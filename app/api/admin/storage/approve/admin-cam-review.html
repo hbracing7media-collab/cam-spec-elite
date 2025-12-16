@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Cam Spec Elite — Admin Moderation</title>
+
+  <style>
+    :root{
+      --bg0:#050816;
+      --bg1:#020617;
+      --card: rgba(2,6,23,.75);
+      --stroke: rgba(56,189,248,.35);
+      --text:#e5e7eb;
+      --muted2:#cbd5f5;
+      --cyan:#38bdf8;
+      --pink:#f472b6;
+      --purple:#a78bfa;
+      --good:#22c55e;
+      --bad:#ef4444;
+      --warn:#f59e0b;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(56,189,248,.18), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(244,114,182,.16), transparent 45%),
+        radial-gradient(circle at 50% 100%, rgba(167,139,250,.12), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      min-height:100vh;
+    }
+
+    .wrap{max-width:1200px; margin:0 auto; padding:16px;}
+    .header{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      padding:14px 16px;
+      background: rgba(2,6,23,.65);
+      border: 1px solid var(--stroke);
+      border-radius: 18px;
+      box-shadow: 0 18px 46px rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
+    }
+    .brand{display:flex; flex-direction:column; gap:2px;}
+    .title{
+      margin:0;
+      font-size:15px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color: #7dd3fc;
+      font-weight:800;
+    }
+    .sub{
+      margin:0;
+      font-size:12px;
+      color: var(--muted2);
+      opacity:.95;
+    }
+
+    .pillrow{display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:flex-end;}
+    .pill{
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(56,189,248,.35);
+      background: rgba(2,6,23,.55);
+      color:#cbd5f5;
+      font-size:12px;
+      user-select:none;
+    }
+    .pill strong{color:#e5e7eb}
+    .btn{
+      cursor:pointer;
+      border:none;
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:800;
+      letter-spacing:.04em;
+      color:#06101a;
+      background: linear-gradient(90deg, rgba(56,189,248,.95), rgba(244,114,182,.9));
+      box-shadow: 0 14px 30px rgba(0,0,0,.45);
+    }
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+    .btn2{
+      cursor:pointer;
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:800;
+      letter-spacing:.04em;
+      border:1px solid rgba(148,163,184,.25);
+      background: rgba(2,6,23,.55);
+      color:#e5e7eb;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.05fr 1.95fr;
+      gap:14px;
+      margin-top:14px;
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: 18px;
+      box-shadow: 0 18px 46px rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+    }
+
+    .cardHead{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:12px 14px;
+      border-bottom:1px solid rgba(56,189,248,.22);
+      background: linear-gradient(135deg, rgba(56,189,248,.08), rgba(244,114,182,.06));
+    }
+    .cardHead h3{
+      margin:0;
+      font-size:13px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:#bfe9ff;
+    }
+
+    .list{
+      max-height: calc(100vh - 190px);
+      overflow:auto;
+    }
+    .row{
+      padding:12px 14px;
+      border-bottom:1px solid rgba(148,163,184,.12);
+      cursor:pointer;
+      transition: background .12s ease;
+    }
+    .row:hover{background: rgba(56,189,248,.06);}
+    .row.active{background: rgba(244,114,182,.07); border-left:3px solid rgba(244,114,182,.65);}
+    .rowTop{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+    .rowName{font-weight:900; color:#eaf2ff; font-size:13px;}
+    .rowMeta{font-size:11px; color: var(--muted2); opacity:.95; margin-top:4px;}
+    .tag{
+      font-size:11px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.22);
+      background: rgba(2,6,23,.45);
+      color:#dbeafe;
+      white-space:nowrap;
+    }
+    .tag.pending{border-color: rgba(245,158,11,.45); color:#fde68a;}
+    .tag.approved{border-color: rgba(34,197,94,.45); color:#bbf7d0;}
+    .tag.denied{border-color: rgba(239,68,68,.45); color:#fecaca;}
+
+    .detail{
+      padding:14px;
+      display:grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap:14px;
+    }
+    .pane{
+      border:1px solid rgba(148,163,184,.16);
+      border-radius:16px;
+      background: rgba(2,6,23,.45);
+      padding:12px;
+    }
+    .label{font-size:11px; color:#cbd5f5; opacity:.9; letter-spacing:.08em; text-transform:uppercase;}
+    .value{font-size:13px; font-weight:800; margin-top:4px; color:#e5e7eb;}
+    .small{font-size:12px; color:#cbd5f5; opacity:.95; line-height:1.35;}
+
+    .imgBox{
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid rgba(56,189,248,.22);
+      background: rgba(2,6,23,.55);
+      min-height: 240px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .imgBox img{width:100%; height:100%; object-fit:contain; display:block;}
+    .imgHint{font-size:12px; color:#cbd5f5; opacity:.9; padding:10px; text-align:center;}
+
+    textarea{
+      width:100%;
+      min-height:90px;
+      border-radius:14px;
+      padding:10px 12px;
+      border:1px solid rgba(56,189,248,.22);
+      background: rgba(2,6,23,.55);
+      color:#e5e7eb;
+      outline:none;
+      resize:vertical;
+      font-family: inherit;
+    }
+
+    pre{
+      margin:0;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-size:12px;
+      color:#e5e7eb;
+      line-height:1.35;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .approve{
+      background: linear-gradient(90deg, rgba(34,197,94,.95), rgba(56,189,248,.85));
+      color:#04120b;
+    }
+    .deny{
+      background: linear-gradient(90deg, rgba(239,68,68,.95), rgba(244,114,182,.85));
+      color:#1b070a;
+    }
+
+    .bar{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(148,163,184,.18);
+      background: rgba(2,6,23,.55);
+      color:#e5e7eb;
+      font-size:12px;
+      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    }
+    .bar b{color:#eaf2ff}
+    .err{color:#fecaca}
+    .ok{color:#bbf7d0}
+
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+      .detail{grid-template-columns:1fr}
+      .list{max-height: 320px;}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div class="brand">
+        <h1 class="title">Cam Spec Elite — Admin Moderation</h1>
+        <p class="sub">Review pending cam submissions. Preview photo + specs. Approve or deny in one click.</p>
+      </div>
+      <div class="pillrow">
+        <div class="pill"><strong id="adminState">Checking admin…</strong></div>
+        <div class="pill">Queue: <strong id="queueCount">0</strong></div>
+        <button class="btn2" id="refreshBtn" type="button">Refresh Queue</button>
+        <button class="btn" id="signOutBtn" type="button">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: Pending list -->
+      <div class="card">
+        <div class="cardHead">
+          <h3>Pending Queue</h3>
+          <span class="tag pending" id="pendingTag">pending</span>
+        </div>
+        <div class="list" id="list"></div>
+      </div>
+
+      <!-- RIGHT: Review panel -->
+      <div class="card">
+        <div class="cardHead">
+          <h3>Review</h3>
+          <span class="tag" id="statusTag">—</span>
+        </div>
+
+        <div class="detail">
+          <div class="pane">
+            <div class="label">Cam Name</div>
+            <div class="value" id="camName">Select a cam…</div>
+
+            <div style="height:10px"></div>
+            <div class="label">Engine</div>
+            <div class="small" id="engineLine">—</div>
+
+            <div style="height:10px"></div>
+            <div class="label">Notes</div>
+            <div class="small" id="notesLine">—</div>
+
+            <div style="height:12px"></div>
+            <div class="label">Denial Reason (optional)</div>
+            <textarea id="denyReason" placeholder="Example: photo is blurry, missing duration/LSA, bad data, etc."></textarea>
+
+            <div class="actions">
+              <button class="btn approve" id="approveBtn" type="button" disabled>Approve</button>
+              <button class="btn deny" id="denyBtn" type="button" disabled>Deny</button>
+              <button class="btn2" id="openPhotoBtn" type="button" disabled>Open Photo</button>
+            </div>
+
+            <div class="bar" id="msgBar">
+              <span><b>Status:</b> <span id="msgText">Waiting…</span></span>
+              <span id="whoLine"></span>
+            </div>
+          </div>
+
+          <div class="pane">
+            <div class="label">Cam Card Photo</div>
+            <div class="imgBox" id="imgBox">
+              <div class="imgHint">Select a cam to preview its uploaded cam card photo.</div>
+            </div>
+
+            <div style="height:12px"></div>
+            <div class="label">Specs (JSON)</div>
+            <div class="pane" style="padding:10px; border-radius:14px;">
+              <pre id="specJson">—</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    /***********************
+     * CONFIG (YOU SET THESE)
+     ***********************/
+    const SUPABASE_URL = "https://yumusixibqpwvlurtram.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_uFDAq_Hm9Bs0X7rNUOca7Q_7vCnMChj";
+
+    // Storage bucket where cam card images live:
+    const BUCKET_NAME = "cam_cards";
+
+    // Table that stores submissions:
+    const TABLE = "cse_cam_submissions_table";
+
+    // Admin table (real table) used for auth:
+    const ADMINS_TABLE = "cse_admins";
+
+    /***********************
+     * INIT
+     ***********************/
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const els = {
+      adminState: document.getElementById("adminState"),
+      queueCount: document.getElementById("queueCount"),
+      refreshBtn: document.getElementById("refreshBtn"),
+      signOutBtn: document.getElementById("signOutBtn"),
+      list: document.getElementById("list"),
+
+      statusTag: document.getElementById("statusTag"),
+      camName: document.getElementById("camName"),
+      engineLine: document.getElementById("engineLine"),
+      notesLine: document.getElementById("notesLine"),
+      denyReason: document.getElementById("denyReason"),
+
+      approveBtn: document.getElementById("approveBtn"),
+      denyBtn: document.getElementById("denyBtn"),
+      openPhotoBtn: document.getElementById("openPhotoBtn"),
+
+      imgBox: document.getElementById("imgBox"),
+      specJson: document.getElementById("specJson"),
+
+      msgBar: document.getElementById("msgBar"),
+      msgText: document.getElementById("msgText"),
+      whoLine: document.getElementById("whoLine"),
+    };
+
+    let current = null;
+    let pending = [];
+
+    function setMsg(text, kind="") {
+      els.msgText.textContent = text;
+      els.msgText.className = kind ? kind : "";
+    }
+
+    function setStatusTag(status) {
+      els.statusTag.textContent = status || "—";
+      els.statusTag.className = "tag " + (status || "");
+    }
+
+    function safeJsonPretty(v) {
+      try { return JSON.stringify(v ?? {}, null, 2); }
+      catch { return String(v ?? ""); }
+    }
+
+    function escapeHtml(s){
+      return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[c]));
+    }
+
+    function pickSpecValue(spec, keys) {
+      if (!spec || typeof spec !== "object") return null;
+      for (const k of keys) {
+        if (spec[k] != null && String(spec[k]).trim() !== "") return spec[k];
+      }
+      return null;
+    }
+
+    function normalizeRow(row) {
+      const spec = (row && typeof row.spec === "object" && row.spec) ? row.spec : (row?.spec || null);
+
+      const cam_name = row.cam_name || pickSpecValue(spec, ["cam_name", "name"]) || "(No name)";
+      const engine_make = row.engine_make || pickSpecValue(spec, ["engine_make", "make"]) || "—";
+      const engine_family = row.engine_family || pickSpecValue(spec, ["engine_family", "family"]) || "—";
+      const notes = row.notes || pickSpecValue(spec, ["notes", "note"]) || "—";
+
+      return {
+        ...row,
+        cam_name,
+        engine_make,
+        engine_family,
+        notes,
+        spec
+      };
+    }
+
+    async function requireAdmin() {
+      const { data: { user }, error: userErr } = await supabase.auth.getUser();
+      if (userErr) throw userErr;
+
+      if (!user) {
+        els.adminState.textContent = "Not logged in";
+        setMsg("Please log in (this page requires an authenticated admin).", "err");
+        return { ok:false };
+      }
+
+      // Admin check against cse_admins (real table)
+      const { data: adminRow, error: adminErr } = await supabase
+        .from(ADMINS_TABLE)
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (adminErr) throw adminErr;
+      if (!adminRow) {
+        els.adminState.textContent = "Not admin";
+        setMsg("You are logged in, but your account is not in cse_admins.", "err");
+        els.whoLine.textContent = user.email ? `Logged in: ${user.email}` : `Logged in: ${user.id}`;
+        return { ok:false, user };
+      }
+
+      els.adminState.textContent = "Admin: OK";
+      els.whoLine.textContent = user.email ? `Logged in: ${user.email}` : `Logged in: ${user.id}`;
+      return { ok:true, user };
+    }
+
+    async function getPhotoUrl(cam_card_path) {
+      if (!cam_card_path) return null;
+      if (cam_card_path.startsWith("http://") || cam_card_path.startsWith("https://")) return cam_card_path;
+
+      const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(cam_card_path);
+      if (data?.publicUrl) return data.publicUrl;
+
+      const signed = await supabase.storage.from(BUCKET_NAME).createSignedUrl(cam_card_path, 60 * 60);
+      if (signed?.data?.signedUrl) return signed.data.signedUrl;
+
+      return null;
+    }
+
+    function renderList() {
+      els.list.innerHTML = "";
+      els.queueCount.textContent = String(pending.length);
+
+      if (!pending.length) {
+        els.list.innerHTML =
+          `<div class="row"><div class="rowName">No pending cams 🎉</div><div class="rowMeta">Nothing to review right now.</div></div>`;
+        return;
+      }
+
+      pending.forEach((r) => {
+        const div = document.createElement("div");
+        div.className = "row" + (current?.id === r.id ? " active" : "");
+        div.innerHTML = `
+          <div class="rowTop">
+            <div class="rowName">${escapeHtml(r.cam_name || "(No name)")}</div>
+            <span class="tag pending">pending</span>
+          </div>
+          <div class="rowMeta">
+            ${escapeHtml(r.engine_make || "—")} • ${escapeHtml(r.engine_family || "—")} • ${new Date(r.created_at).toLocaleString()}
+          </div>
+        `;
+        div.addEventListener("click", () => selectRow(r.id));
+        els.list.appendChild(div);
+      });
+    }
+
+    async function loadQueue() {
+      setMsg("Loading pending queue…");
+      current = null;
+      disableActions(true);
+
+      const { data, error } = await supabase
+        .from(TABLE)
+        .select("id, created_at, cam_name, engine_make, engine_family, notes, cam_card_path, spec, status")
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error(error);
+        setMsg("Failed to load queue: " + error.message, "err");
+        pending = [];
+        renderList();
+        return;
+      }
+
+      pending = (data || []).map(normalizeRow);
+      renderList();
+      setMsg(`Loaded ${pending.length} pending cams.`, "ok");
+
+      if (pending.length) selectRow(pending[0].id);
+    }
+
+    async function selectRow(id) {
+      const row = pending.find(x => x.id === id);
+      if (!row) return;
+
+      current = row;
+      renderList();
+
+      els.camName.textContent = row.cam_name || "(No name)";
+      els.engineLine.textContent = `${row.engine_make || "—"} • ${row.engine_family || "—"}`;
+      els.notesLine.textContent = row.notes || "—";
+      els.specJson.textContent = safeJsonPretty(row.spec);
+      setStatusTag("pending");
+
+      els.imgBox.innerHTML = `<div class="imgHint">Loading photo…</div>`;
+      const url = await getPhotoUrl(row.cam_card_path);
+
+      if (url) {
+        els.imgBox.innerHTML = `<img alt="Cam card photo" src="${url}">`;
+        els.openPhotoBtn.disabled = false;
+        els.openPhotoBtn.onclick = () => window.open(url, "_blank", "noopener,noreferrer");
+      } else {
+        els.imgBox.innerHTML =
+          `<div class="imgHint">No photo found OR cam_card_path is not saved.<br><br><b>cam_card_path:</b> ${escapeHtml(row.cam_card_path || "—")}</div>`;
+        els.openPhotoBtn.disabled = true;
+        els.openPhotoBtn.onclick = null;
+      }
+
+      disableActions(false);
+      setMsg("Ready to approve or deny.");
+    }
+
+    function disableActions(disabled) {
+      els.approveBtn.disabled = disabled || !current;
+      els.denyBtn.disabled = disabled || !current;
+    }
+
+    async function setStatus(newStatus, reasonText=null) {
+      if (!current?.id) return;
+
+      disableActions(true);
+      setMsg(`${newStatus.toUpperCase()}…`);
+
+      const updates = { status: newStatus };
+
+      if (newStatus === "denied" && reasonText && reasonText.trim()) {
+        const existing = (current.notes && current.notes !== "—") ? String(current.notes) : "";
+        updates.notes = (existing ? existing + "\n\n" : "") + `[ADMIN DENIAL]: ${reasonText.trim()}`;
+      }
+
+      const { error } = await supabase
+        .from(TABLE)
+        .update(updates)
+        .eq("id", current.id);
+
+      if (error) {
+        console.error(error);
+        setMsg("Update failed (likely RLS): " + error.message, "err");
+        disableActions(false);
+        return;
+      }
+
+      setMsg(`Updated to ${newStatus}.`, "ok");
+
+      pending = pending.filter(x => x.id !== current.id);
+      current = null;
+      renderList();
+
+      if (pending.length) {
+        await selectRow(pending[0].id);
+      } else {
+        els.camName.textContent = "Select a cam…";
+        els.engineLine.textContent = "—";
+        els.notesLine.textContent = "—";
+        els.specJson.textContent = "—";
+        setStatusTag("—");
+        els.imgBox.innerHTML = `<div class="imgHint">No pending cams 🎉</div>`;
+        disableActions(true);
+      }
+    }
+
+    // ✅ FIX: NO confirm() (blocked in sandboxed iframes)
+    els.approveBtn.addEventListener("click", async () => {
+      if (!current) return;
+      await setStatus("approved");
+    });
+
+    // ✅ FIX: NO confirm() (blocked in sandboxed iframes)
+    els.denyBtn.addEventListener("click", async () => {
+      if (!current) return;
+      const reason = els.denyReason.value || "";
+      await setStatus("denied", reason);
+      els.denyReason.value = "";
+    });
+
+    els.refreshBtn.addEventListener("click", loadQueue);
+
+    els.signOutBtn.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      location.reload();
+    });
+
+    (async function boot(){
+      try{
+        const admin = await requireAdmin();
+        if (!admin.ok) return;
+        await loadQueue();
+      } catch(e){
+        console.error(e);
+        setMsg("Error: " + (e?.message || e), "err");
+      }
+    })();
+  </script>
+</body>
+</html>
