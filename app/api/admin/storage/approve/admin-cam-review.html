@@ -318,311 +318,317 @@
     </div>
   </div>
 
-  <!-- Supabase -->
+  <!-- Supabase (load once) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    /***********************
-     * CONFIG (YOU SET THESE)
-     ***********************/
-    const SUPABASE_URL = "https://yumusixibqpwvlurtram.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_uFDAq_Hm9Bs0X7rNUOca7Q_7vCnMChj";
+    (function () {
+      "use strict";
 
-    // Storage bucket where cam card images live:
-    const BUCKET_NAME = "cam_cards";
+      /***********************
+       * CONFIG (YOUR REAL VALUES)
+       ***********************/
+      const SUPABASE_URL = "https://api.hbracing7.com";
+      const SUPABASE_ANON_KEY = "sb_publishable_uFDAq_Hm9Bs0X7rNUOca7Q_7vCnMChj";
 
-    // Table that stores submissions:
-    const TABLE = "cse_cam_submissions_table";
+      const BUCKET_NAME = "cam_cards";
+      const TABLE = "cse_cam_submissions_table";
+      const ADMINS_TABLE = "cse_admins";
 
-    // Admin table (real table) used for auth:
-    const ADMINS_TABLE = "cse_admins";
-
-    /***********************
-     * INIT
-     ***********************/
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const els = {
-      adminState: document.getElementById("adminState"),
-      queueCount: document.getElementById("queueCount"),
-      refreshBtn: document.getElementById("refreshBtn"),
-      signOutBtn: document.getElementById("signOutBtn"),
-      list: document.getElementById("list"),
-
-      statusTag: document.getElementById("statusTag"),
-      camName: document.getElementById("camName"),
-      engineLine: document.getElementById("engineLine"),
-      notesLine: document.getElementById("notesLine"),
-      denyReason: document.getElementById("denyReason"),
-
-      approveBtn: document.getElementById("approveBtn"),
-      denyBtn: document.getElementById("denyBtn"),
-      openPhotoBtn: document.getElementById("openPhotoBtn"),
-
-      imgBox: document.getElementById("imgBox"),
-      specJson: document.getElementById("specJson"),
-
-      msgBar: document.getElementById("msgBar"),
-      msgText: document.getElementById("msgText"),
-      whoLine: document.getElementById("whoLine"),
-    };
-
-    let current = null;
-    let pending = [];
-
-    function setMsg(text, kind="") {
-      els.msgText.textContent = text;
-      els.msgText.className = kind ? kind : "";
-    }
-
-    function setStatusTag(status) {
-      els.statusTag.textContent = status || "—";
-      els.statusTag.className = "tag " + (status || "");
-    }
-
-    function safeJsonPretty(v) {
-      try { return JSON.stringify(v ?? {}, null, 2); }
-      catch { return String(v ?? ""); }
-    }
-
-    function escapeHtml(s){
-      return String(s ?? "").replace(/[&<>"']/g, (c) => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[c]));
-    }
-
-    function pickSpecValue(spec, keys) {
-      if (!spec || typeof spec !== "object") return null;
-      for (const k of keys) {
-        if (spec[k] != null && String(spec[k]).trim() !== "") return spec[k];
+      /***********************
+       * IMPORTANT FIX:
+       * - DO NOT declare a global `const supabase = ...`
+       * - GoDaddy / builder pages often inject other scripts that also define `supabase`
+       * - We store our client on a unique window key and use a local variable name `sb`
+       ***********************/
+      if (!window.supabase || typeof window.supabase.createClient !== "function") {
+        console.error("Supabase library did not load.");
+        return;
       }
-      return null;
-    }
 
-    function normalizeRow(row) {
-      const spec = (row && typeof row.spec === "object" && row.spec) ? row.spec : (row?.spec || null);
+      const CLIENT_KEY = "__CSE_ADMIN_SUPABASE_CLIENT__";
+      if (!window[CLIENT_KEY]) {
+        window[CLIENT_KEY] = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+      const sb = window[CLIENT_KEY];
 
-      const cam_name = row.cam_name || pickSpecValue(spec, ["cam_name", "name"]) || "(No name)";
-      const engine_make = row.engine_make || pickSpecValue(spec, ["engine_make", "make"]) || "—";
-      const engine_family = row.engine_family || pickSpecValue(spec, ["engine_family", "family"]) || "—";
-      const notes = row.notes || pickSpecValue(spec, ["notes", "note"]) || "—";
+      const els = {
+        adminState: document.getElementById("adminState"),
+        queueCount: document.getElementById("queueCount"),
+        refreshBtn: document.getElementById("refreshBtn"),
+        signOutBtn: document.getElementById("signOutBtn"),
+        list: document.getElementById("list"),
 
-      return {
-        ...row,
-        cam_name,
-        engine_make,
-        engine_family,
-        notes,
-        spec
+        statusTag: document.getElementById("statusTag"),
+        camName: document.getElementById("camName"),
+        engineLine: document.getElementById("engineLine"),
+        notesLine: document.getElementById("notesLine"),
+        denyReason: document.getElementById("denyReason"),
+
+        approveBtn: document.getElementById("approveBtn"),
+        denyBtn: document.getElementById("denyBtn"),
+        openPhotoBtn: document.getElementById("openPhotoBtn"),
+
+        imgBox: document.getElementById("imgBox"),
+        specJson: document.getElementById("specJson"),
+
+        msgText: document.getElementById("msgText"),
+        whoLine: document.getElementById("whoLine"),
       };
-    }
 
-    async function requireAdmin() {
-      const { data: { user }, error: userErr } = await supabase.auth.getUser();
-      if (userErr) throw userErr;
+      let current = null;
+      let pending = [];
 
-      if (!user) {
-        els.adminState.textContent = "Not logged in";
-        setMsg("Please log in (this page requires an authenticated admin).", "err");
-        return { ok:false };
+      function setMsg(text, kind="") {
+        els.msgText.textContent = text;
+        els.msgText.className = kind ? kind : "";
       }
 
-      // Admin check against cse_admins (real table)
-      const { data: adminRow, error: adminErr } = await supabase
-        .from(ADMINS_TABLE)
-        .select("user_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      function setStatusTag(status) {
+        els.statusTag.textContent = status || "—";
+        els.statusTag.className = "tag " + (status || "");
+      }
 
-      if (adminErr) throw adminErr;
-      if (!adminRow) {
-        els.adminState.textContent = "Not admin";
-        setMsg("You are logged in, but your account is not in cse_admins.", "err");
+      function safeJsonPretty(v) {
+        try { return JSON.stringify(v ?? {}, null, 2); }
+        catch { return String(v ?? ""); }
+      }
+
+      function escapeHtml(s){
+        return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+        }[c]));
+      }
+
+      function pickSpecValue(spec, keys) {
+        if (!spec || typeof spec !== "object") return null;
+        for (const k of keys) {
+          if (spec[k] != null && String(spec[k]).trim() !== "") return spec[k];
+        }
+        return null;
+      }
+
+      function normalizeRow(row) {
+        const spec = (row && typeof row.spec === "object" && row.spec) ? row.spec : (row?.spec || null);
+
+        const cam_name = row.cam_name || pickSpecValue(spec, ["cam_name", "name"]) || "(No name)";
+        const engine_make = row.engine_make || pickSpecValue(spec, ["engine_make", "make"]) || "—";
+        const engine_family = row.engine_family || pickSpecValue(spec, ["engine_family", "family"]) || "—";
+        const notes = row.notes || pickSpecValue(spec, ["notes", "note"]) || "—";
+
+        return { ...row, cam_name, engine_make, engine_family, notes, spec };
+      }
+
+      async function requireAdmin() {
+        const { data: userWrap, error: userErr } = await sb.auth.getUser();
+        if (userErr) throw userErr;
+
+        const user = userWrap?.user;
+        if (!user) {
+          els.adminState.textContent = "Not logged in";
+          setMsg("Please log in (this page requires an authenticated admin).", "err");
+          return { ok:false };
+        }
+
+        // Admin check: user must exist in cse_admins.user_id
+        const { data: adminRow, error: adminErr } = await sb
+          .from(ADMINS_TABLE)
+          .select("user_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (adminErr) throw adminErr;
+
         els.whoLine.textContent = user.email ? `Logged in: ${user.email}` : `Logged in: ${user.id}`;
-        return { ok:false, user };
+
+        if (!adminRow) {
+          els.adminState.textContent = "Not admin";
+          setMsg("You are logged in, but your account is not in cse_admins.", "err");
+          return { ok:false, user };
+        }
+
+        els.adminState.textContent = "Admin: OK";
+        return { ok:true, user };
       }
 
-      els.adminState.textContent = "Admin: OK";
-      els.whoLine.textContent = user.email ? `Logged in: ${user.email}` : `Logged in: ${user.id}`;
-      return { ok:true, user };
-    }
+      async function getPhotoUrl(cam_card_path) {
+        if (!cam_card_path) return null;
+        if (String(cam_card_path).startsWith("http://") || String(cam_card_path).startsWith("https://")) return cam_card_path;
 
-    async function getPhotoUrl(cam_card_path) {
-      if (!cam_card_path) return null;
-      if (cam_card_path.startsWith("http://") || cam_card_path.startsWith("https://")) return cam_card_path;
+        const pub = sb.storage.from(BUCKET_NAME).getPublicUrl(cam_card_path);
+        if (pub?.data?.publicUrl) return pub.data.publicUrl;
 
-      const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(cam_card_path);
-      if (data?.publicUrl) return data.publicUrl;
+        const signed = await sb.storage.from(BUCKET_NAME).createSignedUrl(cam_card_path, 60 * 60);
+        if (signed?.data?.signedUrl) return signed.data.signedUrl;
 
-      const signed = await supabase.storage.from(BUCKET_NAME).createSignedUrl(cam_card_path, 60 * 60);
-      if (signed?.data?.signedUrl) return signed.data.signedUrl;
-
-      return null;
-    }
-
-    function renderList() {
-      els.list.innerHTML = "";
-      els.queueCount.textContent = String(pending.length);
-
-      if (!pending.length) {
-        els.list.innerHTML =
-          `<div class="row"><div class="rowName">No pending cams 🎉</div><div class="rowMeta">Nothing to review right now.</div></div>`;
-        return;
+        return null;
       }
 
-      pending.forEach((r) => {
-        const div = document.createElement("div");
-        div.className = "row" + (current?.id === r.id ? " active" : "");
-        div.innerHTML = `
-          <div class="rowTop">
-            <div class="rowName">${escapeHtml(r.cam_name || "(No name)")}</div>
-            <span class="tag pending">pending</span>
-          </div>
-          <div class="rowMeta">
-            ${escapeHtml(r.engine_make || "—")} • ${escapeHtml(r.engine_family || "—")} • ${new Date(r.created_at).toLocaleString()}
-          </div>
-        `;
-        div.addEventListener("click", () => selectRow(r.id));
-        els.list.appendChild(div);
-      });
-    }
+      function renderList() {
+        els.list.innerHTML = "";
+        els.queueCount.textContent = String(pending.length);
 
-    async function loadQueue() {
-      setMsg("Loading pending queue…");
-      current = null;
-      disableActions(true);
+        if (!pending.length) {
+          els.list.innerHTML =
+            `<div class="row"><div class="rowName">No pending cams 🎉</div><div class="rowMeta">Nothing to review right now.</div></div>`;
+          return;
+        }
 
-      const { data, error } = await supabase
-        .from(TABLE)
-        .select("id, created_at, cam_name, engine_make, engine_family, notes, cam_card_path, spec, status")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error(error);
-        setMsg("Failed to load queue: " + error.message, "err");
-        pending = [];
-        renderList();
-        return;
+        pending.forEach((r) => {
+          const div = document.createElement("div");
+          div.className = "row" + (current?.id === r.id ? " active" : "");
+          div.innerHTML = `
+            <div class="rowTop">
+              <div class="rowName">${escapeHtml(r.cam_name || "(No name)")}</div>
+              <span class="tag pending">pending</span>
+            </div>
+            <div class="rowMeta">
+              ${escapeHtml(r.engine_make || "—")} • ${escapeHtml(r.engine_family || "—")} • ${r.created_at ? new Date(r.created_at).toLocaleString() : "—"}
+            </div>
+          `;
+          div.addEventListener("click", () => selectRow(r.id));
+          els.list.appendChild(div);
+        });
       }
 
-      pending = (data || []).map(normalizeRow);
-      renderList();
-      setMsg(`Loaded ${pending.length} pending cams.`, "ok");
-
-      if (pending.length) selectRow(pending[0].id);
-    }
-
-    async function selectRow(id) {
-      const row = pending.find(x => x.id === id);
-      if (!row) return;
-
-      current = row;
-      renderList();
-
-      els.camName.textContent = row.cam_name || "(No name)";
-      els.engineLine.textContent = `${row.engine_make || "—"} • ${row.engine_family || "—"}`;
-      els.notesLine.textContent = row.notes || "—";
-      els.specJson.textContent = safeJsonPretty(row.spec);
-      setStatusTag("pending");
-
-      els.imgBox.innerHTML = `<div class="imgHint">Loading photo…</div>`;
-      const url = await getPhotoUrl(row.cam_card_path);
-
-      if (url) {
-        els.imgBox.innerHTML = `<img alt="Cam card photo" src="${url}">`;
-        els.openPhotoBtn.disabled = false;
-        els.openPhotoBtn.onclick = () => window.open(url, "_blank", "noopener,noreferrer");
-      } else {
-        els.imgBox.innerHTML =
-          `<div class="imgHint">No photo found OR cam_card_path is not saved.<br><br><b>cam_card_path:</b> ${escapeHtml(row.cam_card_path || "—")}</div>`;
-        els.openPhotoBtn.disabled = true;
-        els.openPhotoBtn.onclick = null;
-      }
-
-      disableActions(false);
-      setMsg("Ready to approve or deny.");
-    }
-
-    function disableActions(disabled) {
-      els.approveBtn.disabled = disabled || !current;
-      els.denyBtn.disabled = disabled || !current;
-    }
-
-    async function setStatus(newStatus, reasonText=null) {
-      if (!current?.id) return;
-
-      disableActions(true);
-      setMsg(`${newStatus.toUpperCase()}…`);
-
-      const updates = { status: newStatus };
-
-      if (newStatus === "denied" && reasonText && reasonText.trim()) {
-        const existing = (current.notes && current.notes !== "—") ? String(current.notes) : "";
-        updates.notes = (existing ? existing + "\n\n" : "") + `[ADMIN DENIAL]: ${reasonText.trim()}`;
-      }
-
-      const { error } = await supabase
-        .from(TABLE)
-        .update(updates)
-        .eq("id", current.id);
-
-      if (error) {
-        console.error(error);
-        setMsg("Update failed (likely RLS): " + error.message, "err");
-        disableActions(false);
-        return;
-      }
-
-      setMsg(`Updated to ${newStatus}.`, "ok");
-
-      pending = pending.filter(x => x.id !== current.id);
-      current = null;
-      renderList();
-
-      if (pending.length) {
-        await selectRow(pending[0].id);
-      } else {
-        els.camName.textContent = "Select a cam…";
-        els.engineLine.textContent = "—";
-        els.notesLine.textContent = "—";
-        els.specJson.textContent = "—";
-        setStatusTag("—");
-        els.imgBox.innerHTML = `<div class="imgHint">No pending cams 🎉</div>`;
+      async function loadQueue() {
+        setMsg("Loading pending queue…");
+        current = null;
         disableActions(true);
+
+        const { data, error } = await sb
+          .from(TABLE)
+          .select("id, created_at, cam_name, engine_make, engine_family, notes, cam_card_path, spec, status")
+          .eq("status", "pending")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error(error);
+          setMsg("Failed to load queue: " + error.message, "err");
+          pending = [];
+          renderList();
+          return;
+        }
+
+        pending = (data || []).map(normalizeRow);
+        renderList();
+        setMsg(`Loaded ${pending.length} pending cams.`, "ok");
+
+        if (pending.length) selectRow(pending[0].id);
       }
-    }
 
-    // ✅ FIX: NO confirm() (blocked in sandboxed iframes)
-    els.approveBtn.addEventListener("click", async () => {
-      if (!current) return;
-      await setStatus("approved");
-    });
+      async function selectRow(id) {
+        const row = pending.find(x => x.id === id);
+        if (!row) return;
 
-    // ✅ FIX: NO confirm() (blocked in sandboxed iframes)
-    els.denyBtn.addEventListener("click", async () => {
-      if (!current) return;
-      const reason = els.denyReason.value || "";
-      await setStatus("denied", reason);
-      els.denyReason.value = "";
-    });
+        current = row;
+        renderList();
 
-    els.refreshBtn.addEventListener("click", loadQueue);
+        els.camName.textContent = row.cam_name || "(No name)";
+        els.engineLine.textContent = `${row.engine_make || "—"} • ${row.engine_family || "—"}`;
+        els.notesLine.textContent = row.notes || "—";
+        els.specJson.textContent = safeJsonPretty(row.spec);
+        setStatusTag("pending");
 
-    els.signOutBtn.addEventListener("click", async () => {
-      await supabase.auth.signOut();
-      location.reload();
-    });
+        els.imgBox.innerHTML = `<div class="imgHint">Loading photo…</div>`;
+        const url = await getPhotoUrl(row.cam_card_path);
 
-    (async function boot(){
-      try{
-        const admin = await requireAdmin();
-        if (!admin.ok) return;
-        await loadQueue();
-      } catch(e){
-        console.error(e);
-        setMsg("Error: " + (e?.message || e), "err");
+        if (url) {
+          els.imgBox.innerHTML = `<img alt="Cam card photo" src="${escapeHtml(url)}">`;
+          els.openPhotoBtn.disabled = false;
+          els.openPhotoBtn.onclick = () => window.open(url, "_blank", "noopener,noreferrer");
+        } else {
+          els.imgBox.innerHTML =
+            `<div class="imgHint">No photo found OR cam_card_path is not saved.<br><br><b>cam_card_path:</b> ${escapeHtml(row.cam_card_path || "—")}</div>`;
+          els.openPhotoBtn.disabled = true;
+          els.openPhotoBtn.onclick = null;
+        }
+
+        disableActions(false);
+        setMsg("Ready to approve or deny.");
       }
+
+      function disableActions(disabled) {
+        els.approveBtn.disabled = disabled || !current;
+        els.denyBtn.disabled = disabled || !current;
+      }
+
+      async function setStatus(newStatus, reasonText=null) {
+        if (!current?.id) return;
+
+        disableActions(true);
+        setMsg(`${newStatus.toUpperCase()}…`);
+
+        const updates = { status: newStatus };
+
+        if (newStatus === "denied" && reasonText && reasonText.trim()) {
+          const existing = (current.notes && current.notes !== "—") ? String(current.notes) : "";
+          updates.notes = (existing ? existing + "\n\n" : "") + `[ADMIN DENIAL]: ${reasonText.trim()}`;
+        }
+
+        const { error } = await sb
+          .from(TABLE)
+          .update(updates)
+          .eq("id", current.id);
+
+        if (error) {
+          console.error(error);
+          setMsg("Update failed (likely RLS): " + error.message, "err");
+          disableActions(false);
+          return;
+        }
+
+        setMsg(`Updated to ${newStatus}.`, "ok");
+
+        pending = pending.filter(x => x.id !== current.id);
+        current = null;
+        renderList();
+
+        if (pending.length) {
+          await selectRow(pending[0].id);
+        } else {
+          els.camName.textContent = "Select a cam…";
+          els.engineLine.textContent = "—";
+          els.notesLine.textContent = "—";
+          els.specJson.textContent = "—";
+          setStatusTag("—");
+          els.imgBox.innerHTML = `<div class="imgHint">No pending cams 🎉</div>`;
+          disableActions(true);
+        }
+      }
+
+      // No confirm() dialogs (often blocked in sandboxed iframes)
+      els.approveBtn.addEventListener("click", async () => {
+        if (!current) return;
+        await setStatus("approved");
+      });
+
+      els.denyBtn.addEventListener("click", async () => {
+        if (!current) return;
+        const reason = els.denyReason.value || "";
+        await setStatus("denied", reason);
+        els.denyReason.value = "";
+      });
+
+      els.refreshBtn.addEventListener("click", loadQueue);
+
+      els.signOutBtn.addEventListener("click", async () => {
+        await sb.auth.signOut();
+        location.reload();
+      });
+
+      (async function boot(){
+        try{
+          setMsg("Initializing…");
+          const admin = await requireAdmin();
+          if (!admin.ok) return;
+          await loadQueue();
+        } catch(e){
+          console.error(e);
+          setMsg("Error: " + (e?.message || e), "err");
+        }
+      })();
+
     })();
   </script>
 </body>
