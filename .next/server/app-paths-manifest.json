@@ -1,3 +1,26 @@
 {
-  "/api/admin/approve/route": "app/api/admin/approve/route.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/admin/storage/approve/route": "app/api/admin/storage/approve/route.js",
+  "/api/admin/uploads/route": "app/api/admin/uploads/route.js",
+  "/api/admin/approve/route": "app/api/admin/approve/route.js",
+  "/api/auth/whoami/route": "app/api/auth/whoami/route.js",
+  "/api/admin/storage/pending/route": "app/api/admin/storage/pending/route.js",
+  "/api/auth/login/route": "app/api/auth/login/route.js",
+  "/api/admin/cams/pending/route": "app/api/admin/cams/pending/route.js",
+  "/api/admin/cams/approve/route": "app/api/admin/cams/approve/route.js",
+  "/api/upload/forum/route": "app/api/upload/forum/route.js",
+  "/api/upload/profile/route": "app/api/upload/profile/route.js",
+  "/api/cams/create/route": "app/api/cams/create/route.js",
+  "/calculators/page": "app/calculators/page.js",
+  "/calculators/[slug]/page": "app/calculators/[slug]/page.js",
+  "/login/page": "app/login/page.js",
+  "/page": "app/page.js",
+  "/profile/page": "app/profile/page.js",
+  "/logout/page": "app/logout/page.js",
+  "/upload/page": "app/upload/page.js",
+  "/forum/page": "app/forum/page.js",
+  "/cams/new/page": "app/cams/new/page.js",
+  "/cams/submit/page": "app/cams/submit/page.js",
+  "/forum/thread/[id]/page": "app/forum/thread/[id]/page.js",
+  "/forum/new/page": "app/forum/new/page.js"
 }
