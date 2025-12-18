@@ -69,6 +69,8 @@ export async function POST(req: NextRequest) {
       const engine_make = String(form.get("engine_make") || "").trim();
       const engine_family = String(form.get("engine_family") || "").trim();
       const notes = String(form.get("notes") || "").trim();
+      const brand = String(form.get("brand") || "").trim();
+      const part_number = String(form.get("part_number") || "").trim();
 
       if (!cam_name) {
         return NextResponse.json({ ok: false, error: "cam_name is required" }, { status: 400 });
@@ -84,6 +86,32 @@ export async function POST(req: NextRequest) {
       if (typeof rawSpec === "string" && rawSpec.trim()) {
         try { spec = JSON.parse(rawSpec); } catch { spec = null; }
       }
+
+      // helper to coerce numeric fields from spec or form
+      const toNumber = (v: any) => {
+        if (v == null) return null;
+        if (typeof v === "number") return Number.isFinite(v) ? v : null;
+        if (typeof v === "string") {
+          const cleaned = v.replace(/,/g, "").trim();
+          if (cleaned === "") return null;
+          const n = Number(cleaned);
+          return Number.isFinite(n) ? n : null;
+        }
+        return null;
+      };
+
+      const s = (spec && typeof spec === "object") ? (spec as any) : {};
+      const lsa = toNumber(form.get("lsa") ?? s.lsa ?? s.LSA ?? null);
+      const icl = toNumber(form.get("icl") ?? s.icl ?? s.ICL ?? null);
+      const rocker_ratio = toNumber(form.get("rocker_ratio") ?? s.rocker_ratio ?? s.rockerRatio ?? null);
+      const duration_int_050 = toNumber(form.get("duration_int_050") ?? s.dur_int_050 ?? s.duration_int_050 ?? s.durInt050 ?? null);
+      const duration_exh_050 = toNumber(form.get("duration_exh_050") ?? s.dur_exh_050 ?? s.duration_exh_050 ?? s.durExh050 ?? null);
+      const lift_int = toNumber(form.get("lift_int") ?? s.lift_int ?? s.liftInt ?? null);
+      const lift_exh = toNumber(form.get("lift_exh") ?? s.lift_exh ?? s.liftExh ?? null);
+      const advertised_int = toNumber(form.get("advertised_int") ?? s.adv_int ?? s.advertised_int ?? s.advInt ?? null);
+      const advertised_exh = toNumber(form.get("advertised_exh") ?? s.adv_exh ?? s.advertised_exh ?? s.advExh ?? null);
+      const lash_int = toNumber(form.get("lash_int") ?? s.lash_int ?? s.lashInt ?? null);
+      const lash_exh = toNumber(form.get("lash_exh") ?? s.lash_exh ?? s.lashExh ?? null);
 
       const ts = Date.now();
 
@@ -108,8 +136,21 @@ export async function POST(req: NextRequest) {
         .insert({
           user_id: user.id,
           cam_name,
+          brand: brand || null,
+          part_number: part_number || null,
           engine_make: engine_make || null,
           engine_family: engine_family || null,
+          lsa,
+          icl,
+          rocker_ratio,
+          duration_int_050,
+          duration_exh_050,
+          lift_int,
+          lift_exh,
+          advertised_int,
+          advertised_exh,
+          lash_int,
+          lash_exh,
           notes: notes || null,
           cam_card_path: camCardPath,
           dyno_paths: dynoPaths.length ? dynoPaths : null,
@@ -134,6 +175,33 @@ export async function POST(req: NextRequest) {
       const notes = String(body.notes || "").trim();
       const spec = body.spec ?? body.spec_json ?? null;
 
+      const toNumber = (v: any) => {
+        if (v == null) return null;
+        if (typeof v === "number") return Number.isFinite(v) ? v : null;
+        if (typeof v === "string") {
+          const cleaned = v.replace(/,/g, "").trim();
+          if (cleaned === "") return null;
+          const n = Number(cleaned);
+          return Number.isFinite(n) ? n : null;
+        }
+        return null;
+      };
+
+      const s = spec ?? {};
+      const brand = String(body.brand || "").trim() || null;
+      const part_number = String(body.part_number || "").trim() || null;
+      const lsa = toNumber(body.lsa ?? s.lsa ?? s.LSA ?? null);
+      const icl = toNumber(body.icl ?? s.icl ?? s.ICL ?? null);
+      const rocker_ratio = toNumber(body.rocker_ratio ?? s.rocker_ratio ?? s.rockerRatio ?? null);
+      const duration_int_050 = toNumber(body.duration_int_050 ?? s.duration_int_050 ?? s.dur_int_050 ?? s.durInt050 ?? null);
+      const duration_exh_050 = toNumber(body.duration_exh_050 ?? s.duration_exh_050 ?? s.dur_exh_050 ?? s.durExh050 ?? null);
+      const lift_int = toNumber(body.lift_int ?? s.lift_int ?? s.liftInt ?? null);
+      const lift_exh = toNumber(body.lift_exh ?? s.lift_exh ?? s.liftExh ?? null);
+      const advertised_int = toNumber(body.advertised_int ?? s.advertised_int ?? s.adv_int ?? s.advInt ?? null);
+      const advertised_exh = toNumber(body.advertised_exh ?? s.advertised_exh ?? s.adv_exh ?? s.advExh ?? null);
+      const lash_int = toNumber(body.lash_int ?? s.lash_int ?? s.lashInt ?? null);
+      const lash_exh = toNumber(body.lash_exh ?? s.lash_exh ?? s.lashExh ?? null);
+
       if (!cam_name) {
         return NextResponse.json({ ok: false, error: "cam_name is required" }, { status: 400 });
       }
@@ -144,8 +212,21 @@ export async function POST(req: NextRequest) {
         .insert({
           user_id: user.id,
           cam_name,
+          brand,
+          part_number,
           engine_make: engine_make || null,
           engine_family: engine_family || null,
+          lsa,
+          icl,
+          rocker_ratio,
+          duration_int_050,
+          duration_exh_050,
+          lift_int,
+          lift_exh,
+          advertised_int,
+          advertised_exh,
+          lash_int,
+          lash_exh,
           notes: notes || null,
           cam_card_path: null,
           dyno_paths: null,

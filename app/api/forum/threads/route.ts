@@ -1,0 +1,65 @@
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { createClient } from "@supabase/supabase-js";
+
+// GET: List all threads
+export async function GET() {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRole) {
+    return NextResponse.json({ ok: false, message: "Server misconfigured" }, { status: 500 });
+  }
+
+  const supabase = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
+  const { data, error } = await supabase
+    .from("forum_threads")
+    .select("id, title, body, created_at, user_id")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ ok: true, threads: data });
+}
+
+// POST: Create a new thread
+export async function POST(req: Request) {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const cookieStore = await cookies();
+
+  if (!supabaseUrl || !serviceRole) {
+    return NextResponse.json({ ok: false, message: "Server misconfigured" }, { status: 500 });
+  }
+
+  const access_token = cookieStore.get("sb-access-token")?.value;
+  if (!access_token) {
+    return NextResponse.json({ ok: false, message: "Not authenticated" }, { status: 401 });
+  }
+
+  const { title, body } = await req.json();
+  if (!title || !body) {
+    return NextResponse.json({ ok: false, message: "Title and body required" }, { status: 400 });
+  }
+
+  const supabase = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
+  const { data: { user }, error: userError } = await supabase.auth.getUser(access_token);
+
+  if (userError || !user) {
+    return NextResponse.json({ ok: false, message: "Not authenticated" }, { status: 401 });
+  }
+
+  // Insert thread and return the created row
+  const { error, data } = await supabase
+    .from("forum_threads")
+    .insert([{ user_id: user.id, title, body }])
+    .select();
+
+  if (error) {
+    return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ ok: true, message: "Thread created!", thread: data?.[0] });
+}

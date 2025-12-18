@@ -1,25 +1,54 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { useEffect, useState } from "react";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-function makeSupabase(): SupabaseClient | null {
+let supabaseInstance: SupabaseClient | null = null;
+
+function getSupabase(): SupabaseClient | null {
+  if (supabaseInstance) return supabaseInstance;
+  
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anon) return null;
-  return createClient(url, anon);
+  
+  supabaseInstance = createClient(url, anon);
+  return supabaseInstance;
 }
 
 export default function NewThreadPage() {
-  const supabase = useMemo(() => makeSupabase(), []);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        // Check auth via API endpoint (validates auth cookie)
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.user?.id) {
+            setUserId(json.user.id);
+          }
+        }
+      } catch (err) {
+        console.error("Auth check failed:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void init();
+  }, []);
 
   async function createThread() {
     setMsg("");
+    const supabase = getSupabase();
 
     if (!supabase) {
       setMsg("Missing Supabase env vars (.env.local).");
@@ -33,30 +62,30 @@ export default function NewThreadPage() {
       setMsg("Body is required.");
       return;
     }
+    if (!userId) {
+      setMsg("You must be logged in.");
+      return;
+    }
 
     setBusy(true);
     try {
-      const { data: u, error: uerr } = await supabase.auth.getUser();
-      if (uerr) throw uerr;
-      if (!u.user) {
-        setMsg("You must be logged in.");
-        setBusy(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("forum_threads")
-        .insert({
-          user_id: u.user.id,
+      // Call server-side API to create thread (passes auth context)
+      const res = await fetch("/api/forum/new", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           title: title.trim(),
           body: body.trim()
         })
-        .select("id")
-        .single();
+      });
 
-      if (error) throw error;
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.message || "Failed to create thread");
+      }
 
-      const threadId = (data as any)?.id as string | undefined;
+      const data = await res.json();
+      const threadId = data.thread?.id;
       if (!threadId) throw new Error("Thread created but no id returned.");
 
       // Go to thread page
@@ -75,15 +104,19 @@ export default function NewThreadPage() {
 
         <hr className="hr" />
 
-        {!supabase ? (
+        {loading ? (
           <div className="card" style={{ background: "rgba(2,6,23,0.55)" }}>
             <div className="card-inner">
-              <p className="small">
-                Add <code>NEXT_PUBLIC_SUPABASE_URL</code> and <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> in <code>.env.local</code>.
-              </p>
+              <p className="small">Loading...</p>
+            </div>
+          </div>
+        ) : !userId ? (
+          <div className="card" style={{ background: "rgba(2,6,23,0.55)" }}>
+            <div className="card-inner">
+              <p className="small">You must be logged in to create a thread.</p>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
                 <Link className="pill" href="/forum">Back to Forum</Link>
-                <Link className="pill" href="/login">Login</Link>
+                <Link className="pill" href="/auth/login">Login</Link>
               </div>
             </div>
           </div>

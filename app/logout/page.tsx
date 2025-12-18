@@ -1,49 +1,35 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "../../lib/supabaseClient";
 
-function makeSupabase(): SupabaseClient | null {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anon) return null;
-  return createClient(url, anon);
-}
-
-export default function LogoutPage() {
-  const supabase = useMemo(() => makeSupabase(), []);
-  const [msg, setMsg] = useState("Logging out…");
+export default function Logout() {
+  const router = useRouter();
 
   useEffect(() => {
-    (async () => {
-      try {
-        if (!supabase) {
-          setMsg("Missing Supabase env vars in .env.local");
-          return;
-        }
-        await supabase.auth.signOut();
-        setMsg("Logged out.");
-      } catch (e: any) {
-        setMsg(e?.message ?? "Logout error");
+    let finished = false;
+    async function doLogout() {
+      await supabase.auth.signOut().catch(() => {});
+      await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+      if (!finished) {
+        finished = true;
+        router.replace("/auth/login");
       }
-    })();
-  }, [supabase]);
+    }
+    doLogout();
+    const timeout = setTimeout(() => {
+      if (!finished) {
+        finished = true;
+        router.replace("/auth/login");
+      }
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, [router]);
 
   return (
-    <div className="card">
-      <div className="card-inner">
-        <h1 className="h1">Logout</h1>
-        <p className="small">{msg}</p>
-
-        <hr className="hr" />
-
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <Link className="pill" href="/">Home</Link>
-          <Link className="pill" href="/login">Login</Link>
-          <Link className="pill" href="/forum">Forum</Link>
-        </div>
-      </div>
-    </div>
+    <main style={{ padding: 20, textAlign: "center" }}>
+      <h1>Logging out...</h1>
+    </main>
   );
 }

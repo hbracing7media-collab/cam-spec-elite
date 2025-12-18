@@ -1,6 +1,27 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function HomePage() {
+export default function Home() {
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) {
+        router.replace("/auth/login");
+      } else {
+        setChecking(false);
+      }
+    };
+    checkAuth();
+  }, [router]);
+
+  if (checking) return <div>Loading...</div>;
+
   return (
     <main
       style={{
@@ -54,20 +75,17 @@ export default function HomePage() {
             gap: 12,
           }}
         >
-          <Link href="/login" className="pill">
-            Login
-          </Link>
-
           <Link href="/profile" className="pill">
             Profile
           </Link>
-
           <Link href="/forum" className="pill">
             Forum
           </Link>
-
           <Link href="/calculators" className="pill">
             Calculators
+          </Link>
+          <Link href="/cams" className="pill">
+            Browse Cams
           </Link>
         </div>
 
@@ -85,7 +103,6 @@ export default function HomePage() {
           <Link href="/forum/new" className="pill small">
             New Thread
           </Link>
-
           <Link href="/logout" className="pill small">
             Logout
           </Link>

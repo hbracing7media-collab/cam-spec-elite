@@ -52,9 +52,9 @@ export default function ThreadPage() {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   const [replyBody, setReplyBody] = useState("");
+  const [replyImage, setReplyImage] = useState<File | null>(null);
   const [busyReply, setBusyReply] = useState(false);
 
-  const [imgFile, setImgFile] = useState<File | null>(null);
   const [busyUpload, setBusyUpload] = useState(false);
 
   async function loadAll() {
@@ -68,15 +68,18 @@ export default function ThreadPage() {
         return;
       }
 
-      const { data: u, error: uerr } = await supabase.auth.getUser();
-      if (uerr) throw uerr;
-      if (!u.user) {
-        setUserId(null);
-        setStatus("Login required to view this thread.");
-        setLoading(false);
-        return;
+      // Check auth via API instead of getUser()
+      let currentUserId: string | null = null;
+      try {
+        const authRes = await fetch("/api/auth/me");
+        if (authRes.ok) {
+          const authData = await authRes.json();
+          currentUserId = authData.user?.id || null;
+        }
+      } catch (err) {
+        console.error("Failed to check auth:", err);
       }
-      setUserId(u.user.id);
+      setUserId(currentUserId);
 
       if (!threadId) {
         setStatus("Missing thread id.");
@@ -84,32 +87,19 @@ export default function ThreadPage() {
         return;
       }
 
-      const { data: t, error: terr } = await supabase
-        .from("forum_threads")
-        .select("id,title,body,created_at,user_id")
-        .eq("id", threadId)
-        .single();
+      // Fetch thread and posts from server API
+      const threadRes = await fetch(`/api/forum/thread/${threadId}`);
+      if (!threadRes.ok) {
+        const errorData = await threadRes.json();
+        setStatus(errorData.message || "Error loading thread");
+        setLoading(false);
+        return;
+      }
 
-      if (terr) throw terr;
-      setThread(t as Thread);
-
-      const { data: p, error: perr } = await supabase
-        .from("forum_posts")
-        .select("id,thread_id,user_id,body,created_at")
-        .eq("thread_id", threadId)
-        .order("created_at", { ascending: true });
-
-      if (perr) throw perr;
-      setPosts((p as Post[]) ?? []);
-
-      const { data: a, error: aerr } = await supabase
-        .from("forum_attachments")
-        .select("id,thread_id,post_id,user_id,file_url,created_at")
-        .eq("thread_id", threadId)
-        .order("created_at", { ascending: true });
-
-      if (aerr) throw aerr;
-      setAttachments((a as Attachment[]) ?? []);
+      const threadData = await threadRes.json();
+      setThread(threadData.thread);
+      setPosts(threadData.posts || []);
+      setAttachments(threadData.attachments || []);
     } catch (e: any) {
       setStatus(e?.message ?? "Load error");
     } finally {
@@ -140,25 +130,53 @@ export default function ThreadPage() {
 
   async function addReply() {
     setStatus("");
-    if (!supabase) return setStatus("Missing Supabase env vars.");
     if (!threadId) return setStatus("Missing thread id.");
     if (!replyBody.trim()) return setStatus("Reply cannot be empty.");
+    if (!userId) return setStatus("You must be logged in.");
 
     setBusyReply(true);
     try {
-      const { data: u, error: uerr } = await supabase.auth.getUser();
-      if (uerr) throw uerr;
-      if (!u.user) return setStatus("You must be logged in.");
-
-      const { error } = await supabase.from("forum_posts").insert({
-        thread_id: threadId,
-        user_id: u.user.id,
-        body: replyBody.trim(),
+      // Use API endpoint to create reply with server auth
+      const res = await fetch(`/api/forum/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          thread_id: threadId,
+          body: replyBody.trim()
+        })
       });
 
-      if (error) throw error;
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.message || "Failed to post reply");
+      }
+
+      const replyData = await res.json();
+      const postId = replyData.post?.id;
+
+      // If there's an image, upload it with the post_id
+      if (replyImage && postId) {
+        try {
+          const fd = new FormData();
+          fd.append("file", replyImage);
+          fd.append("thread_id", threadId);
+          fd.append("post_id", postId);
+
+          const uploadRes = await fetch("/api/forum/upload", { method: "POST", body: fd });
+          const uploadJson = await uploadRes.json();
+          
+          if (!uploadRes.ok) {
+            console.error("Image upload failed:", uploadJson.message);
+            // Don't fail the reply if image upload fails
+          }
+        } catch (err) {
+          console.error("Image upload error:", err);
+          // Don't fail the reply if image upload fails
+        }
+      }
 
       setReplyBody("");
+      setReplyImage(null);
       await loadAll();
     } catch (e: any) {
       setStatus(e?.message ?? "Reply error");
@@ -167,46 +185,7 @@ export default function ThreadPage() {
     }
   }
 
-  async function uploadThreadImage() {
-    setStatus("");
-    if (!supabase) return setStatus("Missing Supabase env vars.");
-    if (!threadId) return setStatus("Missing thread id.");
-    if (!imgFile) return setStatus("Choose an image first.");
 
-    setBusyUpload(true);
-    try {
-      const { data: u, error: uerr } = await supabase.auth.getUser();
-      if (uerr) throw uerr;
-      if (!u.user) return setStatus("You must be logged in.");
-
-      const fd = new FormData();
-      fd.append("file", imgFile);
-
-      // This route will be implemented next; for now the UI is wired correctly.
-      const res = await fetch("/api/upload/forum", { method: "POST", body: fd });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || "Upload failed (API route not ready yet).");
-
-      const publicUrl = json.publicUrl as string | undefined;
-      if (!publicUrl) throw new Error("Upload succeeded but no publicUrl returned.");
-
-      const { error: insErr } = await supabase.from("forum_attachments").insert({
-        thread_id: threadId,
-        post_id: null,
-        user_id: u.user.id,
-        file_url: publicUrl,
-      });
-
-      if (insErr) throw insErr;
-
-      setImgFile(null);
-      await loadAll();
-    } catch (e: any) {
-      setStatus(e?.message ?? "Upload error");
-    } finally {
-      setBusyUpload(false);
-    }
-  }
 
   return (
     <div className="card">
@@ -250,71 +229,31 @@ export default function ThreadPage() {
           <>
             <div className="card" style={{ background: "rgba(2,6,23,0.55)" }}>
               <div className="card-inner">
+                <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
+                  {(thread as any).user_profiles?.forum_avatar_url ? (
+                    <img
+                      src={(thread as any).user_profiles.forum_avatar_url}
+                      alt="avatar"
+                      style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#7dd3fc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: "bold" }}>
+                      {((thread as any).user_profiles?.forum_handle?.[0] || "?").toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <div style={{ fontWeight: 700, color: "#7dd3fc" }}>
+                      {(thread as any).user_profiles?.forum_handle || "Anonymous"}
+                    </div>
+                    <div className="small" style={{ opacity: 0.85 }}>
+                      {new Date(thread.created_at).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
                 <div style={{ fontWeight: 900, letterSpacing: "0.10em", textTransform: "uppercase", color: "#7dd3fc" }}>
                   {thread.title}
                 </div>
                 <p className="small" style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>{thread.body}</p>
-                <div className="small" style={{ marginTop: 10, opacity: 0.85 }}>
-                  {new Date(thread.created_at).toLocaleString()}
-                </div>
-              </div>
-            </div>
-
-            <hr className="hr" />
-
-            {/* Thread-level images */}
-            <div className="card" style={{ background: "rgba(2,6,23,0.55)" }}>
-              <div className="card-inner">
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-                  <div className="small" style={{ fontWeight: 800, letterSpacing: "0.10em", textTransform: "uppercase", color: "#fb7185" }}>
-                    Images
-                  </div>
-
-                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                    <label className="pill" style={{ cursor: "pointer" }}>
-                      Choose Image
-                      <input
-                        type="file"
-                        accept="image/*"
-                        style={{ display: "none" }}
-                        onChange={(e) => setImgFile(e.target.files?.[0] ?? null)}
-                      />
-                    </label>
-
-                    <button className="btn" disabled={busyUpload || !imgFile} onClick={uploadThreadImage}>
-                      {busyUpload ? "Uploading..." : "Upload"}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="small" style={{ marginTop: 10 }}>
-                  {imgFile ? `Selected: ${imgFile.name}` : "No image selected."}
-                </div>
-
-                <hr className="hr" />
-
-                {attachments.filter(a => !a.post_id).length === 0 ? (
-                  <div className="small">No images yet.</div>
-                ) : (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
-                    {attachments
-                      .filter((a) => !a.post_id)
-                      .map((a) => (
-                        <a key={a.id} href={a.file_url} target="_blank" rel="noreferrer" className="card" style={{ background: "rgba(2,6,23,0.40)" }}>
-                          <div className="card-inner">
-                            <img
-                              src={a.file_url}
-                              alt="attachment"
-                              style={{ width: "100%", height: 180, objectFit: "cover", borderRadius: 12, border: "1px solid rgba(56,189,248,0.18)" }}
-                            />
-                            <div className="small" style={{ marginTop: 8, opacity: 0.85 }}>
-                              {new Date(a.created_at).toLocaleString()}
-                            </div>
-                          </div>
-                        </a>
-                      ))}
-                  </div>
-                )}
               </div>
             </div>
 
@@ -333,18 +272,52 @@ export default function ThreadPage() {
                   <div className="small">No replies yet.</div>
                 ) : (
                   <div style={{ display: "grid", gap: 12 }}>
-                    {posts.map((p) => (
-                      <div key={p.id} className="card" style={{ background: "rgba(2,6,23,0.40)" }}>
-                        <div className="card-inner">
-                          <div className="small" style={{ opacity: 0.85 }}>
-                            {new Date(p.created_at).toLocaleString()}
-                          </div>
-                          <div className="small" style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>
-                            {p.body}
+                    {posts.map((p: any) => {
+                      const postAttachments = attachments.filter(a => a.post_id === p.id);
+                      return (
+                        <div key={p.id} className="card" style={{ background: "rgba(2,6,23,0.40)" }}>
+                          <div className="card-inner">
+                            <div style={{ display: "flex", gap: 10, justifyContent: "space-between" }}>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
+                                  {p.user_profiles?.forum_avatar_url ? (
+                                    <img
+                                      src={p.user_profiles.forum_avatar_url}
+                                      alt="avatar"
+                                      style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }}
+                                    />
+                                  ) : (
+                                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#7dd3fc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: "bold" }}>
+                                      {(p.user_profiles?.forum_handle?.[0] || "?").toUpperCase()}
+                                    </div>
+                                  )}
+                                  <div>
+                                    <div style={{ fontWeight: 700, color: "#7dd3fc" }}>
+                                      {p.user_profiles?.forum_handle || "Anonymous"}
+                                    </div>
+                                    <div className="small" style={{ opacity: 0.85 }}>
+                                      {new Date(p.created_at).toLocaleString()}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="small" style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>
+                                  {p.body}
+                                </div>
+                              </div>
+                              {postAttachments.length > 0 && (
+                                <a key={postAttachments[0].id} href={postAttachments[0].file_url} target="_blank" rel="noreferrer" style={{ marginLeft: 16, flexShrink: 0 }}>
+                                  <img
+                                    src={postAttachments[0].file_url}
+                                    alt="attachment"
+                                    style={{ width: 180, height: 180, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(56,189,248,0.18)" }}
+                                  />
+                                </a>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
 
@@ -357,6 +330,20 @@ export default function ThreadPage() {
                   onChange={(e) => setReplyBody(e.target.value)}
                   placeholder="Write your reply…"
                 />
+
+                <label className="label" style={{ marginTop: 10 }}>Attach Image (Optional)</label>
+                <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
+                  <label className="pill" style={{ cursor: "pointer" }}>
+                    Choose Image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={(e) => setReplyImage(e.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                  {replyImage && <span className="small">{replyImage.name}</span>}
+                </div>
 
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
                   <button className="btn" disabled={busyReply} onClick={addReply}>

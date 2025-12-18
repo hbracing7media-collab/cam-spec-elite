@@ -1,7 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { supabaseBrowser } from "../../../lib/supabase/browser";
+import { useEffect, useState } from "react";
 
 type Msg = { type: "ok" | "err" | "info"; text: string };
 
@@ -80,13 +79,7 @@ const ENGINE_FAMILIES: Record<MakeKey, string[]> = {
   Other: ["Other / Custom"],
 };
 
-function safeName(name: string) {
-  return name.replace(/[^\w.\-]+/g, "_");
-}
-
 export default function NewCamSubmissionPage() {
-  const supabase = useMemo(() => supabaseBrowser(), []);
-
   const [userId, setUserId] = useState<string>("");
   const [email, setEmail] = useState<string>("");
 
@@ -122,7 +115,7 @@ export default function NewCamSubmissionPage() {
     setEngineFamily(list[0]);
   }, [engineMake]);
 
-  // ✅ REAL login detection: ask the server (cookie session)
+  // REAL login detection: ask the server (cookie session)
   useEffect(() => {
     (async () => {
       const res = await fetch("/api/auth/whoami", { cache: "no-store" }).catch(() => null);
@@ -147,33 +140,6 @@ export default function NewCamSubmissionPage() {
 
   const familyOptions = ENGINE_FAMILIES[engineMake] ?? ENGINE_FAMILIES["Other"];
 
-  async function uploadToBucket(bucket: "cam_cards" | "dyno_sheets", file: File) {
-    if (!userId) throw new Error("You must be logged in to submit.");
-
-    const objectPath = `${userId}/${safeName(engineMake)}/${safeName(engineFamily)}/${crypto.randomUUID()}_${safeName(
-      file.name
-    )}`;
-
-    const { error } = await supabase.storage.from(bucket).upload(objectPath, file, {
-      contentType: file.type || "application/octet-stream",
-      upsert: false,
-      metadata: {
-        approved: "false",
-        kind: bucket === "cam_cards" ? "cam_card" : "dyno_sheet",
-        uploaded_by: userId,
-        uploader_email: email || "",
-        cam_name: camName || "",
-        brand: brand || "",
-        part_number: partNumber || "",
-        engine_make: engineMake || "",
-        engine_family: engineFamily || "",
-      },
-    });
-
-    if (error) throw new Error(error.message);
-    return objectPath;
-  }
-
   async function submit() {
     setMsg(null);
 
@@ -186,52 +152,60 @@ export default function NewCamSubmissionPage() {
     if (!cn) return setMsg({ type: "err", text: "Cam Name is required." });
     if (!br) return setMsg({ type: "err", text: "Brand is required." });
     if (!pn) return setMsg({ type: "err", text: "Part Number is required." });
+    if (!engineMake) return setMsg({ type: "err", text: "Engine Make is required." });
     if (!engineFamily) return setMsg({ type: "err", text: "Engine Family is required." });
     if (!camCardFile) return setMsg({ type: "err", text: "Cam Card file is required." });
 
     setBusy(true);
     try {
-      const spec = {
-        cam_name: cn,
-        brand: br,
-        part_number: pn,
-        engine_make: engineMake,
-        engine_family: engineFamily,
+      const fd = new FormData();
 
-        lsa,
-        icl,
-        duration_int_050: durInt050,
-        duration_exh_050: durExh050,
-        advertised_int: advInt,
-        advertised_exh: advExh,
-        lift_int: liftInt,
-        lift_exh: liftExh,
-        rocker_ratio: rocker,
-        lash_int: lashInt,
-        lash_exh: lashExh,
+      // REQUIRED keys that the API expects (snake_case)
+      fd.append("cam_name", cn);
+      fd.append("brand", br);
+      fd.append("part_number", pn);
+      fd.append("engine_make", engineMake);
+      fd.append("engine_family", engineFamily);
+      fd.append("user_id", userId);
 
-        notes,
-      };
+      // Optional numeric/spec fields (only append if set)
+      if (lsa !== "") fd.append("lsa", String(lsa));
+      if (icl !== "") fd.append("icl", String(icl));
+      if (rocker !== "") fd.append("rocker_ratio", String(rocker));
 
-      const camCardObject = await uploadToBucket("cam_cards", camCardFile);
+      if (durInt050 !== "") fd.append("dur_int_050", String(durInt050));
+      if (durExh050 !== "") fd.append("dur_exh_050", String(durExh050));
 
-      const dynoObjects: string[] = [];
-      for (const f of dynoFiles) dynoObjects.push(await uploadToBucket("dyno_sheets", f));
+      if (advInt !== "") fd.append("adv_int", String(advInt));
+      if (advExh !== "") fd.append("adv_exh", String(advExh));
 
-      const res = await fetch("/api/cams/create", {
+      if (liftInt !== "") fd.append("lift_int", String(liftInt));
+      if (liftExh !== "") fd.append("lift_exh", String(liftExh));
+
+      if (lashInt !== "") fd.append("lash_int", String(lashInt));
+      if (lashExh !== "") fd.append("lash_exh", String(lashExh));
+
+      if (notes.trim()) fd.append("notes", notes.trim());
+
+      // Files (exact keys)
+      fd.append("cam_card", camCardFile);
+      for (const f of dynoFiles) fd.append("dyno_sheets", f);
+
+      // IMPORTANT: do not set Content-Type manually (browser adds boundary)
+      const res = await fetch("/api/cam-submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cam_name: cn,
-          spec,
-          cam_card_object: camCardObject,
-          dyno_objects: dynoObjects,
-          notes: notes || null,
-        }),
+        body: fd,
       });
 
       const out: any = await res.json().catch(() => ({}));
-      if (!res.ok) return setMsg({ type: "err", text: out?.error || `Submit failed (HTTP ${res.status})` });
+      if (!res.ok) {
+        const txt =
+          out?.message ||
+          out?.error?.message ||
+          out?.error ||
+          `Submit failed (HTTP ${res.status})`;
+        return setMsg({ type: "err", text: txt });
+      }
 
       setMsg({ type: "ok", text: "Submitted! Waiting for admin approval." });
 
@@ -305,14 +279,23 @@ export default function NewCamSubmissionPage() {
           <label style={{ display: "block", fontSize: 12, color: "#cbd5e1", marginBottom: 8 }}>
             Cam Card (required) — image or PDF
           </label>
-          <input type="file" accept="image/*,application/pdf" onChange={(e) => setCamCardFile(e.target.files?.[0] ?? null)} />
+          <input
+            type="file"
+            accept="image/*,application/pdf"
+            onChange={(e) => setCamCardFile(e.target.files?.[0] ?? null)}
+          />
 
           <div style={{ height: 12 }} />
 
           <label style={{ display: "block", fontSize: 12, color: "#cbd5e1", marginBottom: 8 }}>
             Dyno Sheets (optional) — multiple images/PDFs
           </label>
-          <input type="file" accept="image/*,application/pdf" multiple onChange={(e) => setDynoFiles(Array.from(e.target.files ?? []))} />
+          <input
+            type="file"
+            accept="image/*,application/pdf"
+            multiple
+            onChange={(e) => setDynoFiles(Array.from(e.target.files ?? []))}
+          />
 
           <div style={{ height: 12 }} />
 
