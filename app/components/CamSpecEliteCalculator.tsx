@@ -89,6 +89,7 @@ export default function CamSpecEliteCalculator() {
   const [chartData, setChartData] = useState<CurvePoint[]>([]);
   const [geomDisplay, setGeomDisplay] = useState({ cid: '-', crStatic: '-' });
   const [dynCrDisplay, setDynCrDisplay] = useState('-');
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
   // --------- Engine Geometry & Compression Ratios ---------
   function computeEngineGeometry() {
@@ -373,7 +374,16 @@ export default function CamSpecEliteCalculator() {
   // --------- Build Curve ---------
   function buildCurve(eng: any, cam: any, tune: any, dynCR: number, hpData: any) {
     const hpPeak = hpData.hp || 0;
-    const hpRpm = hpData.hpRpm || (tune.rpmEnd + tune.rpmStart) / 2;
+    
+    // Adjust peak RPM to be closer to upper RPM range (70-85% of the way)
+    const startRpm = tune.rpmStart || 2000;
+    const endRpm = tune.rpmEnd || 7000;
+    const rpmRange = endRpm - startRpm;
+    
+    // Peak should be at 70-80% of the range to show high-RPM power
+    const targetPeakPos = 0.75;
+    const adjustedPeakRpm = startRpm + rpmRange * targetPeakPos;
+    const hpRpm = Math.max(hpData.hpRpm || adjustedPeakRpm, adjustedPeakRpm - 300);
     
     // Effective CR under boost
     const psi = Math.max(0, tune.boostPsi || 0);
@@ -381,8 +391,6 @@ export default function CamSpecEliteCalculator() {
     const PR = (amb + psi) / amb;
     const effCR = dynCR * PR;
 
-    const startRpm = tune.rpmStart || 2000;
-    const endRpm = tune.rpmEnd || 7000;
     const rpmStep = 250;
 
     const upSpan = Math.max(500, hpRpm - startRpm);
@@ -811,73 +819,136 @@ export default function CamSpecEliteCalculator() {
                     }
                   }
 
+                  const hoverPoint = hoverIdx !== null ? chartData[hoverIdx] : null;
+
                   return (
-                    <svg width={svgWidth} height={svgHeight} style={{ marginTop: 12, border: '1px solid rgba(0,212,255,0.35)', borderRadius: 8 }}>
-                      {/* Grid */}
-                      <defs>
-                        <pattern id="dyno-grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                          <path d={`M 60 0 L 0 0 0 60`} fill="none" stroke="rgba(0,212,255,0.1)" strokeWidth="0.5" />
-                        </pattern>
-                      </defs>
-                      <rect x={padding} y={padding} width={graphWidth} height={graphHeight} fill="url(#dyno-grid)" />
+                    <div style={{ position: 'relative' }}>
+                      <svg 
+                        width={svgWidth} 
+                        height={svgHeight} 
+                        style={{ marginTop: 12, border: '1px solid rgba(0,212,255,0.35)', borderRadius: 8, cursor: 'crosshair' }}
+                        onMouseMove={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const x = e.clientX - rect.left;
+                          const graphX = x - padding;
+                          if (graphX >= 0 && graphX <= graphWidth) {
+                            const rpmPos = minRpm + (graphX / graphWidth) * (maxRpm - minRpm);
+                            const closest = chartData.reduce((prev, curr, idx) => 
+                              Math.abs(curr.rpm - rpmPos) < Math.abs(chartData[prev].rpm - rpmPos) ? idx : prev
+                            , 0);
+                            setHoverIdx(closest);
+                          }
+                        }}
+                        onMouseLeave={() => setHoverIdx(null)}
+                      >
+                        {/* Grid */}
+                        <defs>
+                          <pattern id="dyno-grid" width="60" height="60" patternUnits="userSpaceOnUse">
+                            <path d={`M 60 0 L 0 0 0 60`} fill="none" stroke="rgba(0,212,255,0.1)" strokeWidth="0.5" />
+                          </pattern>
+                        </defs>
+                        <rect x={padding} y={padding} width={graphWidth} height={graphHeight} fill="url(#dyno-grid)" />
 
-                      {/* Axes */}
-                      <line x1={padding} y1={padding + graphHeight} x2={padding + graphWidth} y2={padding + graphHeight} stroke="#00d4ff" strokeWidth="2" />
-                      <line x1={padding} y1={padding} x2={padding} y2={padding + graphHeight} stroke="#00d4ff" strokeWidth="2" />
+                        {/* Axes */}
+                        <line x1={padding} y1={padding + graphHeight} x2={padding + graphWidth} y2={padding + graphHeight} stroke="#00d4ff" strokeWidth="2" />
+                        <line x1={padding} y1={padding} x2={padding} y2={padding + graphHeight} stroke="#00d4ff" strokeWidth="2" />
 
-                      {/* RPM Labels (X-axis) */}
-                      {[2000, 3000, 4000, 5000, 6000, 7000, 8000].map((rpmVal) => {
-                        if (rpmVal < minRpm || rpmVal > maxRpm) return null;
-                        const x = padding + ((rpmVal - minRpm) / (maxRpm - minRpm)) * graphWidth;
-                        return (
-                          <g key={`rpm-${rpmVal}`}>
-                            <line x1={x} y1={padding + graphHeight} x2={x} y2={padding + graphHeight + 4} stroke="#00d4ff" strokeWidth="1" />
-                            <text x={x} y={padding + graphHeight + 18} textAnchor="middle" fontSize="11" fill="#a5b4fc">
-                              {rpmVal / 1000}k
-                            </text>
-                          </g>
-                        );
-                      })}
+                        {/* RPM Labels (X-axis) */}
+                        {[2000, 3000, 4000, 5000, 6000, 7000, 8000].map((rpmVal) => {
+                          if (rpmVal < minRpm || rpmVal > maxRpm) return null;
+                          const x = padding + ((rpmVal - minRpm) / (maxRpm - minRpm)) * graphWidth;
+                          return (
+                            <g key={`rpm-${rpmVal}`}>
+                              <line x1={x} y1={padding + graphHeight} x2={x} y2={padding + graphHeight + 4} stroke="#00d4ff" strokeWidth="1" />
+                              <text x={x} y={padding + graphHeight + 18} textAnchor="middle" fontSize="11" fill="#a5b4fc">
+                                {rpmVal / 1000}k
+                              </text>
+                            </g>
+                          );
+                        })}
 
-                      {/* HP Labels (Y-axis) */}
-                      {[0, 100, 200, 300, 400, 500].map((hpVal) => {
-                        if (hpVal > maxHp) return null;
-                        const y = padding + graphHeight - (hpVal / maxHp) * graphHeight;
-                        return (
-                          <g key={`hp-${hpVal}`}>
-                            <line x1={padding - 4} y1={y} x2={padding} y2={y} stroke="#00d4ff" strokeWidth="1" />
-                            <text x={padding - 8} y={y + 4} textAnchor="end" fontSize="11" fill="#a5b4fc">
-                              {hpVal}
-                            </text>
-                          </g>
-                        );
-                      })}
+                        {/* HP Labels (Y-axis) */}
+                        {[0, 100, 200, 300, 400, 500].map((hpVal) => {
+                          if (hpVal > maxHp) return null;
+                          const y = padding + graphHeight - (hpVal / maxHp) * graphHeight;
+                          return (
+                            <g key={`hp-${hpVal}`}>
+                              <line x1={padding - 4} y1={y} x2={padding} y2={y} stroke="#00d4ff" strokeWidth="1" />
+                              <text x={padding - 8} y={y + 4} textAnchor="end" fontSize="11" fill="#a5b4fc">
+                                {hpVal}
+                              </text>
+                            </g>
+                          );
+                        })}
 
-                      {/* HP Curve */}
-                      <path d={hpPath.join(" ")} fill="none" stroke="#00d4ff" strokeWidth="3" />
+                        {/* HP Curve */}
+                        <path d={hpPath.join(" ")} fill="none" stroke="#00d4ff" strokeWidth="3" />
 
-                      {/* Peak HP marker */}
-                      {results && (
-                        <>
-                          <circle 
-                            cx={padding + ((results.hpRpm - minRpm) / (maxRpm - minRpm)) * graphWidth} 
-                            cy={padding + graphHeight - (results.hp / maxHp) * graphHeight} 
-                            r="5" 
-                            fill="#ff2bd6" 
-                            stroke="#7CFFCB" 
-                            strokeWidth="2"
-                          />
-                        </>
+                        {/* Peak HP marker */}
+                        {results && (
+                          <>
+                            <circle 
+                              cx={padding + ((results.hpRpm - minRpm) / (maxRpm - minRpm)) * graphWidth} 
+                              cy={padding + graphHeight - (results.hp / maxHp) * graphHeight} 
+                              r="5" 
+                              fill="#ff2bd6" 
+                              stroke="#7CFFCB" 
+                              strokeWidth="2"
+                            />
+                          </>
+                        )}
+
+                        {/* Hover vertical line and point */}
+                        {hoverPoint && (
+                          <>
+                            <line 
+                              x1={padding + ((hoverPoint.rpm - minRpm) / (maxRpm - minRpm)) * graphWidth}
+                              y1={padding}
+                              x2={padding + ((hoverPoint.rpm - minRpm) / (maxRpm - minRpm)) * graphWidth}
+                              y2={padding + graphHeight}
+                              stroke="rgba(0,212,255,0.3)"
+                              strokeWidth="1"
+                              strokeDasharray="2 2"
+                            />
+                            <circle 
+                              cx={padding + ((hoverPoint.rpm - minRpm) / (maxRpm - minRpm)) * graphWidth}
+                              cy={padding + graphHeight - (hoverPoint.hp / maxHp) * graphHeight}
+                              r="4"
+                              fill="rgba(0,212,255,0.7)"
+                            />
+                          </>
+                        )}
+
+                        {/* Axis Labels */}
+                        <text x={padding + graphWidth / 2} y={svgHeight - 10} textAnchor="middle" fontSize="12" fill="#a5b4fc">
+                          RPM
+                        </text>
+                        <text x={20} y={padding + graphHeight / 2} textAnchor="middle" fontSize="12" fill="#a5b4fc" transform={`rotate(-90, 20, ${padding + graphHeight / 2})`}>
+                          Horsepower (hp)
+                        </text>
+                      </svg>
+
+                      {/* Hover Tooltip */}
+                      {hoverPoint && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '20px',
+                          right: '20px',
+                          background: 'rgba(2,6,23,0.95)',
+                          border: '1px solid rgba(0,212,255,0.6)',
+                          borderRadius: '8px',
+                          padding: '10px 12px',
+                          fontSize: '12px',
+                          color: '#e5e7eb',
+                          pointerEvents: 'none',
+                          fontFamily: 'monospace'
+                        }}>
+                          <div style={{ color: '#a5b4fc', marginBottom: '4px' }}>RPM: {hoverPoint.rpm.toFixed(0)}</div>
+                          <div style={{ color: '#00d4ff', fontWeight: 'bold' }}>HP: {hoverPoint.hp.toFixed(1)}</div>
+                          <div style={{ color: '#7CFFCB', marginTop: '4px', fontSize: '10px' }}>TQ: {hoverPoint.tq.toFixed(1)} ft-lb</div>
+                        </div>
                       )}
-
-                      {/* Axis Labels */}
-                      <text x={padding + graphWidth / 2} y={svgHeight - 10} textAnchor="middle" fontSize="12" fill="#a5b4fc">
-                        RPM
-                      </text>
-                      <text x={20} y={padding + graphHeight / 2} textAnchor="middle" fontSize="12" fill="#a5b4fc" transform={`rotate(-90, 20, ${padding + graphHeight / 2})`}>
-                        Horsepower (hp)
-                      </text>
-                    </svg>
+                    </div>
                   );
                 })()
               ) : (
