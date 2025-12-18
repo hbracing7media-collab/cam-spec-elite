@@ -456,23 +456,30 @@ export default function CamSpecEliteCalculator() {
       const tuneFull: Tune = {
         intake: tune.intake,
         fuel: tune.fuel,
-        boostPsi: tune.boostPsi,
-        afr: tune.afr,
-        rpmStart: tune.graphRpmStart,
-        rpmEnd: tune.graphRpmEnd,
+        boostPsi: tune.boostPsi || 0,
+        afr: tune.afr || 12.8,
+        rpmStart: tune.graphRpmStart || 2000,
+        rpmEnd: tune.graphRpmEnd || 7000,
         rpmStep: 250,
-        intercoolerEff: tune.intercoolerEff,
-        compressorEff: tune.compressorEff,
-        turboOrBlower: tune.turboOrBlower,
+        intercoolerEff: tune.intercoolerEff || 0.7,
+        compressorEff: tune.compressorEff || 0.72,
+        turboOrBlower: tune.turboOrBlower || 'turbo',
       };
       console.log('tuneFull:', tuneFull);
 
       const hpData = estimateNaHp(engFull, currentCam, tuneFull);
-      console.log('hpData:', hpData);
+      console.log('hpData returned:', hpData);
       
+      if (!hpData || hpData.hp === undefined) {
+        console.error('hpData is invalid:', hpData);
+        setResults(null);
+        setChartData([]);
+        return;
+      }
+
       const dynCR = crData.crDynamic;
       const curveData = buildCurve(engFull, currentCam, tuneFull, dynCR, hpData);
-      console.log('curveData points:', curveData.points.length);
+      console.log('curveData:', { points: curveData.points.length, effCR: curveData.effCR });
 
       setChartData(curveData.points);
       setResults({
