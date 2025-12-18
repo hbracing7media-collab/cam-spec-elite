@@ -68,6 +68,9 @@ export default async function CalculatorSlugPage({ params }: PageProps) {
 
         <hr className="hr" />
 
+        {slug === "cam-spec-elite" ? (
+          <CamSpecEliteCalculator />
+        ) : (
         <div className="card" style={{ background: "rgba(2,6,23,0.55)" }}>
           <div className="card-inner">
             <div
@@ -86,10 +89,11 @@ export default async function CalculatorSlugPage({ params }: PageProps) {
             </p>
 
             <p className="small" style={{ opacity: 0.85 }}>
-              Next, we’ll wire the first real calculator here (Cam Spec Elite), then add the rest one-by-one.
+              Next, we'll wire the first real calculator here (Cam Spec Elite), then add the rest one-by-one.
             </p>
           </div>
         </div>
+        )}
 
         <hr className="hr" />
 

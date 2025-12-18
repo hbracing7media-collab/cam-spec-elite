@@ -1,395 +1,265 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
+import React, { useState, useEffect, useRef } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-export default function CamSpecEliteCalculator() {
-  useEffect(() => {
-    // Chart.js script will load and be available globally
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/chart.js";
-    script.async = true;
-    document.head.appendChild(script);
-  }, []);
-
-  return (
-    <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-  );
+interface EngineGeometry {
+  cid: number;
+  crStatic: number;
+  rod: number;
+  stroke: number;
+  cyl: number;
+  portCfm: number;
 }
 
-const htmlContent = `
-<div id="gofast-widget" style="max-width: 980px; margin: 0 auto; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #f5f5f5;">
-  <div style="background: radial-gradient(circle at top left, #ff2bd6 0%, #00d4ff 35%, #050816 75%, #020617 100%); border-radius: 18px; padding: 18px; box-shadow: 0 16px 40px rgba(0,0,0,0.7); border: 1px solid rgba(0,212,255,0.45);">
-    <h2 style="margin: 0 0 6px 0; text-align: center; font-size: 17px; letter-spacing: 0.12em; text-transform: uppercase; color: #7CFFCB;">
-      Cam Spec Elite Calculator
-    </h2>
-    <p style="font-size: 11px; color:#c7d2fe; text-align:center; margin: 0 0 12px 0;">
-      Step 1: Engine • Step 2: Cam • Step 3: Intake/Fuel/Boost → Dyno curve. Estimations only; real-world dyno wins.
-    </p>
+interface Cam {
+  name: string;
+  intDur: number;
+  exhDur: number;
+  lsa: number;
+  ivc: number;
+  intLift: number;
+  exhLift: number;
+  rpmStart: number;
+  rpmEnd: number;
+}
 
-    <!-- STEP TABS (visual only) -->
-    <div style="display:flex; gap:4px; margin-bottom:12px; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; justify-content:center;">
-      <div style="padding:4px 10px; border-radius:999px; background:rgba(255,43,214,0.18); border:1px solid rgba(255,43,214,0.75); color:#ffd6f5;">1 • Engine</div>
-      <div style="padding:4px 10px; border-radius:999px; background:rgba(0,212,255,0.10); border:1px solid rgba(0,212,255,0.35); color:#c7f7ff;">2 • Cam</div>
-      <div style="padding:4px 10px; border-radius:999px; background:rgba(124,255,203,0.10); border:1px solid rgba(124,255,203,0.35); color:#d7fff0;">3 • Tune</div>
-    </div>
+interface Tune {
+  intake: string;
+  fuel: string;
+  boostPsi: number;
+  afr: number;
+  rpmStart: number;
+  rpmEnd: number;
+  rpmStep: number;
+  intercoolerEff?: number;
+  compressorEff?: number;
+  turboOrBlower?: string;
+}
 
-    <!-- STEP 1: ENGINE GEOMETRY -->
-    <div style="border-radius:12px; padding:10px 12px; background:rgba(6,11,30,0.78); border:1px solid rgba(0,212,255,0.22); margin-bottom:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-        <h3 style="margin:0; font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:#e5e7eb;">Step 1 • Engine Geometry</h3>
-        <span style="font-size:10px; color:#a5b4fc;">Bore • Stroke • Rod • Volumes • Port Flow</span>
-      </div>
+interface CurvePoint {
+  rpm: number;
+  hp: number;
+  tq: number;
+  dynCR: number;
+  effCR: number;
+}
 
-      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; font-size:12px;">
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Bore (in)</label>
-          <input id="eng_bore" type="number" value="4.03" step="0.001" min="2.0" max="6.0"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Stroke (in)</label>
-          <input id="eng_stroke" type="number" value="3.5" step="0.001" min="2.0" max="6.0"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Rod Length (in)</label>
-          <input id="eng_rod" type="number" value="5.956" step="0.001" min="4.5" max="7.5"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Cylinders</label>
-          <input id="eng_cyl" type="number" value="8" min="3" max="16" step="1"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Chamber Volume (cc)</label>
-          <input id="eng_chamber" type="number" value="56" step="0.1" min="30" max="120"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Piston Dome/Dish (cc)</label>
-          <input id="eng_piston_cc" type="number" value="19.5" step="0.1" min="-40" max="40"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-          <span style="font-size:10px; color:#a5b4fc;">Negative = dish, Positive = dome</span>
-        </div>
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Gasket Bore (in)</label>
-          <input id="eng_gasket_bore" type="number" value="4.06" step="0.001" min="2.0" max="6.0"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Gasket Thickness (in)</label>
-          <input id="eng_gasket_thk" type="number" value="0.040" step="0.001" min="0.01" max="0.2"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Deck Clearance (in)</label>
-          <input id="eng_deck" type="number" value="0.015" step="0.001" min="-0.05" max="0.2"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Port Flow (cfm @28&quot; per cyl)</label>
-          <input id="eng_port_cfm" type="number" value="300" step="1" min="100" max="450"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-      </div>
+export default function CamSpecEliteCalculator() {
+  const [engine, setEngine] = useState({
+    bore: 4.03,
+    stroke: 3.5,
+    rod: 5.956,
+    cyl: 8,
+    chamber: 56,
+    pistonCc: 19.5,
+    gasketBore: 4.06,
+    gasketThk: 0.04,
+    deck: 0.015,
+    portCfm: 300,
+  });
 
-      <div id="eng_geom_summary"
-           style="margin-top:8px; padding:6px 8px; border-radius:8px; background:rgba(2,6,23,0.85); border:1px solid rgba(255,43,214,0.30); font-size:11px; color:#e5e7eb;">
-        Displacement: - CID • Static CR: - : 1
-      </div>
-    </div>
+  const [cam, setCam] = useState({
+    name: 'F303+',
+    intDur: 226,
+    exhDur: 234,
+    lsa: 114,
+    ivc: 43,
+    intLift: 0.585,
+    exhLift: 0.574,
+    rpmStart: 3000,
+    rpmEnd: 6500,
+  });
 
-    <!-- STEP 2: CAM LIBRARY -->
-    <div style="border-radius:12px; padding:10px 12px; background:rgba(6,11,30,0.78); border:1px solid rgba(255,43,214,0.22); margin-bottom:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <h3 style="margin:0; font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:#e5e7eb;">Step 2 • Cam Library</h3>
-        <span style="font-size:10px; color:#a5b4fc;">Build &amp; select cam</span>
-      </div>
+  const [tune, setTune] = useState({
+    intake: 'single_plane',
+    fuel: 'pump93',
+    boostPsi: 0,
+    afr: 12.0,
+    intercoolerEff: 0.7,
+    compressorEff: 0.72,
+    turboOrBlower: 'turbo',
+    graphRpmStart: 2000,
+    graphRpmEnd: 7000,
+    rpmStep: 250,
+  });
 
-      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; font-size:12px; margin-bottom:8px;">
-        <div>
-          <label style="display:block; color:#ffd6f5; margin-bottom:2px;">Cam Name</label>
-          <input id="cam_name" type="text" value="F303+"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(255,43,214,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#ffd6f5; margin-bottom:2px;">Int Dur @ .050 (°)</label>
-          <input id="cam_int_dur" type="number" value="226" min="180" max="290" step="1"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(255,43,214,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#ffd6f5; margin-bottom:2px;">Exh Dur @ .050 (°)</label>
-          <input id="cam_exh_dur" type="number" value="234" min="180" max="300" step="1"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(255,43,214,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#ffd6f5; margin-bottom:2px;">LSA (°)</label>
-          <input id="cam_lsa" type="number" value="114" min="104" max="118" step="1"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(255,43,214,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#ffd6f5; margin-bottom:2px;">IVC @ .050 (ABDC °)</label>
-          <input id="cam_ivc" type="number" value="43" min="40" max="90" step="1"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(255,43,214,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#ffd6f5; margin-bottom:2px;">Int Lift (in)</label>
-          <input id="cam_int_lift" type="number" value="0.585" min="0.350" max="0.900" step="0.001"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(255,43,214,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#ffd6f5; margin-bottom:2px;">Exh Lift (in)</label>
-          <input id="cam_exh_lift" type="number" value="0.574" min="0.350" max="0.900" step="0.001"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(255,43,214,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#ffd6f5; margin-bottom:2px;">Cam RPM Start</label>
-          <input id="cam_rpm_start" type="number" value="3000" min="1000" max="8000" step="100"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(255,43,214,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#ffd6f5; margin-bottom:2px;">Cam RPM End</label>
-          <input id="cam_rpm_end" type="number" value="6500" min="2000" max="10000" step="100"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(255,43,214,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-      </div>
+  const [camLibrary, setCamLibrary] = useState<Cam[]>([]);
+  const [selectedCamIdx, setSelectedCamIdx] = useState<string>('');
+  const [results, setResults] = useState<any>(null);
+  const [chartData, setChartData] = useState<CurvePoint[]>([]);
+  const [geomDisplay, setGeomDisplay] = useState({ cid: '-', crStatic: '-' });
+  const [dynCrDisplay, setDynCrDisplay] = useState('-');
 
-      <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between;">
-        <div style="display:flex; gap:8px; align-items:center;">
-          <button id="btn_add_cam"
-                  style="padding:6px 10px; border-radius:999px; border:0; background:linear-gradient(135deg,#7CFFCB,#00d4ff); color:#020617; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer;">
-            Save Cam
-          </button>
-          <span style="font-size:11px; color:#a5b4fc;">Cam Library:</span>
-          <select id="cam_select"
-                  style="min-width:160px; padding:4px 8px; border-radius:999px; border:1px solid rgba(0,212,255,0.45); background:rgba(2,6,23,0.9); color:#e5e7eb; font-size:11px; outline:none;">
-            <option value="">(Current Unsaved Cam)</option>
-          </select>
-        </div>
-        <div id="cam_dyn_cr_display" style="font-size:11px; color:#7CFFCB;">
-          Dynamic CR (est): -
-        </div>
-      </div>
-    </div>
-
-    <!-- STEP 3: TUNE / INTAKE / FUEL / BOOST / GRAPH RANGE -->
-    <div style="border-radius:12px; padding:10px 12px; background:rgba(6,11,30,0.78); border:1px solid rgba(124,255,203,0.22); margin-bottom:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <h3 style="margin:0; font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:#e5e7eb;">Step 3 • Intake, Fuel & Boost</h3>
-        <span style="font-size:10px; color:#a5b4fc;">Tune layer • Dyno RPM range</span>
-      </div>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; font-size:12px;">
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Intake Type</label>
-          <select id="tune_intake"
-                  style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-            <option value="dual_plane">Dual Plane NA</option>
-            <option value="single_plane" selected>Single Plane NA</option>
-            <option value="tunnel_ram">Tunnel Ram NA</option>
-            <option value="boosted">Boosted (Turbo/SC)</option>
-          </select>
-        </div>
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Fuel</label>
-          <select id="tune_fuel"
-                  style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-            <option value="pump91">Pump 91</option>
-            <option value="pump93" selected>Pump 93</option>
-            <option value="race_gas">Race Gas</option>
-            <option value="e85">E85</option>
-          </select>
-        </div>
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Boost (psi)</label>
-          <input id="tune_boost" type="number" value="0" min="0" max="40" step="1"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Target AFR (WOT)</label>
-          <input id="tune_afr" type="number" value="12.0" min="9" max="13" step="0.1"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Graph RPM Start</label>
-          <input id="graph_rpm_start" type="number" value="2000" min="1000" max="9000" step="250"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; color:#c7f7ff; margin-bottom:2px;">Graph RPM End</label>
-          <input id="graph_rpm_end" type="number" value="7000" min="2000" max="10000" step="250"
-                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(0,212,255,0.35); background:rgba(2,6,23,0.9); color:#f9fafb; font-size:12px; outline:none;">
-        </div>
-      </div>
-      <div style="text-align:center; margin-top:10px;">
-        <button id="btn_calc_dyno"
-                style="padding:7px 20px; border-radius:999px; border:0; background:linear-gradient(135deg,#ff2bd6,#00d4ff,#7CFFCB); color:#020617; font-size:12px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; cursor:pointer;">
-          Run Cam Spec Elite
-        </button>
-      </div>
-    </div>
-
-    <!-- RESULTS -->
-    <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:10px; font-size:12px;">
-      <!-- HP/TQ BAR -->
-      <div style="flex:1 1 260px; max-width:460px; padding:10px 12px; border-radius:12px; background:rgba(2,6,23,0.9); border:1px solid rgba(0,212,255,0.30);">
-        <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:#a5b4fc; margin-bottom:4px;">
-          Peak Output
-        </div>
-        <div id="res_peak_summary" style="font-size:14px; font-weight:700; color:#e5e7eb;">
-          -
-        </div>
-        <div style="margin-top:8px; position:relative; height:16px; border-radius:999px; background:rgba(2,6,23,0.9); border:1px solid rgba(255,255,255,0.08); overflow:hidden;">
-          <div id="hpBarFill"
-               style="position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg,#ff2bd6,#00d4ff); opacity:0.9;"></div>
-          <div id="tqBarFill"
-               style="position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg,#7CFFCB,#00d4ff); opacity:0.70;"></div>
-        </div>
-        <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:10px;">
-          <span style="color:#ff2bd6;">HP bar (relative)</span>
-          <span style="color:#7CFFCB;">TQ bar (relative)</span>
-        </div>
-      </div>
-
-      <!-- CR CARD -->
-      <div style="min-width:160px; padding:10px 12px; border-radius:12px; background:rgba(2,6,23,0.9); border:1px solid rgba(255,43,214,0.25); text-align:center;">
-        <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:#a5b4fc;">Compression Ratios</div>
-        <div id="res_boost_cr" style="font-size:13px; font-weight:800; color:#e5e7eb; margin-top:2px;">
-          - / - / -
-        </div>
-        <div style="font-size:10px; color:#a5b4fc; margin-top:2px;">
-          Static / Dynamic / Effective (boosted)
-        </div>
-      </div>
-    </div>
-
-    <!-- DYNO GRAPH -->
-    <div style="border-radius:12px; padding:10px; background:rgba(2,6,23,0.9); border:1px solid rgba(0,212,255,0.18); height:280px;">
-      <canvas id="dynoChart"></canvas>
-    </div>
-  </div>
-</div>
-
-<script>
-(function() {
-  const camLibrary = [];
-
-  // ---------- ENGINE GEOMETRY ----------
+  // --------- Engine Geometry & Compression Ratios ---------
   function computeEngineGeometry() {
-    const bore        = Number(document.getElementById('eng_bore').value) || 0;
-    const stroke      = Number(document.getElementById('eng_stroke').value) || 0;
-    const rod         = Number(document.getElementById('eng_rod').value) || 0;
-    const cyl         = Number(document.getElementById('eng_cyl').value) || 0;
-    const chamberCc   = Number(document.getElementById('eng_chamber').value) || 0;
-    const pistonCc    = Number(document.getElementById('eng_piston_cc').value) || 0;
-    const gasketBore  = Number(document.getElementById('eng_gasket_bore').value) || 0;
-    const gasketThk   = Number(document.getElementById('eng_gasket_thk').value) || 0;
-    const deck        = Number(document.getElementById('eng_deck').value) || 0;
-    const portCfm     = Number(document.getElementById('eng_port_cfm').value) || 0;
+    const PI = Math.PI;
+    const CC_TO_IN3 = 0.0610237441;
 
-    const ccPerIn3 = 16.387064;
+    // Cross-sectional areas
+    const A = (PI / 4) * engine.bore * engine.bore;
+    const Ag = (PI / 4) * engine.gasketBore * engine.gasketBore;
 
-    if (bore <= 0 || stroke <= 0 || cyl <= 0 || chamberCc <= 0) {
-      return { cid:0, crStatic:0, rod, stroke, portCfm };
-    }
+    // Volumes in cubic inches
+    const Vs = A * engine.stroke;
+    const Vch = engine.chamber * CC_TO_IN3;
+    const Vp = engine.pistonCc * CC_TO_IN3; // positive = dome, negative = dish
+    const Vg = Ag * engine.gasketThk;
+    const Vd = A * engine.deck;
 
-    const sweptPerCyl_in3 = Math.PI / 4 * bore * bore * stroke;
-    const sweptPerCyl_cc  = sweptPerCyl_in3 * ccPerIn3;
+    // Clearance volume
+    const Vc = Vch + Vp + Vg + Vd;
 
-    let gasketVol_cc = 0;
-    if (gasketBore > 0 && gasketThk > 0) {
-      const gasket_in3 = Math.PI / 4 * gasketBore * gasketBore * gasketThk;
-      gasketVol_cc = gasket_in3 * ccPerIn3;
-    }
+    // Static CR
+    const crStatic = (Vs + Vc) / Vc;
 
-    let deckVol_cc = 0;
-    if (deck !== 0) {
-      const deck_in3 = Math.PI / 4 * bore * bore * deck;
-      deckVol_cc = deck_in3 * ccPerIn3;
-    }
+    // CID
+    const cid = Vs * engine.cyl;
 
-    const clearCc = chamberCc + pistonCc + gasketVol_cc + deckVol_cc;
-    let crStatic = 0;
-    if (clearCc > 0) {
-      crStatic = (sweptPerCyl_cc + clearCc) / clearCc;
-    }
-
-    const cid = sweptPerCyl_in3 * cyl;
-
-    return {
-      cid,
-      crStatic,
-      rod,
-      stroke,
-      portCfm
-    };
+    return { cid, crStatic, Vc, A, Vs };
   }
 
-  function updateEngineGeometryDisplay() {
+  function calculateDynamicAndStaticCR() {
     const geom = computeEngineGeometry();
-    const el = document.getElementById('eng_geom_summary');
-    if (!el) return;
+    const PI = Math.PI;
 
-    if (!geom.cid || !geom.crStatic) {
-      el.textContent = 'Displacement: - CID • Static CR: - : 1';
-    } else {
-      el.textContent = 'Displacement: ' + geom.cid.toFixed(1) +
-                       ' CID • Static CR: ' + geom.crStatic.toFixed(2) + ' : 1';
+    // Piston position at IVC (Intake Valve Closing)
+    const r = engine.stroke / 2;
+    const l = engine.rod;
+    const phi = (180 + cam.ivc) * (PI / 180);
+    const sinp = Math.sin(phi);
+    const cosp = Math.cos(phi);
+
+    const underSqrt = l * l - (r * sinp) * (r * sinp);
+    if (underSqrt < 0) return { crStatic: geom.crStatic, crDynamic: geom.crStatic };
+
+    const x = r * (1 - cosp) + l - Math.sqrt(underSqrt);
+
+    // Dynamic CR at IVC
+    const crDynamic = (geom.Vc + geom.A * x) / geom.Vc;
+
+    return { crStatic: geom.crStatic, crDynamic };
+  }
+
+  // --------- Helper Functions ---------
+  function clamp(x: number, lo: number, hi: number): number {
+    return Math.min(hi, Math.max(lo, x));
+  }
+
+  function calcPeakHpFromInputs(
+    manifoldStage: number,
+    intakeDur050: number,
+    tappetType: string,
+    dynamicCR: number,
+    displacementCID: number,
+    cylinders: number,
+    peakIntakeFlowCFM: number
+  ) {
+    const stg = Math.min(5, Math.max(1, Math.round(manifoldStage) || 1));
+    const dur = Math.max(150, intakeDur050 || 0);
+    const dcr = Math.max(5.0, Math.min(11.0, dynamicCR || 0));
+    const cid = Math.max(1, displacementCID || 0);
+    const cyl = Math.max(1, cylinders || 0);
+    const cfm = Math.max(1, peakIntakeFlowCFM || 0);
+    const isRoller = tappetType === 'roller';
+
+    const manifoldMultByStage: Record<number, number> = {
+      1: 0.92,   // reduced from 0.96
+      2: 0.97,   // reduced from 1.0
+      3: 1.00,   // reduced from 1.04
+      4: 1.03,   // reduced from 1.08
+      5: 1.06,   // reduced from 1.12
+    };
+    const manifoldMult = manifoldMultByStage[stg] ?? 1.0;
+    const camMult = clamp(0.85 + (dur - 200) * 0.003, 0.78, 1.15);  // reduced cam effect
+    const tappetMult = isRoller ? 1.015 : 1.0;  // reduced roller bonus from 1.03
+    const dcrMult = clamp(1.0 + (dcr - 8.0) * 0.12, 0.75, 1.18);  // reduced CR effect
+
+    const cidPerCyl = cid / cyl;
+    const cidUse = clamp(Math.pow(cidPerCyl / 50.0, 0.35), 0.75, 1.12);  // reduced max from 1.18
+
+    const k = 0.20;  // reduced from 0.252 for more realistic power
+    const baseHP =
+      cfm * cyl * k *
+      manifoldMult * camMult * tappetMult * dcrMult * cidUse;
+
+    let peakRpm =
+      4300 +
+      (dur - 210) * 22 +
+      (stg - 1) * 180 +
+      (isRoller ? 120 : 0);
+
+    peakRpm *= clamp(Math.sqrt(50.0 / cidPerCyl), 0.78, 1.12);
+    peakRpm = clamp(peakRpm, 2500, 8500);
+
+    return {
+      baseHP: Math.round(baseHP * 10) / 10,
+      peakRpm: Math.round(peakRpm),
+    };
+  }
+
+  // --------- Fuel/AFR/Boost Helper Functions ---------
+  function getFuelModel(type: string): any {
+    const key = String(type || '').toLowerCase().trim().replace('pump', '');
+
+    if (key === '91') {
+      return {
+        name: '91',
+        bestPowerAfr: 12.7,
+        afrTolerance: 0.65,
+        powerMult: 0.985,
+        heatSensitivity: 1.1,
+      };
     }
-  }
-
-  function getEngine() {
-    const geom = computeEngineGeometry();
+    if (key === 'race_gas' || key === 'racegas' || key === '110' || key === '116') {
+      return {
+        name: 'Race Gas',
+        bestPowerAfr: 12.9,
+        afrTolerance: 0.7,
+        powerMult: 1.02,
+        heatSensitivity: 0.9,
+      };
+    }
+    if (key === 'e85' || key === 'ethanol') {
+      return {
+        name: 'E85',
+        bestPowerAfr: 7.9,
+        afrTolerance: 0.55,
+        powerMult: 1.0,  // Not used for E85 (uses e85BoostMult instead)
+        heatSensitivity: 0.78,
+      };
+    }
     return {
-      cid: geom.cid || 0,
-      crStatic: geom.crStatic || 0,
-      rod: geom.rod || 0,
-      stroke: geom.stroke || 0,
-      cyl: Number(document.getElementById('eng_cyl').value) || 8,
-      portCfm: geom.portCfm || 0
+      name: '93',
+      bestPowerAfr: 12.8,
+      afrTolerance: 0.65,
+      powerMult: 1.0,
+      heatSensitivity: 1.0,
     };
   }
 
-  // ---------- CAM / TUNE ----------
-  function getCamFromInputs() {
-    return {
-      name: document.getElementById('cam_name').value.trim() || 'Custom Cam',
-      intDur: Number(document.getElementById('cam_int_dur').value) || 230,
-      exhDur: Number(document.getElementById('cam_exh_dur').value) || 236,
-      lsa: Number(document.getElementById('cam_lsa').value) || 110,
-      ivc: Number(document.getElementById('cam_ivc').value) || 70,
-      intLift: Number(document.getElementById('cam_int_lift').value) || 0.500,
-      exhLift: Number(document.getElementById('cam_exh_lift').value) || 0.500,
-      rpmStart: Number(document.getElementById('cam_rpm_start').value) || 3000,
-      rpmEnd: Number(document.getElementById('cam_rpm_end').value) || 6500
-    };
+  function afrPowerMultiplier(actual: number, target: number, tol: number): number {
+    const a = Number(actual);
+    const t = Number(target);
+    // Very wide curve: sigma = 1.2 means ±1.2 AFR is 1 std dev
+    // At ±3 std dev (e.g., 12.8 ± 3.6), power is only 0.5% down
+    // At ±2 std dev (e.g., 12.8 ± 2.4), power is ~2.5% down
+    const sigma = 1.2;
+    const z = (a - t) / sigma;
+    const mult = Math.exp(-0.5 * z * z);
+    // Only 3.5% penalty at the edges (cut 7% in half)
+    return clamp(mult, 0.965, 1.0);
   }
 
-  function getTune() {
-    let start = Number(document.getElementById('graph_rpm_start').value) || 2000;
-    let end   = Number(document.getElementById('graph_rpm_end').value) || 7000;
-    if (end <= start) end = start + 500;
-
-    return {
-      intake: document.getElementById('tune_intake').value,
-      fuel: document.getElementById('tune_fuel').value,
-      boostPsi: Number(document.getElementById('tune_boost').value) || 0,
-      afr: Number(document.getElementById('tune_afr').value) || 12.0,
-      rpmStart: start,
-      rpmEnd: end,
-      rpmStep: 250
-    };
-  }
-
-  // ---------- FACTORS ----------
-  function fuelFactor(fuel) {
+  // --------- Factors ---------
+  function fuelFactor(fuel: string) {
     if (fuel === 'e85') return 1.07;
     if (fuel === 'race_gas') return 1.04;
     if (fuel === 'pump93') return 1.02;
     return 1.0;
   }
 
-  function intakeFactor(intake) {
+  function intakeFactor(intake: string) {
     if (intake === 'dual_plane') return 0.96;
     if (intake === 'single_plane') return 1.0;
     if (intake === 'tunnel_ram') return 1.05;
@@ -397,120 +267,136 @@ const htmlContent = `
     return 1.0;
   }
 
-  function boostFactor(boostPsi, fuel) {
+  function boostFactor(boostPsi: number, fuel: string) {
     if (boostPsi <= 0) return 1.0;
-    const eff = (fuel === 'e85' || fuel === 'race_gas') ? 0.92 : 0.85;
-    const pr = 1 + (boostPsi / 14.7);
+    const eff = fuel === 'e85' || fuel === 'race_gas' ? 0.92 : 0.85;
+    const pr = 1 + boostPsi / 14.7;
     return 1 + (pr - 1) * eff;
   }
 
-  function afrFactor(afr, fuel) {
-    const target = (fuel === 'e85') ? 11.0 : 12.5;
+  function afrFactor(afr: number, fuel: string) {
+    const target = fuel === 'e85' ? 11.0 : 12.5;
     const diff = afr - target;
     return 1 - Math.min(Math.abs(diff) * 0.02, 0.15);
   }
 
-  // ---------- DYNAMIC CR ----------
-  function estimateDynamicCR(engine, cam) {
-    const crStatic = engine.crStatic;
-    const stroke   = engine.stroke;
-    let rod        = engine.rod;
+  // --------- Peak HP with Boost/AFR/Fuel Model ---------
+  function estimateNaHp(eng: any, cam: any, tune: any) {
+    const crData = calculateDynamicAndStaticCR();
+    const dynCR = crData.crDynamic;
 
-    if (!crStatic || crStatic <= 0 || !stroke || stroke <= 0) return 0;
-    if (!rod || rod <= 0) rod = stroke * 1.6;
+    // Map intake type to manifold stage
+    const intakeToStage: Record<string, number> = {
+      'dual_plane': 1,
+      'single_plane': 2.5,
+      'tunnel_ram': 4.5,
+      'boosted': 2,
+    };
+    const manifoldStage = intakeToStage[tune.intake] ?? 2;
+    const tappetType = 'roller';
 
-    const ivcDeg = cam.ivc || 0;
-    const a = stroke / 2;
-    const theta = (Math.PI / 180) * (180 + ivcDeg);
+    // Get base NA HP
+    const naCalc = calcPeakHpFromInputs(
+      manifoldStage,
+      cam.intDur,
+      tappetType,
+      dynCR,
+      eng.cid,
+      eng.cyl,
+      eng.portCfm
+    );
 
-    const sinT = Math.sin(theta);
-    const inner = Math.max(0, rod*rod - (a * sinT) * (a * sinT));
-    const pistonPos = a * (1 - Math.cos(theta)) + rod - Math.sqrt(inner);
+    const naHP = naCalc.baseHP;
+    let naPeakRpm = naCalc.peakRpm;
 
-    const dynStroke = Math.max(0.1, Math.min(stroke, pistonPos));
-    const ratio = dynStroke / stroke;
+    // Fuel model
+    const fuel = getFuelModel(tune.fuel);
+    const targetAfr = tune.afr || fuel.bestPowerAfr;
+    const afrMult = afrPowerMultiplier(targetAfr, fuel.bestPowerAfr, fuel.afrTolerance);
+    const fuelMult = fuel.powerMult;
 
-    let dynCR = 1 + ratio * (crStatic - 1);
-    dynCR = Math.max(5.0, Math.min(15.0, dynCR));
-    return dynCR;
-  }
+    // Boost model
+    const psi = Math.max(0, tune.boostPsi || 0);
+    const amb = 14.7;
+    const PR = (amb + psi) / amb;
 
-  // ---------- NA PEAK HP / TQ ESTIMATE ----------
-  function estimateNaHp(engine, cam, tune) {
-    const dynCR = estimateDynamicCR(engine, cam);
+    const ic = clamp(tune.intercoolerEff, 0, 1);
+    const ce = clamp(tune.compressorEff || 0.72, 0.4, 0.85);
+    const heatSensitivity = fuel.heatSensitivity;
+    const rawHeatPenalty = (PR - 1) * 0.12 * heatSensitivity;
+    const coolingCredit = ic * 0.65 + (ce - 0.6) * 0.5;
+    const heatPenalty = clamp(rawHeatPenalty * (1 - coolingCredit), 0, 0.25);
 
-    let rr = 1.6;
-    if (engine.rod > 0 && engine.stroke > 0) rr = engine.rod / engine.stroke;
-    const rrFactor = 1 + Math.max(-0.08, Math.min(0.08, (rr - 1.6) * 0.15));
+    const driveLoss = String(tune.turboOrBlower).toLowerCase().includes('blower')
+      ? clamp(psi * 0.004, 0, 0.1)
+      : 0.0;
 
-    let baseVe = 0.80 + (cam.intDur - 200) * 0.002;
-    baseVe += (cam.intLift - 0.450) * 0.5;
-    baseVe = Math.max(0.75, Math.min(1.25, baseVe));
+    const boostMult = Math.max(1, PR * (1 - heatPenalty) * (1 - driveLoss));
 
-    let headFactor = 1.0;
-    if (engine.portCfm > 0) {
-      const baselineCfm = 260;
-      headFactor = Math.pow(engine.portCfm / baselineCfm, 0.35);
-      headFactor = Math.max(0.85, Math.min(1.20, headFactor));
+    // E85 boost enhancement: +10% at 0psi scaling to +25-30% at 30psi
+    let e85BoostMult = 1.0;
+    let actualFuelMult = fuelMult;  // Use actual fuel multiplier
+    
+    if (String(tune.fuel).toLowerCase().includes('e85')) {
+      // For E85, replace fuelMult with direct boost curve (don't double-apply)
+      // Linear ramp from 1.10 at 0psi to 1.26 at 30psi (10% to 26% gain)
+      e85BoostMult = 1.10 + clamp(psi / 30.0, 0, 1) * 0.16;
+      actualFuelMult = 1.0;  // Don't apply fuelMult for E85, use e85BoostMult instead
     }
 
-    const ve = baseVe * rrFactor * headFactor;
+    // Final HP with E85 boost enhancement
+    const boostedHP = naHP * boostMult * afrMult * actualFuelMult * e85BoostMult;
 
-    const fFuel   = fuelFactor(tune.fuel);
-    const fIntake = intakeFactor(tune.intake);
-    const fAfr    = afrFactor(tune.afr, tune.fuel);
+    // Peak RPM shift under boost
+    const rpmShift = clamp((psi * 18) + (PR - 1) * 120, 0, 350);
+    const peakRpm = Math.round(clamp(naPeakRpm + rpmShift, 2500, 9000));
 
-    const raw = engine.cid * ve * dynCR * fFuel * fIntake * fAfr;
+    // Torque at peak HP RPM
+    const tqAtHp = (boostedHP * 5252) / peakRpm;
 
-    // Calibrated so F303+ 357 combo ≈ mid-400s hp NA
-    const hpNa = raw / 6.65;
-    const boostMult = boostFactor(tune.boostPsi, tune.fuel);
-    const hpFinal = hpNa * boostMult;
-
-    const range = cam.rpmEnd - cam.rpmStart;
-    const hpRpm = Math.max(2500, Math.min(9500, cam.rpmEnd - 0.05 * range || 6000));
-    const tqAtHp = hpFinal * 5252 / hpRpm;
-
-    return { hp: hpFinal, dynCR, hpRpm, tqAtHp };
+    return { hp: boostedHP, dynCR, hpRpm: peakRpm, tqAtHp };
   }
 
-  // ---------- BUILD CURVE (HP ONLY, TRUE PEAK AT hpRpm) ----------
-  function buildCurve(engine, cam, tune, dynCR, hpData) {
+  // --------- Build Curve ---------
+  function buildCurve(eng: any, cam: any, tune: any, dynCR: number, hpData: any) {
     const hpPeak = hpData.hp || 0;
-    const hpRpm  = hpData.hpRpm || ((tune.rpmStart + tune.rpmEnd) / 2);
-    const effCR  = dynCR * boostFactor(tune.boostPsi, tune.fuel);
+    const hpRpm = hpData.hpRpm || (tune.graphRpmStart + tune.graphRpmEnd) / 2;
+    
+    // Effective CR under boost
+    const psi = Math.max(0, tune.boostPsi || 0);
+    const amb = 14.7;
+    const PR = (amb + psi) / amb;
+    const effCR = dynCR * PR;
 
-    const startRpm = tune.rpmStart;
-    const endRpm   = tune.rpmEnd;
+    const startRpm = tune.graphRpmStart;
+    const endRpm = tune.graphRpmEnd;
+    const rpmStep = 250;
 
-    const upSpan   = Math.max(500, hpRpm - startRpm);  // ramp up to peak
-    const downSpan = Math.max(800, endRpm - hpRpm);    // fall after peak
+    const upSpan = Math.max(500, hpRpm - startRpm);
+    const downSpan = Math.max(800, endRpm - hpRpm);
 
-    const points = [];
+    const points: CurvePoint[] = [];
 
-    for (let r = startRpm; r <= endRpm; r += tune.rpmStep) {
+    for (let r = startRpm; r <= endRpm; r += rpmStep) {
       if (hpPeak <= 0 || r <= 0) {
         points.push({ rpm: r, hp: 0, tq: 0, dynCR, effCR });
         continue;
       }
 
       let shape;
-
       if (r <= hpRpm) {
-        // Rising side: ~20% at start, smooth to 1.0 at hpRpm
         const tRaw = (r - startRpm) / upSpan;
         const t = Math.max(0, Math.min(1, tRaw));
-        shape = 0.20 + 0.80 * Math.pow(t, 1.6);
+        shape = 0.2 + 0.8 * Math.pow(t, 1.6);
       } else {
-        // Falling side: strictly decreasing from 1.0 at hpRpm
         const tRaw = (r - hpRpm) / downSpan;
         const t = Math.max(0, Math.min(1, tRaw));
-        shape = 1.0 - 0.95 * Math.pow(t, 1.4); // 1.0 → 0.05
+        shape = 1.0 - 0.95 * Math.pow(t, 1.4);
         if (shape < 0.05) shape = 0.05;
       }
 
       const hp = hpPeak * shape;
-      const tq = hp * 5252 / r;
+      const tq = (hp * 5252) / r;
 
       points.push({ rpm: r, hp, tq, dynCR, effCR });
     }
@@ -518,186 +404,393 @@ const htmlContent = `
     return { points, dynCR, effCR };
   }
 
-  // ---------- CAM LIBRARY UI ----------
-  function refreshCamSelect() {
-    const sel = document.getElementById('cam_select');
-    while (sel.options.length > 1) sel.remove(1);
-    camLibrary.forEach((cam, idx) => {
-      const opt = document.createElement('option');
-      opt.value = String(idx);
-      opt.textContent = cam.name;
-      sel.appendChild(opt);
+  // --------- Update Geom Display ---------
+  useEffect(() => {
+    const geom = computeEngineGeometry();
+    setGeomDisplay({
+      cid: geom.cid > 0 ? geom.cid.toFixed(1) : '-',
+      crStatic: geom.crStatic > 0 ? geom.crStatic.toFixed(2) : '-',
     });
+  }, [engine]);
+
+  // --------- Update Dynamic CR Display ---------
+  useEffect(() => {
+    const crData = calculateDynamicAndStaticCR();
+    setDynCrDisplay(crData.crDynamic > 0 ? crData.crDynamic.toFixed(2) : '-');
+  }, [engine, cam]);
+
+  // --------- Add Cam to Library ---------
+  function handleAddCam() {
+    setCamLibrary([...camLibrary, cam]);
   }
 
-  function updateDynamicCrDisplay() {
-    const eng = getEngine();
-    let cam = getCamFromInputs();
-    const sel = document.getElementById('cam_select');
-    if (sel.value !== '') {
-      const idx = Number(sel.value);
-      if (!isNaN(idx) && camLibrary[idx]) cam = camLibrary[idx];
-    }
-    const dyn = estimateDynamicCR(eng, cam);
-    const el = document.getElementById('cam_dyn_cr_display');
-    if (!el) return;
-    if (!dyn) el.textContent = 'Dynamic CR (est): -';
-    else el.textContent = 'Dynamic CR (est): ' + dyn.toFixed(2) + ' : 1';
-  }
+  // --------- Run Calculation ---------
+  function handleRunCalc() {
+    try {
+      const geom = computeEngineGeometry();
+      console.log('geom:', geom);
+      
+      const crData = calculateDynamicAndStaticCR();
+      console.log('crData:', crData);
+      
+      const engFull = { ...geom, rod: engine.rod, stroke: engine.stroke, cyl: engine.cyl, portCfm: engine.portCfm };
+      console.log('engFull:', engFull);
+      
+      const currentCam = selectedCamIdx !== '' ? camLibrary[Number(selectedCamIdx)] : cam;
+      console.log('currentCam:', currentCam);
+      
+      const tuneFull: Tune = {
+        intake: tune.intake,
+        fuel: tune.fuel,
+        boostPsi: tune.boostPsi,
+        afr: tune.afr,
+        rpmStart: tune.graphRpmStart,
+        rpmEnd: tune.graphRpmEnd,
+        rpmStep: 250,
+        intercoolerEff: tune.intercoolerEff,
+        compressorEff: tune.compressorEff,
+        turboOrBlower: tune.turboOrBlower,
+      };
+      console.log('tuneFull:', tuneFull);
 
-  document.getElementById('btn_add_cam').addEventListener('click', function() {
-    const cam = getCamFromInputs();
-    camLibrary.push(cam);
-    refreshCamSelect();
-    updateDynamicCrDisplay();
-  });
+      const hpData = estimateNaHp(engFull, currentCam, tuneFull);
+      console.log('hpData:', hpData);
+      
+      const dynCR = crData.crDynamic;
+      const curveData = buildCurve(engFull, currentCam, tuneFull, dynCR, hpData);
+      console.log('curveData points:', curveData.points.length);
 
-  document.getElementById('cam_select').addEventListener('change', updateDynamicCrDisplay);
-
-  [
-    'eng_bore','eng_stroke','eng_rod','eng_cyl','eng_chamber','eng_piston_cc',
-    'eng_gasket_bore','eng_gasket_thk','eng_deck','eng_port_cfm',
-    'cam_ivc','cam_int_dur','cam_int_lift','cam_rpm_start','cam_rpm_end'
-  ].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', function() {
-      updateEngineGeometryDisplay();
-      updateDynamicCrDisplay();
-    });
-  });
-
-  // ---------- CHART (HP ONLY) ----------
-  let dynoChart = null;
-
-  function renderDynoChart(points) {
-    const canvas = document.getElementById('dynoChart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const labels = points.map(p => p.rpm);
-    const hpData = points.map(p => p.hp);
-
-    if (dynoChart) {
-      dynoChart.data.labels = labels;
-      dynoChart.data.datasets[0].data = hpData;
-      dynoChart.update();
-      return;
-    }
-
-    dynoChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [
-          {
-            label: 'Horsepower',
-            data: hpData,
-            borderWidth: 2,
-            tension: 0.25,
-            yAxisID: 'y',
-            borderColor: '#00d4ff',
-            pointRadius: 0
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            labels: {
-              color: '#e5e7eb',
-              font: { size: 11 }
-            }
-          }
-        },
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: 'Engine Speed (RPM)',
-              color: '#a5b4fc',
-              font: { size: 11 }
-            },
-            ticks: { color: '#a5b4fc', maxTicksLimit: 9 },
-            grid: { color: 'rgba(0,212,255,0.12)' }
-          },
-          y: {
-            position: 'left',
-            title: {
-              display: true,
-              text: 'Horsepower (hp)',
-              color: '#e5e7eb',
-              font: { size: 11 }
-            },
-            ticks: { color: '#e5e7eb' },
-            grid: { color: 'rgba(255,43,214,0.10)' }
-          }
-        }
-      }
-    });
-  }
-
-  // ---------- RESULTS ----------
-  function updateResultCards(engine, dynCR, effCR, peakInfo) {
-    const summaryEl = document.getElementById('res_peak_summary');
-    const hpBarFill = document.getElementById('hpBarFill');
-    const tqBarFill = document.getElementById('tqBarFill');
-
-    if (peakInfo && summaryEl) {
-      summaryEl.textContent =
-        peakInfo.hp.toFixed(1) + ' hp @ ' + peakInfo.hpRpm.toFixed(0) + ' rpm • ' +
-        peakInfo.tq.toFixed(1) + ' ft-lb @ ' + peakInfo.hpRpm.toFixed(0) + ' rpm';
-    }
-
-    const maxVal = Math.max(peakInfo.hp, peakInfo.tq, 1);
-    if (hpBarFill) hpBarFill.style.width = (peakInfo.hp / maxVal * 100).toFixed(1) + '%';
-    if (tqBarFill) tqBarFill.style.width = (peakInfo.tq / maxVal * 100).toFixed(1) + '%';
-
-    const crEl = document.getElementById('res_boost_cr');
-    if (crEl) {
-      const staticCR = engine.crStatic || 0;
-      if (!staticCR || !dynCR || !effCR) {
-        crEl.textContent = '- / - / -';
-      } else {
-        crEl.textContent =
-          staticCR.toFixed(2) + ' / ' +
-          dynCR.toFixed(2)   + ' / ' +
-          effCR.toFixed(2);
-      }
+      setChartData(curveData.points);
+      setResults({
+        hp: hpData.hp,
+        hpRpm: hpData.hpRpm,
+        tq: hpData.tqAtHp,
+        staticCR: crData.crStatic,
+        dynCR: dynCR,
+        effCR: curveData.effCR,
+      });
+      console.log('Results set successfully');
+    } catch (err) {
+      console.error('Calculator error:', err);
+      setResults(null);
+      setChartData([]);
     }
   }
 
-  // ---------- RUN ----------
-  document.getElementById('btn_calc_dyno').addEventListener('click', function() {
-    const eng = getEngine();
-    let cam = getCamFromInputs();
-    const sel = document.getElementById('cam_select');
-    if (sel.value !== '') {
-      const idx = Number(sel.value);
-      if (!isNaN(idx) && camLibrary[idx]) cam = camLibrary[idx];
-    }
-    const tune = getTune();
+  // Recalculate when engine, cam, tune, or library changes
+  useEffect(() => {
+    handleRunCalc();
+  }, [engine, cam, tune, camLibrary, selectedCamIdx]);
 
-    const hpData = estimateNaHp(eng, cam, tune);
-    const dynCR  = hpData.dynCR;
-    const curveData = buildCurve(eng, cam, tune, dynCR, hpData);
+  return (
+    <div style={{ maxWidth: '980px', margin: '0 auto', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#f5f5f5' }}>
+      <section style={{ borderRadius: '18px', padding: '18px', background: 'radial-gradient(circle at top left, #ff2bd6 0%, #00d4ff 35%, #050816 75%, #020617 100%)', boxShadow: '0 16px 40px rgba(0,0,0,0.7)', border: '1px solid rgba(0,212,255,0.45)' }}>
+        <p style={{ fontSize: '11px', color: '#c7d2fe', textAlign: 'center', margin: '0 0 12px 0' }}>
+          Step 1: Engine • Step 2: Cam • Step 3: Intake/Fuel/Boost → Dyno curve. Estimations only; real-world dyno wins.
+        </p>
 
-    renderDynoChart(curveData.points);
-    updateResultCards(eng, dynCR, curveData.effCR, {
-      hp: hpData.hp,
-      hpRpm: hpData.hpRpm,
-      tq: hpData.tqAtHp
-    });
-  });
+        {/* STEP TABS */}
+        <div style={{ display: 'flex', gap: '4px', marginBottom: '12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', justifyContent: 'center' }}>
+          <div style={{ padding: '4px 10px', borderRadius: '999px', background: 'rgba(255,43,214,0.18)', border: '1px solid rgba(255,43,214,0.75)', color: '#ffd6f5' }}>1 • Engine</div>
+          <div style={{ padding: '4px 10px', borderRadius: '999px', background: 'rgba(0,212,255,0.10)', border: '1px solid rgba(0,212,255,0.35)', color: '#c7f7ff' }}>2 • Cam</div>
+          <div style={{ padding: '4px 10px', borderRadius: '999px', background: 'rgba(124,255,203,0.10)', border: '1px solid rgba(124,255,203,0.35)', color: '#d7fff0' }}>3 • Tune</div>
+        </div>
 
-  // Init with defaults
-  updateEngineGeometryDisplay();
-  updateDynamicCrDisplay();
-  document.getElementById('btn_calc_dyno').click();
-})();
-</script>
-`;
+        {/* STEP 1: ENGINE GEOMETRY */}
+        <div style={{ borderRadius: '12px', padding: '10px 12px', background: 'rgba(6,11,30,0.78)', border: '1px solid rgba(0,212,255,0.22)', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <h3 style={{ margin: '0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#e5e7eb' }}>Step 1 • Engine Geometry</h3>
+            <span style={{ fontSize: '10px', color: '#a5b4fc' }}>Bore • Stroke • Rod • Volumes • Port Flow</span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px', fontSize: '12px' }}>
+            {[
+              { key: 'bore', label: 'Bore (in)', step: 0.001, min: 2, max: 6 },
+              { key: 'stroke', label: 'Stroke (in)', step: 0.001, min: 2, max: 6 },
+              { key: 'rod', label: 'Rod Length (in)', step: 0.001, min: 4.5, max: 7.5 },
+              { key: 'cyl', label: 'Cylinders', step: 1, min: 3, max: 16 },
+              { key: 'chamber', label: 'Chamber Volume (cc)', step: 0.1, min: 30, max: 120 },
+              { key: 'pistonCc', label: 'Piston Dome/Dish (cc)', step: 0.1, min: -40, max: 40 },
+              { key: 'gasketBore', label: 'Gasket Bore (in)', step: 0.001, min: 2, max: 6 },
+              { key: 'gasketThk', label: 'Gasket Thickness (in)', step: 0.001, min: 0.01, max: 0.2 },
+              { key: 'deck', label: 'Deck Clearance (in)', step: 0.001, min: -0.05, max: 0.2 },
+              { key: 'portCfm', label: 'Port Flow (cfm @28" per cyl)', step: 1, min: 100, max: 450 },
+            ].map(field => (
+              <div key={field.key}>
+                <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>{field.label}</label>
+                <input
+                  type="number"
+                  value={engine[field.key as keyof typeof engine]}
+                  onChange={(e) => setEngine({ ...engine, [field.key]: parseFloat(e.target.value) })}
+                  step={field.step}
+                  min={field.min}
+                  max={field.max}
+                  style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: '8px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(2,6,23,0.85)', border: '1px solid rgba(255,43,214,0.30)', fontSize: '11px', color: '#e5e7eb' }}>
+            Displacement: {geomDisplay.cid} CID • Static CR: {geomDisplay.crStatic} : 1
+          </div>
+        </div>
+
+        {/* STEP 2: CAM LIBRARY */}
+        <div style={{ borderRadius: '12px', padding: '10px 12px', background: 'rgba(6,11,30,0.78)', border: '1px solid rgba(255,43,214,0.22)', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <h3 style={{ margin: '0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#e5e7eb' }}>Step 2 • Cam Library</h3>
+            <span style={{ fontSize: '10px', color: '#a5b4fc' }}>Build & select cam</span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px', fontSize: '12px', marginBottom: '8px' }}>
+            {[
+              { key: 'name', label: 'Cam Name', type: 'text' },
+              { key: 'intDur', label: 'Int Dur @ .050 (°)', type: 'number', min: 180, max: 290, step: 1 },
+              { key: 'exhDur', label: 'Exh Dur @ .050 (°)', type: 'number', min: 180, max: 300, step: 1 },
+              { key: 'lsa', label: 'LSA (°)', type: 'number', min: 104, max: 118, step: 1 },
+              { key: 'ivc', label: 'IVC @ .050 (ABDC °)', type: 'number', min: 40, max: 90, step: 1 },
+              { key: 'intLift', label: 'Int Lift (in)', type: 'number', min: 0.35, max: 0.9, step: 0.001 },
+              { key: 'exhLift', label: 'Exh Lift (in)', type: 'number', min: 0.35, max: 0.9, step: 0.001 },
+              { key: 'rpmStart', label: 'Cam RPM Start', type: 'number', min: 1000, max: 8000, step: 100 },
+              { key: 'rpmEnd', label: 'Cam RPM End', type: 'number', min: 2000, max: 10000, step: 100 },
+            ].map(field => (
+              <div key={field.key}>
+                <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>{field.label}</label>
+                <input
+                  type={field.type}
+                  value={cam[field.key as keyof typeof cam]}
+                  onChange={(e) => setCam({ ...cam, [field.key]: field.type === 'number' ? parseFloat(e.target.value) : e.target.value })}
+                  step={field.step}
+                  min={field.min}
+                  max={field.max}
+                  style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(255,43,214,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <button
+                onClick={handleAddCam}
+                style={{ padding: '6px 10px', borderRadius: '999px', border: '0', background: 'linear-gradient(135deg, #7CFFCB, #00d4ff)', color: '#020617', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', cursor: 'pointer' }}
+              >
+                Save Cam
+              </button>
+              <span style={{ fontSize: '11px', color: '#a5b4fc' }}>Cam Library:</span>
+              <select
+                value={selectedCamIdx}
+                onChange={(e) => setSelectedCamIdx(e.target.value)}
+                style={{ minWidth: '160px', padding: '4px 8px', borderRadius: '999px', border: '1px solid rgba(0,212,255,0.45)', background: 'rgba(2,6,23,0.9)', color: '#e5e7eb', fontSize: '11px', outline: 'none' }}
+              >
+                <option value="">(Current Unsaved Cam)</option>
+                {camLibrary.map((c, idx) => (
+                  <option key={idx} value={String(idx)}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ fontSize: '11px', color: '#7CFFCB' }}>
+              Dynamic CR (est): {dynCrDisplay} : 1
+            </div>
+          </div>
+        </div>
+
+        {/* STEP 3: TUNE / INTAKE / FUEL / BOOST */}
+        <div style={{ borderRadius: '12px', padding: '10px 12px', background: 'rgba(6,11,30,0.78)', border: '1px solid rgba(124,255,203,0.22)', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <h3 style={{ margin: '0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#e5e7eb' }}>Step 3 • Intake, Fuel & Boost</h3>
+            <span style={{ fontSize: '10px', color: '#a5b4fc' }}>Tune layer • Dyno RPM range</span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px', fontSize: '12px' }}>
+            <div>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Intake Type</label>
+              <select
+                value={tune.intake}
+                onChange={(e) => setTune({ ...tune, intake: e.target.value })}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+              >
+                <option value="dual_plane">Dual Plane NA</option>
+                <option value="single_plane">Single Plane NA</option>
+                <option value="tunnel_ram">Tunnel Ram NA</option>
+                <option value="boosted">Boosted (Turbo/SC)</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Fuel</label>
+              <select
+                value={tune.fuel}
+                onChange={(e) => setTune({ ...tune, fuel: e.target.value })}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+              >
+                <option value="pump91">Pump 91</option>
+                <option value="pump93">Pump 93</option>
+                <option value="race_gas">Race Gas</option>
+                <option value="e85">E85</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Boost (psi)</label>
+              <input
+                type="number"
+                value={isNaN(tune.boostPsi) ? 0 : tune.boostPsi}
+                onChange={(e) => setTune({ ...tune, boostPsi: parseFloat(e.target.value) || 0 })}
+                min="0" max="40" step="1"
+                style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Target AFR (WOT)</label>
+              <input
+                type="number"
+                value={tune.afr}
+                onChange={(e) => setTune({ ...tune, afr: parseFloat(e.target.value) })}
+                min="9" max="13" step="0.1"
+                style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Intercooler Eff (0-1)</label>
+              <input
+                type="number"
+                value={tune.intercoolerEff}
+                onChange={(e) => setTune({ ...tune, intercoolerEff: parseFloat(e.target.value) })}
+                min="0" max="1" step="0.05"
+                style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Compressor Eff (0.4-0.85)</label>
+              <input
+                type="number"
+                value={tune.compressorEff}
+                onChange={(e) => setTune({ ...tune, compressorEff: parseFloat(e.target.value) })}
+                min="0.4" max="0.85" step="0.01"
+                style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Turbo or Blower</label>
+              <select
+                value={tune.turboOrBlower}
+                onChange={(e) => setTune({ ...tune, turboOrBlower: e.target.value })}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+              >
+                <option value="turbo">Turbo</option>
+                <option value="blower">Blower</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Graph RPM Start</label>
+              <input
+                type="number"
+                value={tune.graphRpmStart}
+                onChange={(e) => setTune({ ...tune, graphRpmStart: parseFloat(e.target.value) })}
+                min="1000" max="9000" step="250"
+                style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Graph RPM End</label>
+              <input
+                type="number"
+                value={tune.graphRpmEnd}
+                onChange={(e) => setTune({ ...tune, graphRpmEnd: parseFloat(e.target.value) })}
+                min="2000" max="10000" step="250"
+                style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+              />
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '10px' }}>
+            <button
+              onClick={handleRunCalc}
+              style={{ padding: '7px 20px', borderRadius: '999px', border: '0', background: 'linear-gradient(135deg, #ff2bd6, #00d4ff, #7CFFCB)', color: '#020617', fontSize: '12px', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer' }}
+            >
+              Run Cam Spec Elite
+            </button>
+          </div>
+        </div>
+
+        {/* RESULTS */}
+        {results && (
+          <>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center', marginBottom: '10px', fontSize: '12px' }}>
+              <div style={{ flex: '1 1 260px', maxWidth: '460px', padding: '10px 12px', borderRadius: '12px', background: 'rgba(2,6,23,0.9)', border: '1px solid rgba(0,212,255,0.30)' }}>
+                <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a5b4fc', marginBottom: '4px' }}>
+                  Peak Output
+                </div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: '#e5e7eb' }}>
+                  {results.hp.toFixed(1)} hp @ {results.hpRpm.toFixed(0)} rpm • {results.tq.toFixed(1)} ft-lb
+                </div>
+                <div style={{ marginTop: '8px', position: 'relative', height: '16px', borderRadius: '999px', background: 'rgba(2,6,23,0.9)', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                  <div
+                    style={{ position: 'absolute', left: '0', top: '0', bottom: '0', width: ((results.hp / Math.max(results.hp, results.tq)) * 100).toFixed(1) + '%', background: 'linear-gradient(90deg, #ff2bd6, #00d4ff)', opacity: 0.9 }}
+                  />
+                  <div
+                    style={{ position: 'absolute', left: '0', top: '0', bottom: '0', width: ((results.tq / Math.max(results.hp, results.tq)) * 100).toFixed(1) + '%', background: 'linear-gradient(90deg, #7CFFCB, #00d4ff)', opacity: 0.7 }}
+                  />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '10px' }}>
+                  <span style={{ color: '#ff2bd6' }}>HP bar (relative)</span>
+                  <span style={{ color: '#7CFFCB' }}>TQ bar (relative)</span>
+                </div>
+              </div>
+
+              <div style={{ minWidth: '160px', padding: '10px 12px', borderRadius: '12px', background: 'rgba(2,6,23,0.9)', border: '1px solid rgba(255,43,214,0.25)', textAlign: 'center' }}>
+                <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a5b4fc' }}>Compression Ratios</div>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: '#e5e7eb', marginTop: '2px' }}>
+                  {results.staticCR.toFixed(2)} / {results.dynCR.toFixed(2)} / {results.effCR.toFixed(2)}
+                </div>
+                <div style={{ fontSize: '10px', color: '#a5b4fc', marginTop: '2px' }}>
+                  Static / Dynamic / Effective (boosted)
+                </div>
+              </div>
+            </div>
+
+            {/* CHART */}
+            <div style={{ borderRadius: '12px', padding: '10px', background: 'rgba(2,6,23,0.9)', border: '1px solid rgba(0,212,255,0.18)', height: '280px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,212,255,0.12)" />
+                  <XAxis
+                    dataKey="rpm"
+                    tick={{ fill: '#a5b4fc', fontSize: 11 }}
+                    label={{ value: 'RPM', position: 'insideBottomRight', offset: -5, fill: '#a5b4fc', fontSize: 11 }}
+                  />
+                  <YAxis
+                    tick={{ fill: '#e5e7eb', fontSize: 11 }}
+                    label={{ value: 'Horsepower (hp)', angle: -90, position: 'insideLeft', fill: '#e5e7eb', fontSize: 11 }}
+                  />
+                  <Tooltip
+                    contentStyle={{ background: 'rgba(2,6,23,0.95)', border: '1px solid rgba(0,212,255,0.45)', borderRadius: '8px', color: '#e5e7eb', fontSize: '11px' }}
+                    formatter={(value) => typeof value === 'number' ? value.toFixed(1) : value}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: '10px' }} />
+                  <Line
+                    type="monotone"
+                    dataKey="hp"
+                    stroke="#00d4ff"
+                    name="Horsepower"
+                    dot={false}
+                    strokeWidth={2}
+                    isAnimationActive={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </>
+        )}
+      </section>
+    </div>
+  );
+}
