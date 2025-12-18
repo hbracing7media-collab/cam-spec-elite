@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { supabaseServer } from "../../../lib/supabase/server";
 import CamSpecEliteCalculator from "../../components/CamSpecEliteCalculator";
 
 const META: Record<string, { title: string; desc: string }> = {
@@ -40,17 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function CalculatorSlugPage({ params }: PageProps) {
-  // Require login for cam-spec-elite calculator
   const { slug } = await params;
-  
-  if (slug === "cam-spec-elite") {
-    const supabase = await supabaseServer();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      redirect("/auth/login");
-    }
-  }
-
   const meta = META[slug] ?? { title: slug, desc: "This calculator slot is available." };
 
   return (
