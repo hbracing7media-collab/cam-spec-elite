@@ -607,7 +607,7 @@ export default function CamSpecEliteCalculator() {
                   }}
                 />
                 {/* Labels */}
-                <span style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'space-between', paddingX: '6px', fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', zIndex: 1, pointerEvents: 'none' }}>
+                <span style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'space-between', paddingLeft: '6px', paddingRight: '6px', fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', zIndex: 1, pointerEvents: 'none' }}>
                   <span style={{ flex: 1, textAlign: 'center', color: 'transparent' }}>I</span>
                   <span style={{ flex: 1, textAlign: 'center', color: 'transparent' }}>M</span>
                 </span>
