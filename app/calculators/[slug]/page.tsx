@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "../../../lib/auth";
 import CamSpecEliteCalculator from "../../components/CamSpecEliteCalculator";
 
 const META: Record<string, { title: string; desc: string }> = {
@@ -38,7 +40,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function CalculatorSlugPage({ params }: PageProps) {
+  // Require login for cam-spec-elite calculator
   const { slug } = await params;
+  
+  if (slug === "cam-spec-elite") {
+    const user = await getCurrentUser();
+    if (!user) {
+      redirect("/auth/login");
+    }
+  }
+
   const meta = META[slug] ?? { title: slug, desc: "This calculator slot is available." };
 
   return (
