@@ -90,6 +90,45 @@ export default function CamSpecEliteCalculator() {
   const [geomDisplay, setGeomDisplay] = useState({ cid: '-', crStatic: '-' });
   const [dynCrDisplay, setDynCrDisplay] = useState('-');
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const [unitSystem, setUnitSystem] = useState<'imperial' | 'metric'>('imperial');
+
+  // --------- Unit Conversion Helpers ---------
+  const IN_TO_MM = 25.4;
+  const CID_TO_CC = 16.387;
+  
+  function toggleUnitSystem() {
+    const newSystem = unitSystem === 'imperial' ? 'metric' : 'imperial';
+    setUnitSystem(newSystem);
+    
+    // Convert engine values
+    if (newSystem === 'metric') {
+      setEngine({
+        bore: parseFloat((engine.bore * IN_TO_MM).toFixed(2)),
+        stroke: parseFloat((engine.stroke * IN_TO_MM).toFixed(2)),
+        rod: parseFloat((engine.rod * IN_TO_MM).toFixed(2)),
+        cyl: engine.cyl,
+        chamber: engine.chamber,
+        pistonCc: engine.pistonCc,
+        gasketBore: parseFloat((engine.gasketBore * IN_TO_MM).toFixed(2)),
+        gasketThk: parseFloat((engine.gasketThk * IN_TO_MM).toFixed(2)),
+        deck: parseFloat((engine.deck * IN_TO_MM).toFixed(2)),
+        portCfm: engine.portCfm,
+      });
+    } else {
+      setEngine({
+        bore: parseFloat((engine.bore / IN_TO_MM).toFixed(3)),
+        stroke: parseFloat((engine.stroke / IN_TO_MM).toFixed(3)),
+        rod: parseFloat((engine.rod / IN_TO_MM).toFixed(3)),
+        cyl: engine.cyl,
+        chamber: engine.chamber,
+        pistonCc: engine.pistonCc,
+        gasketBore: parseFloat((engine.gasketBore / IN_TO_MM).toFixed(3)),
+        gasketThk: parseFloat((engine.gasketThk / IN_TO_MM).toFixed(3)),
+        deck: parseFloat((engine.deck / IN_TO_MM).toFixed(3)),
+        portCfm: engine.portCfm,
+      });
+    }
+  }
 
   // --------- Engine Geometry & Compression Ratios ---------
   function computeEngineGeometry() {
@@ -527,22 +566,48 @@ export default function CamSpecEliteCalculator() {
 
         {/* STEP 1: ENGINE GEOMETRY */}
         <div style={{ borderRadius: '12px', padding: '10px 12px', background: 'rgba(6,11,30,0.78)', border: '1px solid rgba(0,212,255,0.22)', marginBottom: '10px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-            <h3 style={{ margin: '0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#e5e7eb' }}>Step 1 • Engine Geometry</h3>
-            <span style={{ fontSize: '10px', color: '#a5b4fc' }}>Bore • Stroke • Rod • Volumes • Port Flow</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flex: 1 }}>
+              <h3 style={{ margin: '0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#e5e7eb' }}>Step 1 • Engine Geometry</h3>
+              <span style={{ fontSize: '10px', color: '#a5b4fc' }}>Bore • Stroke • Rod • Volumes • Port Flow</span>
+            </div>
+            
+            {/* Unit Toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: 'auto' }}>
+              <span style={{ fontSize: '10px', color: '#a5b4fc', minWidth: '40px', textAlign: 'right' }}>
+                {unitSystem === 'imperial' ? 'Imperial' : 'Metric'}
+              </span>
+              <button
+                onClick={toggleUnitSystem}
+                style={{
+                  padding: '4px 12px',
+                  borderRadius: '999px',
+                  border: '1px solid rgba(0,212,255,0.6)',
+                  background: unitSystem === 'imperial' ? 'rgba(0,212,255,0.2)' : 'rgba(124,255,203,0.2)',
+                  color: unitSystem === 'imperial' ? '#00d4ff' : '#7CFFCB',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                  letterSpacing: '0.06em',
+                }}
+              >
+                {unitSystem === 'imperial' ? 'in / cc' : 'mm / cc'}
+              </button>
+            </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px', fontSize: '12px' }}>
             {[
-              { key: 'bore', label: 'Bore (in)', step: 0.001, min: 2, max: 6 },
-              { key: 'stroke', label: 'Stroke (in)', step: 0.001, min: 2, max: 6 },
-              { key: 'rod', label: 'Rod Length (in)', step: 0.001, min: 4.5, max: 7.5 },
+              { key: 'bore', label: unitSystem === 'imperial' ? 'Bore (in)' : 'Bore (mm)', step: unitSystem === 'imperial' ? 0.001 : 0.1, min: unitSystem === 'imperial' ? 2 : 50, max: unitSystem === 'imperial' ? 6 : 152 },
+              { key: 'stroke', label: unitSystem === 'imperial' ? 'Stroke (in)' : 'Stroke (mm)', step: unitSystem === 'imperial' ? 0.001 : 0.1, min: unitSystem === 'imperial' ? 2 : 50, max: unitSystem === 'imperial' ? 6 : 152 },
+              { key: 'rod', label: unitSystem === 'imperial' ? 'Rod Length (in)' : 'Rod Length (mm)', step: unitSystem === 'imperial' ? 0.001 : 0.1, min: unitSystem === 'imperial' ? 4.5 : 114, max: unitSystem === 'imperial' ? 7.5 : 190 },
               { key: 'cyl', label: 'Cylinders', step: 1, min: 3, max: 16 },
               { key: 'chamber', label: 'Chamber Volume (cc)', step: 0.1, min: 30, max: 120 },
               { key: 'pistonCc', label: 'Piston Dome/Dish (cc)', step: 0.1, min: -40, max: 40 },
-              { key: 'gasketBore', label: 'Gasket Bore (in)', step: 0.001, min: 2, max: 6 },
-              { key: 'gasketThk', label: 'Gasket Thickness (in)', step: 0.001, min: 0.01, max: 0.2 },
-              { key: 'deck', label: 'Deck Clearance (in)', step: 0.001, min: -0.05, max: 0.2 },
+              { key: 'gasketBore', label: unitSystem === 'imperial' ? 'Gasket Bore (in)' : 'Gasket Bore (mm)', step: unitSystem === 'imperial' ? 0.001 : 0.1, min: unitSystem === 'imperial' ? 2 : 50, max: unitSystem === 'imperial' ? 6 : 152 },
+              { key: 'gasketThk', label: unitSystem === 'imperial' ? 'Gasket Thickness (in)' : 'Gasket Thickness (mm)', step: unitSystem === 'imperial' ? 0.001 : 0.1, min: unitSystem === 'imperial' ? 0.01 : 0.25, max: unitSystem === 'imperial' ? 0.2 : 5 },
+              { key: 'deck', label: unitSystem === 'imperial' ? 'Deck Clearance (in)' : 'Deck Clearance (mm)', step: unitSystem === 'imperial' ? 0.001 : 0.1, min: unitSystem === 'imperial' ? -0.05 : -1.27, max: unitSystem === 'imperial' ? 0.2 : 5 },
               { key: 'portCfm', label: 'Port Flow (cfm @28" per cyl)', step: 1, min: 100, max: 450 },
             ].map(field => (
               <div key={field.key}>
@@ -550,7 +615,7 @@ export default function CamSpecEliteCalculator() {
                 <input
                   type="number"
                   value={engine[field.key as keyof typeof engine]}
-                  onChange={(e) => setEngine({ ...engine, [field.key]: parseFloat(e.target.value) })}
+                  onChange={(e) => setEngine({ ...engine, [field.key]: parseFloat(e.target.value) || 0 })}
                   step={field.step}
                   min={field.min}
                   max={field.max}
