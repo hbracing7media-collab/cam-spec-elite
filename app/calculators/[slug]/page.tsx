@@ -4,7 +4,7 @@ import CamSpecEliteCalculator from "../../components/CamSpecEliteCalculator";
 
 const META: Record<string, { title: string; desc: string }> = {
   "cam-spec-elite": { title: "Cam Spec Elite Basic HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
-  "turbo-sizing": { title: "Turbo Sizing", desc: "Compressor/turbine suggestions based on goals." },
+  "turbo-sizing": { title: "Cam Spec Elite Selective HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
   "drag-sim-1320": { title: "Drag Simulator (1/4 mile)", desc: "HP/weight ET + trap estimate." },
   "drag-sim-660": { title: "Drag Simulator (1/8 mile)", desc: "HP/weight 1/8 ET + mph estimate." },
   "roll-race-60-130": { title: "60–130 Roll Race", desc: "Estimate time based on power/weight/drag." },
