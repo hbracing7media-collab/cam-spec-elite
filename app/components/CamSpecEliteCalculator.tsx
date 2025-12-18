@@ -149,6 +149,8 @@ export default function CamSpecEliteCalculator() {
   function calcPeakHpFromInputs(
     manifoldStage: number,
     intakeDur050: number,
+    intakeLift: number,
+    lsaAngle: number,
     tappetType: string,
     dynamicCR: number,
     displacementCID: number,
@@ -157,6 +159,8 @@ export default function CamSpecEliteCalculator() {
   ) {
     const stg = Math.min(5, Math.max(1, Math.round(manifoldStage) || 1));
     const dur = Math.max(150, intakeDur050 || 0);
+    const lift = Math.max(0.35, intakeLift || 0.5);
+    const lsa = Math.max(104, Math.min(118, lsaAngle || 110));
     const dcr = Math.max(5.0, Math.min(11.0, dynamicCR || 0));
     const cid = Math.max(1, displacementCID || 0);
     const cyl = Math.max(1, cylinders || 0);
@@ -175,19 +179,27 @@ export default function CamSpecEliteCalculator() {
     const tappetMult = isRoller ? 1.015 : 1.0;  // reduced roller bonus from 1.03
     const dcrMult = clamp(1.0 + (dcr - 8.0) * 0.12, 0.75, 1.18);  // reduced CR effect
 
+    // Lift effect: 0.35in baseline, each 0.1in adds ~2% power
+    const liftMult = clamp(1.0 + (lift - 0.5) * 0.15, 0.85, 1.18);
+    
+    // LSA effect: 110° is optimal, narrower = more overlap/aggressive (up to +3%), wider = calmer (-2%)
+    const lsaDev = Math.abs(lsa - 110);
+    const lsaMult = clamp(1.03 - (lsaDev * 0.015), 0.98, 1.03);
+
     const cidPerCyl = cid / cyl;
     const cidUse = clamp(Math.pow(cidPerCyl / 50.0, 0.35), 0.75, 1.12);  // reduced max from 1.18
 
     const k = 0.20;  // reduced from 0.252 for more realistic power
     const baseHP =
       cfm * cyl * k *
-      manifoldMult * camMult * tappetMult * dcrMult * cidUse;
+      manifoldMult * camMult * tappetMult * dcrMult * cidUse * liftMult * lsaMult;
 
     let peakRpm =
       4300 +
       (dur - 210) * 22 +
       (stg - 1) * 180 +
-      (isRoller ? 120 : 0);
+      (isRoller ? 120 : 0) +
+      (lift - 0.5) * 200;  // higher lift pushes peak RPM up
 
     peakRpm *= clamp(Math.sqrt(50.0 / cidPerCyl), 0.78, 1.12);
     peakRpm = clamp(peakRpm, 2500, 8500);
@@ -299,6 +311,8 @@ export default function CamSpecEliteCalculator() {
     const naCalc = calcPeakHpFromInputs(
       manifoldStage,
       cam.intDur,
+      cam.intLift,
+      cam.lsa,
       tappetType,
       dynCR,
       eng.cid,
@@ -759,34 +773,40 @@ export default function CamSpecEliteCalculator() {
 
             {/* CHART */}
             <div style={{ borderRadius: '12px', padding: '10px', background: 'rgba(2,6,23,0.9)', border: '1px solid rgba(0,212,255,0.18)', height: '280px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,212,255,0.12)" />
-                  <XAxis
-                    dataKey="rpm"
-                    tick={{ fill: '#a5b4fc', fontSize: 11 }}
-                    label={{ value: 'RPM', position: 'insideBottomRight', offset: -5, fill: '#a5b4fc', fontSize: 11 }}
-                  />
-                  <YAxis
-                    tick={{ fill: '#e5e7eb', fontSize: 11 }}
-                    label={{ value: 'Horsepower (hp)', angle: -90, position: 'insideLeft', fill: '#e5e7eb', fontSize: 11 }}
-                  />
-                  <Tooltip
-                    contentStyle={{ background: 'rgba(2,6,23,0.95)', border: '1px solid rgba(0,212,255,0.45)', borderRadius: '8px', color: '#e5e7eb', fontSize: '11px' }}
-                    formatter={(value) => typeof value === 'number' ? value.toFixed(1) : value}
-                  />
-                  <Legend wrapperStyle={{ paddingTop: '10px' }} />
-                  <Line
-                    type="monotone"
-                    dataKey="hp"
-                    stroke="#00d4ff"
-                    name="Horsepower"
-                    dot={false}
-                    strokeWidth={2}
-                    isAnimationActive={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {chartData && chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,212,255,0.12)" />
+                    <XAxis
+                      dataKey="rpm"
+                      tick={{ fill: '#a5b4fc', fontSize: 11 }}
+                      label={{ value: 'RPM', position: 'insideBottomRight', offset: -5, fill: '#a5b4fc', fontSize: 11 }}
+                    />
+                    <YAxis
+                      tick={{ fill: '#e5e7eb', fontSize: 11 }}
+                      label={{ value: 'Horsepower (hp)', angle: -90, position: 'insideLeft', fill: '#e5e7eb', fontSize: 11 }}
+                    />
+                    <Tooltip
+                      contentStyle={{ background: 'rgba(2,6,23,0.95)', border: '1px solid rgba(0,212,255,0.45)', borderRadius: '8px', color: '#e5e7eb', fontSize: '11px' }}
+                      formatter={(value) => typeof value === 'number' ? value.toFixed(1) : value}
+                    />
+                    <Legend wrapperStyle={{ paddingTop: '10px' }} />
+                    <Line
+                      type="monotone"
+                      dataKey="hp"
+                      stroke="#00d4ff"
+                      name="Horsepower"
+                      dot={false}
+                      strokeWidth={2}
+                      isAnimationActive={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#a5b4fc', fontSize: '12px' }}>
+                  Click "Run Cam Spec Elite" to generate dyno curve
+                </div>
+              )}
             </div>
           </>
         )}
