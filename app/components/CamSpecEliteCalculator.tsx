@@ -375,15 +375,11 @@ export default function CamSpecEliteCalculator() {
   function buildCurve(eng: any, cam: any, tune: any, dynCR: number, hpData: any) {
     const hpPeak = hpData.hp || 0;
     
-    // Adjust peak RPM to be closer to upper RPM range (70-85% of the way)
     const startRpm = tune.rpmStart || 2000;
     const endRpm = tune.rpmEnd || 7000;
-    const rpmRange = endRpm - startRpm;
     
-    // Peak should be at 70-80% of the range to show high-RPM power
-    const targetPeakPos = 0.75;
-    const adjustedPeakRpm = startRpm + rpmRange * targetPeakPos;
-    const hpRpm = Math.max(hpData.hpRpm || adjustedPeakRpm, adjustedPeakRpm - 300);
+    // Peak HP occurs at the cam's specified RPM end
+    const hpRpm = cam.rpmEnd || endRpm;
     
     // Effective CR under boost
     const psi = Math.max(0, tune.boostPsi || 0);
