@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface EngineGeometry {
   cid: number;
@@ -778,39 +777,105 @@ export default function CamSpecEliteCalculator() {
               </div>
             </div>
 
-            {/* CHART */}
-            <div style={{ borderRadius: '12px', padding: '10px', background: 'rgba(2,6,23,0.9)', border: '1px solid rgba(0,212,255,0.18)', height: '280px' }}>
+            {/* CHART - SVG DYNO GRAPH */}
+            <div style={{ borderRadius: '12px', padding: '10px', background: 'rgba(2,6,23,0.9)', border: '1px solid rgba(0,212,255,0.18)' }}>
               {chartData && chartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,212,255,0.12)" />
-                    <XAxis
-                      dataKey="rpm"
-                      tick={{ fill: '#a5b4fc', fontSize: 11 }}
-                      label={{ value: 'RPM', position: 'insideBottomRight', offset: -5, fill: '#a5b4fc', fontSize: 11 }}
-                    />
-                    <YAxis
-                      tick={{ fill: '#e5e7eb', fontSize: 11 }}
-                      label={{ value: 'Horsepower (hp)', angle: -90, position: 'insideLeft', fill: '#e5e7eb', fontSize: 11 }}
-                    />
-                    <Tooltip
-                      contentStyle={{ background: 'rgba(2,6,23,0.95)', border: '1px solid rgba(0,212,255,0.45)', borderRadius: '8px', color: '#e5e7eb', fontSize: '11px' }}
-                      formatter={(value) => typeof value === 'number' ? value.toFixed(1) : value}
-                    />
-                    <Legend wrapperStyle={{ paddingTop: '10px' }} />
-                    <Line
-                      type="monotone"
-                      dataKey="hp"
-                      stroke="#00d4ff"
-                      name="Horsepower"
-                      dot={false}
-                      strokeWidth={2}
-                      isAnimationActive={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                (() => {
+                  const svgWidth = 700;
+                  const svgHeight = 320;
+                  const padding = 60;
+                  const graphWidth = svgWidth - 2 * padding;
+                  const graphHeight = svgHeight - 2 * padding;
+
+                  const minRpm = Math.min(...chartData.map(p => p.rpm));
+                  const maxRpm = Math.max(...chartData.map(p => p.rpm));
+                  const maxHp = Math.max(...chartData.map(p => p.hp)) * 1.1;
+
+                  // Build SVG path for HP curve
+                  const hpPath = [];
+                  for (let i = 0; i < chartData.length; i++) {
+                    const point = chartData[i];
+                    const x = padding + ((point.rpm - minRpm) / (maxRpm - minRpm)) * graphWidth;
+                    const y = padding + graphHeight - (point.hp / maxHp) * graphHeight;
+                    
+                    if (i === 0) {
+                      hpPath.push(`M ${x} ${y}`);
+                    } else {
+                      hpPath.push(`L ${x} ${y}`);
+                    }
+                  }
+
+                  return (
+                    <svg width={svgWidth} height={svgHeight} style={{ marginTop: 12, border: '1px solid rgba(0,212,255,0.35)', borderRadius: 8 }}>
+                      {/* Grid */}
+                      <defs>
+                        <pattern id="dyno-grid" width="60" height="60" patternUnits="userSpaceOnUse">
+                          <path d={`M 60 0 L 0 0 0 60`} fill="none" stroke="rgba(0,212,255,0.1)" strokeWidth="0.5" />
+                        </pattern>
+                      </defs>
+                      <rect x={padding} y={padding} width={graphWidth} height={graphHeight} fill="url(#dyno-grid)" />
+
+                      {/* Axes */}
+                      <line x1={padding} y1={padding + graphHeight} x2={padding + graphWidth} y2={padding + graphHeight} stroke="#00d4ff" strokeWidth="2" />
+                      <line x1={padding} y1={padding} x2={padding} y2={padding + graphHeight} stroke="#00d4ff" strokeWidth="2" />
+
+                      {/* RPM Labels (X-axis) */}
+                      {[2000, 3000, 4000, 5000, 6000, 7000, 8000].map((rpmVal) => {
+                        if (rpmVal < minRpm || rpmVal > maxRpm) return null;
+                        const x = padding + ((rpmVal - minRpm) / (maxRpm - minRpm)) * graphWidth;
+                        return (
+                          <g key={`rpm-${rpmVal}`}>
+                            <line x1={x} y1={padding + graphHeight} x2={x} y2={padding + graphHeight + 4} stroke="#00d4ff" strokeWidth="1" />
+                            <text x={x} y={padding + graphHeight + 18} textAnchor="middle" fontSize="11" fill="#a5b4fc">
+                              {rpmVal / 1000}k
+                            </text>
+                          </g>
+                        );
+                      })}
+
+                      {/* HP Labels (Y-axis) */}
+                      {[0, 100, 200, 300, 400, 500].map((hpVal) => {
+                        if (hpVal > maxHp) return null;
+                        const y = padding + graphHeight - (hpVal / maxHp) * graphHeight;
+                        return (
+                          <g key={`hp-${hpVal}`}>
+                            <line x1={padding - 4} y1={y} x2={padding} y2={y} stroke="#00d4ff" strokeWidth="1" />
+                            <text x={padding - 8} y={y + 4} textAnchor="end" fontSize="11" fill="#a5b4fc">
+                              {hpVal}
+                            </text>
+                          </g>
+                        );
+                      })}
+
+                      {/* HP Curve */}
+                      <path d={hpPath.join(" ")} fill="none" stroke="#00d4ff" strokeWidth="3" />
+
+                      {/* Peak HP marker */}
+                      {results && (
+                        <>
+                          <circle 
+                            cx={padding + ((results.hpRpm - minRpm) / (maxRpm - minRpm)) * graphWidth} 
+                            cy={padding + graphHeight - (results.hp / maxHp) * graphHeight} 
+                            r="5" 
+                            fill="#ff2bd6" 
+                            stroke="#7CFFCB" 
+                            strokeWidth="2"
+                          />
+                        </>
+                      )}
+
+                      {/* Axis Labels */}
+                      <text x={padding + graphWidth / 2} y={svgHeight - 10} textAnchor="middle" fontSize="12" fill="#a5b4fc">
+                        RPM
+                      </text>
+                      <text x={20} y={padding + graphHeight / 2} textAnchor="middle" fontSize="12" fill="#a5b4fc" transform={`rotate(-90, 20, ${padding + graphHeight / 2})`}>
+                        Horsepower (hp)
+                      </text>
+                    </svg>
+                  );
+                })()
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#a5b4fc', fontSize: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: '#a5b4fc', fontSize: '12px' }}>
                   Click "Run Cam Spec Elite" to generate dyno curve
                 </div>
               )}
