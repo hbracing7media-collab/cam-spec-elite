@@ -12,7 +12,8 @@ export async function GET() {
   const supabase = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
 
   try {
-    const { data: heads, error } = await supabase
+    // Get all heads and filter in code
+    const { data: allHeads, error } = await supabase
       .from("cylinder_heads")
       .select("*")
       .order("brand", { ascending: true });
@@ -22,9 +23,12 @@ export async function GET() {
       return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
     }
 
+    // Filter for approved status
+    const approvedHeads = (allHeads || []).filter((h: any) => h.status === "approved");
+
     return NextResponse.json({
       ok: true,
-      heads,
+      heads: approvedHeads,
     });
   } catch (err) {
     console.error("Error:", err);

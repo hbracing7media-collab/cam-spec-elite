@@ -88,6 +88,8 @@ export async function POST(req: NextRequest) {
 
     // Insert flow data points
     if (flow_data && Array.isArray(flow_data) && flow_data.length > 0) {
+      console.log("Raw flow_data received:", JSON.stringify(flow_data, null, 2));
+      
       const flowDataRecords = flow_data.map((fd: any) => ({
         head_id: head.id,
         lift: fd.lift ? parseFloat(fd.lift) : null,
@@ -95,21 +97,25 @@ export async function POST(req: NextRequest) {
         exhaust_flow: fd.exhaustFlow ? parseFloat(fd.exhaustFlow) : null,
       }));
 
-      console.log("Inserting flow data:", flowDataRecords);
+      console.log("Formatted flow data records:", JSON.stringify(flowDataRecords, null, 2));
 
-      const { error: flowError } = await supabase
+      const { data: insertedData, error: flowError } = await supabase
         .from("cylinder_heads_flow_data")
-        .insert(flowDataRecords);
+        .insert(flowDataRecords)
+        .select();
 
       if (flowError) {
-        console.error("Flow data insert error:", flowError);
-        // Don't fail - head was created, just flow data had issues
+        console.error("Flow data insert error:", JSON.stringify(flowError, null, 2));
         return NextResponse.json({
-          ok: true,
-          message: "Head created but flow data had issues",
+          ok: false,
+          message: `Flow data error: ${flowError.message}`,
           head_id: head.id,
-        });
+        }, { status: 400 });
       }
+
+      console.log("Flow data inserted successfully:", insertedData?.length || 0, "records");
+    } else {
+      console.log("No flow data provided. flow_data:", flow_data, "is array:", Array.isArray(flow_data), "length:", flow_data?.length);
     }
 
     return NextResponse.json({
