@@ -3,7 +3,7 @@ import { supabaseServer } from "../../../../lib/supabase/server";
 
 export async function POST(req: Request) {
   try {
-    const supabase = supabaseServer();
+    const supabase = await supabaseServer();
     const body = await req.json().catch(() => null);
 
     const object_id = body?.object_id;

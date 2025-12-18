@@ -1,6 +1,26 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+function useAuthCheck() {
+  const router = useRouter();
+  const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) {
+        router.replace("/auth/login");
+      } else {
+        setIsAuthed(true);
+      }
+    };
+    checkAuth();
+  }, [router]);
+
+  return isAuthed;
+}
 
 type Msg = { type: "ok" | "err" | "info"; text: string };
 
@@ -80,6 +100,7 @@ const ENGINE_FAMILIES: Record<MakeKey, string[]> = {
 };
 
 export default function NewCamSubmissionPage() {
+  const isAuthed = useAuthCheck();
   const [userId, setUserId] = useState<string>("");
   const [email, setEmail] = useState<string>("");
 
@@ -221,6 +242,8 @@ export default function NewCamSubmissionPage() {
       setBusy(false);
     }
   }
+
+  if (isAuthed === null) return <div style={{ padding: 20, textAlign: "center" }}>Loading...</div>;
 
   return (
     <main style={{ padding: 18, maxWidth: 980, margin: "0 auto" }}>

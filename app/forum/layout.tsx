@@ -52,8 +52,8 @@ export default function ForumLayout({ children }: { children: React.ReactNode })
 
           <nav style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <NavPill href="/cams">Cams</NavPill>
-            <NavPill href="/cams/new">Submit Cam</NavPill>
-            <NavPill href="/upload">Uploads</NavPill>
+            <NavPill href="/cylinder-heads">Heads</NavPill>
+            <NavPill href="/calculators">Calculators</NavPill>
             <NavPill href="/forum">Forum</NavPill>
             <NavPill href="/">Home</NavPill>
           </nav>

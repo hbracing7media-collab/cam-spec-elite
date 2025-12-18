@@ -1,7 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+function useAuthCheck() {
+  const router = useRouter();
+  const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) {
+        router.replace("/auth/login");
+      } else {
+        setIsAuthed(true);
+      }
+    };
+    checkAuth();
+  }, [router]);
+
+  return isAuthed;
+}
 
 type MakeKey =
   | "Ford"
@@ -79,6 +99,7 @@ const ENGINE_FAMILIES: Record<MakeKey, string[]> = {
 };
 
 export default function CamsPage() {
+  const isAuthed = useAuthCheck();
   const router = useRouter();
   const [selectedMake, setSelectedMake] = useState<MakeKey | "">("");
   const [engineFamily, setEngineFamily] = useState("");
@@ -95,8 +116,13 @@ export default function CamsPage() {
 
   const familyOptions = selectedMake ? ENGINE_FAMILIES[selectedMake] : [];
 
+  if (isAuthed === null) return <div style={{ padding: 20, textAlign: "center" }}>Loading...</div>;
+
   return (
     <main style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
+      <div style={{ display: "flex", gap: 10, marginBottom: 20, justifyContent: "center" }}>
+        <Link href="/cams/new" className="pill" style={{ textDecoration: "none" }}>Submit Cam</Link>
+      </div>
       <div
         style={{
           borderRadius: 18,

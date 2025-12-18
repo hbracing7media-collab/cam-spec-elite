@@ -4,8 +4,8 @@ import { createServerClient } from "@supabase/ssr";
 type CookieGetAll = () => Array<{ name: string; value: string }>;
 type CookieSet = (name: string, value: string, options?: any) => void;
 
-export function supabaseServer() {
-  const cookieStore = cookies() as unknown as {
+export async function supabaseServer() {
+  const cookieStore = (await cookies()) as unknown as {
     getAll: CookieGetAll;
     set: CookieSet;
   };

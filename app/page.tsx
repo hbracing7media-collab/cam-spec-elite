@@ -87,6 +87,9 @@ export default function Home() {
           <Link href="/cams" className="pill">
             Browse Cams
           </Link>
+          <Link href="/cylinder-heads" className="pill">
+            Heads
+          </Link>
         </div>
 
         <hr className="hr" />

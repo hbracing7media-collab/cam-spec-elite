@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseServer } from "../../../../lib/supabase/server";
 
 export async function GET() {
-  const supabase = supabaseServer();
+  const supabase = await supabaseServer();
 
   // Check admin
   const { data: isAdmin, error: adminErr } = await supabase
@@ -31,7 +31,7 @@ export async function GET() {
 type ApproveBody = { object_id: string };
 
 export async function POST(req: Request) {
-  const supabase = supabaseServer();
+  const supabase = await supabaseServer();
 
   let body: unknown;
   try {

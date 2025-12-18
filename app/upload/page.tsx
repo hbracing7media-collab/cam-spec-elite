@@ -24,7 +24,6 @@ export default function UploadHubPage() {
         </p>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <BigBtn href="/cams/new">Submit Cam (Specs + Files)</BigBtn>
           <BigBtn href="/api/admin/storage/pending">Admin Pending (JSON)</BigBtn>
           <BigBtn href="/forum">Back to Forum</BigBtn>
         </div>

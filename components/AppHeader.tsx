@@ -19,11 +19,12 @@ export default function AppHeader() {
         </div>
 
         <div className="nav">
+          <Link className="pill" href="/">Home</Link>
           <Link className="pill" href="/forum">Forum</Link>
           <Link className="pill" href="/calculators">Calculators</Link>
+          <Link className="pill" href="/cams">Cams</Link>
+          <Link className="pill" href="/cylinder-heads">Heads</Link>
           <Link className="pill" href="/profile">Profile</Link>
-          <Link className="pill" href="/login">Login</Link>
-          <Link className="pill" href="/logout">Logout</Link>
         </div>
       </div>
     </div>
