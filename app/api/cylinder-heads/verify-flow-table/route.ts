@@ -12,9 +12,6 @@ export async function POST() {
   const supabase = createClient(url, serviceRole, { auth: { persistSession: false } });
 
   try {
-    // Check current table structure
-    const { data: columnInfo } = await supabase.rpc("get_columns", { table_name: "cylinder_heads_flow_data" }).catch(() => ({ data: null }));
-
     // Try to insert a test record to see if id auto-generates
     const testId = crypto.randomUUID();
     const { error: insertError } = await supabase
