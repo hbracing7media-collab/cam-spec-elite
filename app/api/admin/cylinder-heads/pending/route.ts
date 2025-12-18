@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      heads: data || [],
+      submissions: data || [],
     });
   } catch (error: unknown) {
     console.error("Error fetching pending heads:", error);
