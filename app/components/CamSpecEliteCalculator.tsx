@@ -361,9 +361,8 @@ export default function CamSpecEliteCalculator() {
     // Final HP with E85 boost enhancement
     const boostedHP = naHP * boostMult * afrMult * actualFuelMult * e85BoostMult;
 
-    // Peak RPM shift under boost
-    const rpmShift = clamp((psi * 18) + (PR - 1) * 120, 0, 350);
-    const peakRpm = Math.round(clamp(naPeakRpm + rpmShift, 2500, 9000));
+    // Peak RPM is set to cam's specified rpmEnd
+    const peakRpm = Math.round(Math.max(2500, cam.rpmEnd || 6500));
 
     // Torque at peak HP RPM
     const tqAtHp = (boostedHP * 5252) / peakRpm;
