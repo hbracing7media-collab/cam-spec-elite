@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
     // Update status to rejected
     const { error } = await supabase
-      .from("cylinder_heads_submissions")
+      .from("cylinder_heads")
       .update({ status: "rejected" })
       .eq("id", submission_id);
 

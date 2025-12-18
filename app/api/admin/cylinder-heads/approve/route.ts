@@ -16,11 +16,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { headId } = await req.json();
+    const { submission_id } = await req.json();
 
-    if (!headId) {
+    if (!submission_id) {
       return NextResponse.json(
-        { ok: false, message: "Missing headId" },
+        { ok: false, message: "Missing submission_id" },
         { status: 400 }
       );
     }
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
         status: "approved",
         approved_at: new Date().toISOString(),
       })
-      .eq("id", headId);
+      .eq("id", submission_id);
 
     if (error) {
       return NextResponse.json(
