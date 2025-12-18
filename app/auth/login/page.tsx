@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signupWithEmail } from "@/lib/auth";
 
 interface Message {
   type: "ok" | "err";
@@ -39,14 +40,18 @@ export default function AuthPage() {
         setLoading(false);
         return;
       }
-      // Call Supabase client for signup (client-side, since you need email confirmation)
-      const { error } = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      }).then(res => res.json());
-      if (error) {
-        setMsg({ type: "err", text: error.message });
+      try {
+        const { error } = await signupWithEmail(email, password);
+        if (error) {
+          setMsg({ type: "err", text: error.message });
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        setMsg({
+          type: "err",
+          text: err instanceof Error ? err.message : "Signup failed.",
+        });
         setLoading(false);
         return;
       }
