@@ -112,6 +112,7 @@ export default function AdminCylinderHeadReview() {
               </div>
 
               {/* Flow Data */}
+              {sub.flow_data && Array.isArray(sub.flow_data) && sub.flow_data.length > 0 && (
               <div style={{ marginBottom: 16 }}>
                 <strong>Flow Data:</strong>
                 <table style={{ width: "100%", marginTop: 8, borderCollapse: "collapse", fontSize: 12 }}>
@@ -133,6 +134,7 @@ export default function AdminCylinderHeadReview() {
                   </tbody>
                 </table>
               </div>
+              )}
 
               {/* Images */}
               {sub.images && sub.images.length > 0 && (
