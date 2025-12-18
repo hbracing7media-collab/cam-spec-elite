@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "../../../lib/auth";
+import { supabaseServer } from "../../../lib/supabase/server";
 import CamSpecEliteCalculator from "../../components/CamSpecEliteCalculator";
 
 const META: Record<string, { title: string; desc: string }> = {
@@ -44,7 +44,8 @@ export default async function CalculatorSlugPage({ params }: PageProps) {
   const { slug } = await params;
   
   if (slug === "cam-spec-elite") {
-    const user = await getCurrentUser();
+    const supabase = await supabaseServer();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       redirect("/auth/login");
     }
