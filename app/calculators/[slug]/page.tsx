@@ -68,7 +68,7 @@ export default async function CalculatorSlugPage({ params }: PageProps) {
 
         <hr className="hr" />
 
-        {slug === "cam-spec-elite" ? (
+        {slug === "cam-spec-elite" || slug === "turbo-sizing" ? (
           <CamSpecEliteCalculator />
         ) : (
         <div className="card" style={{ background: "rgba(2,6,23,0.55)" }}>

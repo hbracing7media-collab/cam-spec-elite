@@ -572,27 +572,45 @@ export default function CamSpecEliteCalculator() {
               <span style={{ fontSize: '10px', color: '#a5b4fc' }}>Bore • Stroke • Rod • Volumes • Port Flow</span>
             </div>
             
-            {/* Unit Toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: 'auto' }}>
-              <span style={{ fontSize: '10px', color: '#a5b4fc', minWidth: '40px', textAlign: 'right' }}>
+            {/* Unit Toggle Slider */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginLeft: 'auto' }}>
+              <span style={{ fontSize: '10px', color: unitSystem === 'imperial' ? '#00d4ff' : '#7CFFCB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', minWidth: '50px', textAlign: 'center' }}>
                 {unitSystem === 'imperial' ? 'Imperial' : 'Metric'}
               </span>
               <button
                 onClick={toggleUnitSystem}
                 style={{
-                  padding: '4px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  width: '70px',
+                  height: '28px',
                   borderRadius: '999px',
-                  border: '1px solid rgba(0,212,255,0.6)',
-                  background: unitSystem === 'imperial' ? 'rgba(0,212,255,0.2)' : 'rgba(124,255,203,0.2)',
-                  color: unitSystem === 'imperial' ? '#00d4ff' : '#7CFFCB',
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
+                  border: 'none',
+                  background: unitSystem === 'imperial' ? 'rgba(0,212,255,0.3)' : 'rgba(124,255,203,0.3)',
                   cursor: 'pointer',
-                  letterSpacing: '0.06em',
+                  padding: '2px',
+                  position: 'relative',
+                  transition: 'background-color 0.3s ease',
                 }}
               >
-                {unitSystem === 'imperial' ? 'in / cc' : 'mm / cc'}
+                {/* Slider dot */}
+                <div
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '999px',
+                    background: unitSystem === 'imperial' ? '#00d4ff' : '#7CFFCB',
+                    position: 'absolute',
+                    left: unitSystem === 'imperial' ? '2px' : '44px',
+                    transition: 'left 0.3s ease, background-color 0.3s ease',
+                    boxShadow: `0 0 8px ${unitSystem === 'imperial' ? 'rgba(0,212,255,0.6)' : 'rgba(124,255,203,0.6)'}`,
+                  }}
+                />
+                {/* Labels */}
+                <span style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'space-between', paddingX: '6px', fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', zIndex: 1, pointerEvents: 'none' }}>
+                  <span style={{ flex: 1, textAlign: 'center', color: 'transparent' }}>I</span>
+                  <span style={{ flex: 1, textAlign: 'center', color: 'transparent' }}>M</span>
+                </span>
               </button>
             </div>
           </div>
