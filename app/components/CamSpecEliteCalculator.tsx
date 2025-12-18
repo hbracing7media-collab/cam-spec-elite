@@ -373,7 +373,7 @@ export default function CamSpecEliteCalculator() {
   // --------- Build Curve ---------
   function buildCurve(eng: any, cam: any, tune: any, dynCR: number, hpData: any) {
     const hpPeak = hpData.hp || 0;
-    const hpRpm = hpData.hpRpm || (tune.graphRpmStart + tune.graphRpmEnd) / 2;
+    const hpRpm = hpData.hpRpm || (tune.rpmEnd + tune.rpmStart) / 2;
     
     // Effective CR under boost
     const psi = Math.max(0, tune.boostPsi || 0);
@@ -381,8 +381,8 @@ export default function CamSpecEliteCalculator() {
     const PR = (amb + psi) / amb;
     const effCR = dynCR * PR;
 
-    const startRpm = tune.graphRpmStart;
-    const endRpm = tune.graphRpmEnd;
+    const startRpm = tune.rpmStart || 2000;
+    const endRpm = tune.rpmEnd || 7000;
     const rpmStep = 250;
 
     const upSpan = Math.max(500, hpRpm - startRpm);
@@ -481,6 +481,7 @@ export default function CamSpecEliteCalculator() {
       console.log('curveData:', { points: curveData.points.length, effCR: curveData.effCR });
 
       setChartData(curveData.points);
+      console.log('chartData state being set with', curveData.points.length, 'points');
       setResults({
         hp: hpData.hp,
         hpRpm: hpData.hpRpm,
@@ -489,7 +490,7 @@ export default function CamSpecEliteCalculator() {
         dynCR: dynCR,
         effCR: curveData.effCR,
       });
-      console.log('Results set successfully');
+      console.log('Results set successfully with hp:', hpData.hp);
     } catch (err) {
       console.error('Calculator error:', err);
       setResults(null);
@@ -501,6 +502,11 @@ export default function CamSpecEliteCalculator() {
   useEffect(() => {
     handleRunCalc();
   }, [engine, cam, tune, camLibrary, selectedCamIdx]);
+
+  // Initial calculation on mount
+  useEffect(() => {
+    handleRunCalc();
+  }, []);
 
   return (
     <div style={{ maxWidth: '980px', margin: '0 auto', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#f5f5f5' }}>
