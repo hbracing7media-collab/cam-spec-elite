@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import type { CamMakeKey, HeadMakeKey } from '../../lib/engineOptions';
 
 interface EngineGeometry {
@@ -22,6 +22,7 @@ interface Cam {
   exhLift: number;
   rpmStart: number;
   rpmEnd: number;
+  rockerRatio?: number | null;
 }
 
 interface Tune {
@@ -291,6 +292,30 @@ const ENGINE_SELECTIONS: CatalogMake[] = [
   },
 ];
 
+const DEFAULT_ROCKER_RATIO = 1.6;
+
+function formatRatioInput(value: number) {
+  const safe = Number.isFinite(value) ? value : DEFAULT_ROCKER_RATIO;
+  return safe.toFixed(2);
+}
+
+function parseRatioInput(value: string, fallback: number) {
+  const parsed = parseFloat(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function applyRockerRatio(baseLift: number | undefined, sourceRatio: number, targetRatio: number) {
+  if (typeof baseLift !== 'number' || !Number.isFinite(baseLift)) return undefined;
+  const source = Number.isFinite(sourceRatio) && sourceRatio > 0 ? sourceRatio : DEFAULT_ROCKER_RATIO;
+  const target = Number.isFinite(targetRatio) && targetRatio > 0 ? targetRatio : source;
+  if (source <= 0) return baseLift;
+  return (baseLift / source) * target;
+}
+
+function formatLiftDisplay(value: number | undefined) {
+  return typeof value === 'number' && Number.isFinite(value) ? value.toFixed(3) : '—';
+}
+
 type CamFieldKey = keyof Cam;
 type CamTextKey = Extract<CamFieldKey, 'name'>;
 type CamNumericKey = Exclude<CamFieldKey, CamTextKey>;
@@ -347,6 +372,7 @@ const CAM_DEFAULT: Cam = {
   exhLift: 0.574,
   rpmStart: 3000,
   rpmEnd: 6500,
+  rockerRatio: DEFAULT_ROCKER_RATIO,
 };
 
 const TUNE_DEFAULT = {
@@ -383,6 +409,34 @@ export default function CamSpecEliteSelectiveCalculator() {
   const [dynCrDisplay, setDynCrDisplay] = useState('-');
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const [unitSystem, setUnitSystem] = useState<'imperial' | 'metric'>('imperial');
+  const [catalogRockerInput, setCatalogRockerInput] = useState(() => formatRatioInput(DEFAULT_ROCKER_RATIO));
+  const [userRockerInput, setUserRockerInput] = useState(() => formatRatioInput(DEFAULT_ROCKER_RATIO));
+  const [userRockerDirty, setUserRockerDirty] = useState(false);
+  const userRockerDirtyRef = useRef(false);
+
+  useEffect(() => {
+    userRockerDirtyRef.current = userRockerDirty;
+  }, [userRockerDirty]);
+
+  const catalogRockerRatio = useMemo(
+    () => parseRatioInput(catalogRockerInput, DEFAULT_ROCKER_RATIO),
+    [catalogRockerInput]
+  );
+
+  const userRockerRatio = useMemo(
+    () => parseRatioInput(userRockerInput, catalogRockerRatio),
+    [userRockerInput, catalogRockerRatio]
+  );
+
+  const effectiveIntLift = useMemo(
+    () => applyRockerRatio(cam.intLift, catalogRockerRatio, userRockerRatio),
+    [cam.intLift, catalogRockerRatio, userRockerRatio]
+  );
+
+  const effectiveExhLift = useMemo(
+    () => applyRockerRatio(cam.exhLift, catalogRockerRatio, userRockerRatio),
+    [cam.exhLift, catalogRockerRatio, userRockerRatio]
+  );
 
   const selectedMake = selectedMakeId ? ENGINE_SELECTIONS.find((m) => m.id === selectedMakeId) ?? ENGINE_SELECTIONS[0] : ENGINE_SELECTIONS[0];
   const availableFamilies = selectedMake?.families ?? [];
@@ -448,6 +502,11 @@ export default function CamSpecEliteSelectiveCalculator() {
         portCfm: engine.portCfm,
       });
     }
+  }
+
+  function syncUserRockerToCatalog() {
+    setUserRockerInput(formatRatioInput(catalogRockerRatio));
+    setUserRockerDirty(false);
   }
 
   function handleMakeChange(value: string) {
@@ -521,6 +580,7 @@ export default function CamSpecEliteSelectiveCalculator() {
             exhLift: pickNumber([row.lift_exh, row.spec?.lift_exh], CAM_DEFAULT.exhLift),
             rpmStart: pickNumber([row.rpm_start, row.spec?.rpm_start, row.spec?.rpmStart], CAM_DEFAULT.rpmStart),
             rpmEnd: pickNumber([row.rpm_end, row.spec?.rpm_end, row.spec?.rpmEnd], CAM_DEFAULT.rpmEnd),
+            rockerRatio: pickNumber([row.rocker_ratio, row.spec?.rocker_ratio], DEFAULT_ROCKER_RATIO),
           };
           return { id: row.id ?? label, label, spec };
         });
@@ -638,7 +698,7 @@ export default function CamSpecEliteSelectiveCalculator() {
     if (!selectedHead) return;
     const headSpec = headOptions.find((h) => h.id === selectedHead);
     if (!headSpec) return;
-    const interpolated = interpolateHeadFlow(headSpec.flowCurve, cam.intLift);
+    const interpolated = interpolateHeadFlow(headSpec.flowCurve, effectiveIntLift ?? cam.intLift);
     setEngine((prev) => {
       const fallbackFlow = headSpec.flowCfm ?? prev.portCfm;
       const desiredFlow = typeof interpolated === 'number' ? interpolated : fallbackFlow;
@@ -647,7 +707,7 @@ export default function CamSpecEliteSelectiveCalculator() {
       }
       return { ...prev, portCfm: desiredFlow };
     });
-  }, [selectedHead, headOptions, cam.intLift]);
+  }, [selectedHead, headOptions, effectiveIntLift, cam.intLift]);
 
   useEffect(() => {
     if (!selectedCatalogCam) return;
@@ -655,6 +715,14 @@ export default function CamSpecEliteSelectiveCalculator() {
     if (camSpec?.spec) {
       setCam((prev) => ({ ...prev, ...camSpec.spec }));
       setCamDrafts({});
+
+      const nextRatio = typeof camSpec.spec.rockerRatio === 'number' && camSpec.spec.rockerRatio > 0
+        ? camSpec.spec.rockerRatio
+        : DEFAULT_ROCKER_RATIO;
+      setCatalogRockerInput(formatRatioInput(nextRatio));
+      if (!userRockerDirtyRef.current) {
+        setUserRockerInput(formatRatioInput(nextRatio));
+      }
     }
   }, [selectedCatalogCam, camOptions]);
 
@@ -1124,7 +1192,11 @@ export default function CamSpecEliteSelectiveCalculator() {
       const engFull = { ...geom, rod: engine.rod, stroke: engine.stroke, cyl: engine.cyl, portCfm: engine.portCfm };
       console.log('engFull:', engFull);
       
-      const currentCam = cam;
+      const currentCam = {
+        ...cam,
+        intLift: typeof effectiveIntLift === 'number' ? effectiveIntLift : cam.intLift,
+        exhLift: typeof effectiveExhLift === 'number' ? effectiveExhLift : cam.exhLift,
+      };
       console.log('currentCam:', currentCam);
       
       const tuneFull: Tune = {
@@ -1176,7 +1248,7 @@ export default function CamSpecEliteSelectiveCalculator() {
   // Recalculate when engine, cam, tune, or library changes
   useEffect(() => {
     handleRunCalc();
-  }, [engine, cam, tune]);
+  }, [engine, cam, tune, catalogRockerRatio, userRockerRatio]);
 
   // Initial calculation on mount
   useEffect(() => {
@@ -1196,6 +1268,65 @@ export default function CamSpecEliteSelectiveCalculator() {
           <div style={{ padding: '4px 10px', borderRadius: '999px', background: 'rgba(0,212,255,0.10)', border: '1px solid rgba(0,212,255,0.35)', color: '#c7f7ff' }}>2 • Catalog</div>
           <div style={{ padding: '4px 10px', borderRadius: '999px', background: 'rgba(124,255,203,0.10)', border: '1px solid rgba(124,255,203,0.35)', color: '#d7fff0' }}>3 • Cam Spec</div>
           <div style={{ padding: '4px 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.25)', color: '#e5e7eb' }}>4 • Tune</div>
+
+        <div style={{ marginTop: '8px', marginBottom: '10px', padding: '8px 10px', borderRadius: '12px', background: 'rgba(6,11,30,0.78)', border: '1px solid rgba(0,212,255,0.22)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <strong style={{ fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#c7f7ff' }}>Rocker Ratio Adjustment</strong>
+            <button
+              type="button"
+              onClick={syncUserRockerToCatalog}
+              style={{ fontSize: '10px', padding: '4px 8px', borderRadius: '999px', border: '1px solid rgba(0,212,255,0.35)', background: 'transparent', color: '#c7f7ff', cursor: 'pointer' }}
+            >
+              Match Catalog
+            </button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '8px', fontSize: '12px' }}>
+            <div>
+              <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>Catalog / Published Ratio</label>
+              <input
+                type="number"
+                value={catalogRockerInput}
+                onChange={(e) => {
+                  setCatalogRockerInput(e.target.value);
+                  if (!userRockerDirtyRef.current) {
+                    setUserRockerInput(e.target.value);
+                  }
+                }}
+                min="1"
+                max="2.5"
+                step="0.01"
+                style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(255,43,214,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>Your Rocker Ratio</label>
+              <input
+                type="number"
+                value={userRockerInput}
+                onChange={(e) => {
+                  setUserRockerInput(e.target.value);
+                  setUserRockerDirty(true);
+                }}
+                min="1"
+                max="2.5"
+                step="0.01"
+                style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(255,43,214,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+              />
+            </div>
+
+            <div style={{ background: 'rgba(2,6,23,0.85)', border: '1px solid rgba(0,212,255,0.30)', borderRadius: '10px', padding: '8px' }}>
+              <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#7dd3fc', marginBottom: '4px' }}>Net Valve Lift</div>
+              <div style={{ fontSize: '12px', color: '#e5e7eb' }}>
+                <div>Intake: {formatLiftDisplay(effectiveIntLift ?? cam.intLift)}"</div>
+                <div>Exhaust: {formatLiftDisplay(effectiveExhLift ?? cam.exhLift)}"</div>
+              </div>
+            </div>
+          </div>
+          <div style={{ marginTop: '6px', fontSize: '10px', color: '#94a3b8' }}>
+            We convert the published cam lift (based on the catalog ratio) to your rocker ratio before sampling head flow or horsepower.
+          </div>
+        </div>
         </div>
 
         {/* STEP 1: ENGINE GEOMETRY */}
