@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import CamSpecEliteCalculator from "../../components/CamSpecEliteCalculator";
+import CamSpecEliteSelectiveCalculator from "../../components/CamSpecEliteSelectiveCalculator";
+
+const SELECTIVE_SLUGS = ["cam-spec-elite-selective", "turbo-sizing"];
 
 const META: Record<string, { title: string; desc: string }> = {
   "cam-spec-elite": { title: "Cam Spec Elite Basic HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
+  "cam-spec-elite-selective": { title: "Cam Spec Elite Selective HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
   "turbo-sizing": { title: "Cam Spec Elite Selective HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
   "drag-sim-1320": { title: "Drag Simulator (1/4 mile)", desc: "HP/weight ET + trap estimate." },
   "drag-sim-660": { title: "Drag Simulator (1/8 mile)", desc: "HP/weight 1/8 ET + mph estimate." },
@@ -68,8 +72,10 @@ export default async function CalculatorSlugPage({ params }: PageProps) {
 
         <hr className="hr" />
 
-        {slug === "cam-spec-elite" || slug === "turbo-sizing" ? (
+        {slug === "cam-spec-elite" ? (
           <CamSpecEliteCalculator />
+        ) : SELECTIVE_SLUGS.includes(slug) ? (
+          <CamSpecEliteSelectiveCalculator />
         ) : (
         <div className="card" style={{ background: "rgba(2,6,23,0.55)" }}>
           <div className="card-inner">

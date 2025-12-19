@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const CALCULATORS: { slug: string; name: string; desc: string }[] = [
   { slug: "cam-spec-elite", name: "Cam Spec Elite Basic HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
-  { slug: "turbo-sizing", name: "Cam Spec Elite Selective HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
+  { slug: "cam-spec-elite-selective", name: "Cam Spec Elite Selective HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
   { slug: "drag-sim-1320", name: "Cam Spec Elite Generative HP Calculator", desc: "HP/weight ET + trap estimate." },
   { slug: "drag-sim-660", name: "Drag Simulator (1/8 mile)", desc: "HP/weight 1/8 ET + mph estimate." },
   { slug: "roll-race-60-130", name: "60–130 Roll Race", desc: "Estimate time based on power/weight/drag." },
