@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseInstance } from "../../../lib/supabaseSingleton";
+import { HEAD_ENGINE_FAMILIES, HEAD_MAKE_OPTIONS, HeadMakeKey } from "@/lib/engineOptions";
 
 function useAuthCheck() {
   const router = useRouter();
@@ -22,27 +23,6 @@ function useAuthCheck() {
 
   return isAuthed;
 }
-
-type MakeKey =
-  | "Ford" | "GM" | "Mopar" | "Toyota" | "Honda" | "Nissan" | "Mazda"
-  | "Subaru" | "Mitsubishi" | "VW/Audi" | "BMW" | "Mercedes" | "Hyundai/Kia" | "Other";
-
-const ENGINE_FAMILIES: Record<MakeKey, string[]> = {
-  Ford: ["Small Block Windsor", "Small Block Cleveland", "Modular 4.6/5.4", "Coyote 5.0", "Godzilla 7.3", "FE Big Block", "385 Series (429/460)", "EcoBoost 2.3", "EcoBoost 2.7/3.0/3.5"],
-  GM: ["LS (Gen III/IV)", "LT (Gen V)", "Small Block Chevy (SBC)", "Big Block Chevy (BBC)", "Gen I/II LT1/LT4 (90s)", "Ecotec", "Duramax"],
-  Mopar: ["Gen III HEMI (5.7/6.1/6.4)", "Hellcat 6.2", "LA Small Block", "Magnum Small Block", "B/RB Big Block", "Slant-6"],
-  Toyota: ["2JZ", "1JZ", "3S", "1UZ/3UZ", "2UZ", "GR (3.5/4.0/4.3)"],
-  Honda: ["B-Series", "K-Series", "D-Series", "H/F-Series", "J-Series"],
-  Nissan: ["SR20", "RB (RB20/25/26)", "VQ (VQ35/37)", "VR30", "KA24"],
-  Mazda: ["BP", "13B Rotary", "MZR/Duratec", "Skyactiv"],
-  Subaru: ["EJ", "FA/FB"],
-  Mitsubishi: ["4G63", "4B11"],
-  "VW/Audi": ["1.8T", "2.0T EA888", "VR6", "5-Cyl (07K)", "Audi V6T/V8"],
-  BMW: ["N54", "N55", "B58", "S55", "S58"],
-  Mercedes: ["M113", "M156", "M157", "M177/M178", "OM606"],
-  "Hyundai/Kia": ["Theta II 2.0T", "Lambda V6", "Smartstream"],
-  Other: ["Other/Custom"],
-};
 
 type FlowDataPoint = {
   lift: string;
@@ -72,8 +52,8 @@ export default function CylinderHeadSubmitPage(): React.JSX.Element {
   const [brand, setBrand] = useState("");
   const [partNumber, setPartNumber] = useState("");
   const [partName, setPartName] = useState("");
-  const [engineMake, setEngineMake] = useState<MakeKey>("Ford");
-  const [engineFamily, setEngineFamily] = useState<string>(ENGINE_FAMILIES.Ford[0] ?? "");
+  const [engineMake, setEngineMake] = useState<HeadMakeKey>("Ford");
+  const [engineFamily, setEngineFamily] = useState<string>(HEAD_ENGINE_FAMILIES.Ford[0] ?? "");
 
   const [intakeValveSize, setIntakeValveSize] = useState("");
   const [exhaustValveSize, setExhaustValveSize] = useState("");
@@ -89,7 +69,7 @@ export default function CylinderHeadSubmitPage(): React.JSX.Element {
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
-    const fam = ENGINE_FAMILIES[engineMake];
+    const fam = HEAD_ENGINE_FAMILIES[engineMake];
     setEngineFamily(fam?.[0] ?? "");
   }, [engineMake]);
 
@@ -115,7 +95,7 @@ export default function CylinderHeadSubmitPage(): React.JSX.Element {
     void init();
   }, []);
 
-  const families = ENGINE_FAMILIES[engineMake] ?? [];
+  const families = HEAD_ENGINE_FAMILIES[engineMake] ?? [];
 
   function addFlowDataRow() {
     setFlowData([...flowData, { lift: "", intakeFlow: "", exhaustFlow: "" }]);
@@ -199,7 +179,7 @@ export default function CylinderHeadSubmitPage(): React.JSX.Element {
       setBrand("");
       setPartNumber("");
       setPartName("");
-      setEngineFamily(ENGINE_FAMILIES.Ford[0] ?? "");
+      setEngineFamily(HEAD_ENGINE_FAMILIES.Ford[0] ?? "");
       setIntakeValveSize("");
       setExhaustValveSize("");
       setMaxLift("");
@@ -250,8 +230,8 @@ export default function CylinderHeadSubmitPage(): React.JSX.Element {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <label style={labelStyle}>
                 Engine Make (required)
-                <select value={engineMake} onChange={(e) => setEngineMake(e.target.value as MakeKey)} style={inputStyle}>
-                  {(Object.keys(ENGINE_FAMILIES) as MakeKey[]).map((m) => (
+                <select value={engineMake} onChange={(e) => setEngineMake(e.target.value as HeadMakeKey)} style={inputStyle}>
+                  {HEAD_MAKE_OPTIONS.map((m) => (
                     <option key={m} value={m}>{m}</option>
                   ))}
                 </select>

@@ -2,23 +2,29 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CamSpecEliteCalculator from "../../components/CamSpecEliteCalculator";
 import CamSpecEliteSelectiveCalculator from "../../components/CamSpecEliteSelectiveCalculator";
+import DragSim660Calculator from "../../components/DragSim660Calculator";
+import RollRace60130Simulator from "../../components/RollRace60130Simulator";
+import BoostEstimatorCalculator from "../../components/BoostEstimatorCalculator";
+import TurboSizingCalculator from "../../components/TurboSizingCalculator";
+import CamshaftSuggestorBasic from "../../components/CamshaftSuggestorBasic";
+import ConverterSlipCalculator from "../../components/ConverterSlipCalculatorClient";
+import GearRatioCalculator from "../../components/GearRatioCalculator";
 
-const SELECTIVE_SLUGS = ["cam-spec-elite-selective", "turbo-sizing"];
+const SELECTIVE_SLUGS = ["cam-spec-elite-selective"];
 
 const META: Record<string, { title: string; desc: string }> = {
   "cam-spec-elite": { title: "Cam Spec Elite Basic HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
   "cam-spec-elite-selective": { title: "Cam Spec Elite Selective HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
-  "turbo-sizing": { title: "Cam Spec Elite Selective HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
-  "drag-sim-1320": { title: "Drag Simulator (1/4 mile)", desc: "HP/weight ET + trap estimate." },
-  "drag-sim-660": { title: "Drag Simulator (1/8 mile)", desc: "HP/weight 1/8 ET + mph estimate." },
+  "cam-spec-elite-generative": { title: "Cam Spec Elite Generative", desc: "AI-assisted cam + power curve estimator." },
+  "drag-simulator": { title: "Drag Simulator", desc: "HP/weight ET + trap estimate." },
   "roll-race-60-130": { title: "60–130 Roll Race", desc: "Estimate time based on power/weight/drag." },
   "gear-ratio": { title: "Gear Ratio / RPM", desc: "RPM vs speed by tire + gearing." },
-  "compression-ratio": { title: "Compression Ratio", desc: "Static compression from bore/stroke/chamber." },
-  "injector-sizing": { title: "Injector Sizing", desc: "Fuel injector size estimate for HP + fuel type." },
-  "fuel-system": { title: "Fuel System Flow", desc: "Pump flow / line sizing helper." },
-  "converter-slip": { title: "Converter Slip", desc: "Trap RPM vs mph slip estimate." },
-  "boost-psi-target": { title: "Boost Target PSI", desc: "Estimate boost for target HP and efficiency." },
-  "intercooler-calc": { title: "Intercooler Sizing", desc: "Temp drop targets and core sizing." },
+  "boost-estimator": { title: "Boost Estimator", desc: "HP + Boost = New HP" },
+  "turbo-sizing-calculator": { title: "Turbo Sizing Calculator", desc: "Turbo Sizing Calculator" },
+  "camshaft-suggestor-basic": { title: "Camshaft Suggestor Basic", desc: "Camshaft suggested specs from engine combo estimates." },
+  "camshaft-suggestor-selective": { title: "Camshaft Suggestor Selective", desc: "Camshaft suggestor based on databased cams." },
+  "cam-suggestor-global": { title: "Cam Suggestor Global", desc: "Cam suggestion based on calculations, cross referenced with available cams from web data" },
+  "intercooler-calc": { title: "Cam Suggestor Generative", desc: "AI-assisted, data-based cam suggestor." },
   "tire-size": { title: "Tire Size & Speedo", desc: "Diameter + speedo correction." },
   "brake-math": { title: "Brake Bias / Force", desc: "Simple bias and clamp force calculator." },
   "coming-soon": { title: "Calculator Slot 15", desc: "Reserved slot for next tool." },
@@ -74,8 +80,26 @@ export default async function CalculatorSlugPage({ params }: PageProps) {
 
         {slug === "cam-spec-elite" ? (
           <CamSpecEliteCalculator />
+        ) : slug === "cam-spec-elite-generative" ? (
+          <CamSpecEliteCalculator />
         ) : SELECTIVE_SLUGS.includes(slug) ? (
           <CamSpecEliteSelectiveCalculator />
+        ) : slug === "drag-simulator" ? (
+          <DragSim660Calculator />
+        ) : slug === "boost-estimator" ? (
+          <BoostEstimatorCalculator />
+        ) : slug === "turbo-sizing-calculator" ? (
+          <TurboSizingCalculator />
+        ) : slug === "camshaft-suggestor-basic" ? (
+          <CamshaftSuggestorBasic />
+        ) : slug === "camshaft-suggestor-selective" ? (
+          <ConverterSlipCalculator />
+        ) : slug === "cam-suggestor-global" ? (
+          <ConverterSlipCalculator mode="global" desiredSuggestions={3} />
+        ) : slug === "gear-ratio" ? (
+          <GearRatioCalculator />
+        ) : slug === "roll-race-60-130" ? (
+          <RollRace60130Simulator />
         ) : (
         <div className="card" style={{ background: "rgba(2,6,23,0.55)" }}>
           <div className="card-inner">

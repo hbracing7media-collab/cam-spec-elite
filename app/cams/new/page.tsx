@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { CAM_ENGINE_FAMILIES, CAM_MAKE_OPTIONS, CamMakeKey } from "@/lib/engineOptions";
 
 function useAuthCheck() {
   const router = useRouter();
@@ -24,81 +25,6 @@ function useAuthCheck() {
 
 type Msg = { type: "ok" | "err" | "info"; text: string };
 
-type MakeKey =
-  | "Ford"
-  | "Chevrolet"
-  | "Dodge/Mopar"
-  | "Toyota"
-  | "Honda"
-  | "Nissan"
-  | "Subaru"
-  | "Mitsubishi"
-  | "Mazda"
-  | "BMW"
-  | "VW/Audi"
-  | "Mercedes"
-  | "Other";
-
-const MAKE_OPTIONS: MakeKey[] = [
-  "Ford",
-  "Chevrolet",
-  "Dodge/Mopar",
-  "Toyota",
-  "Honda",
-  "Nissan",
-  "Subaru",
-  "Mitsubishi",
-  "Mazda",
-  "BMW",
-  "VW/Audi",
-  "Mercedes",
-  "Other",
-];
-
-const ENGINE_FAMILIES: Record<MakeKey, string[]> = {
-  Ford: [
-    "Small Block Windsor (221/260/289/302/351W)",
-    "Cleveland (351C/351M/400)",
-    "FE Big Block (352/390/406/427/428)",
-    "385-Series (429/460)",
-    "Modular 4.6/5.4 (2V/3V/4V)",
-    "Coyote 5.0 (Gen 1/2/3/4)",
-    "Godzilla 7.3",
-    "EcoBoost V6 (3.5/2.7)",
-    "Lima 2.3",
-    "Y-Block",
-    "Other Ford",
-  ],
-  Chevrolet: [
-    "Gen I Small Block (265–400)",
-    "Gen II LT1/LT4 (1992–1997)",
-    "Gen III/IV LS (4.8/5.3/6.0/6.2 etc.)",
-    "Gen V LT (LT1/LT4/LT2 etc.)",
-    "Big Block Mark IV (396/402/427/454)",
-    "Big Block Gen V/VI (454/502 etc.)",
-    "Other Chevy",
-  ],
-  "Dodge/Mopar": [
-    "LA Small Block (273/318/340/360)",
-    "Magnum (5.2/5.9)",
-    "Gen III Hemi (5.7/6.1/6.4/6.2)",
-    "RB Big Block (383/400/413/426W/440)",
-    "B Big Block",
-    "Slant-6",
-    "Other Mopar",
-  ],
-  Toyota: ["2JZ", "1JZ", "UZ (1UZ/2UZ/3UZ)", "UR", "GR", "Other Toyota"],
-  Honda: ["B-Series", "K-Series", "D-Series", "H-Series", "J-Series", "Other Honda"],
-  Nissan: ["SR", "RB", "VG", "VQ", "VR", "Other Nissan"],
-  Subaru: ["EJ", "FA/FB", "Other Subaru"],
-  Mitsubishi: ["4G63", "4B11", "Other Mitsubishi"],
-  Mazda: ["BP", "B6", "K-Series V6", "13B (Rotary)", "Other Mazda"],
-  BMW: ["M50/M52", "S50/S52", "N54", "S55", "B58", "S58", "Other BMW"],
-  "VW/Audi": ["1.8T", "2.0T EA888", "VR6", "07K 2.5", "Other VW/Audi"],
-  Mercedes: ["M113", "M112", "M156", "M157", "Other Mercedes"],
-  Other: ["Other / Custom"],
-};
-
 export default function NewCamSubmissionPage() {
   const isAuthed = useAuthCheck();
   const [userId, setUserId] = useState<string>("");
@@ -108,8 +34,8 @@ export default function NewCamSubmissionPage() {
   const [brand, setBrand] = useState("");
   const [partNumber, setPartNumber] = useState("");
 
-  const [engineMake, setEngineMake] = useState<MakeKey>("Ford");
-  const [engineFamily, setEngineFamily] = useState<string>(ENGINE_FAMILIES["Ford"][0]);
+  const [engineMake, setEngineMake] = useState<CamMakeKey>("Ford");
+  const [engineFamily, setEngineFamily] = useState<string>(CAM_ENGINE_FAMILIES["Ford"][0]);
 
   const [lsa, setLsa] = useState<number | "">("");
   const [icl, setIcl] = useState<number | "">("");
@@ -122,6 +48,8 @@ export default function NewCamSubmissionPage() {
   const [rocker, setRocker] = useState<number | "">("");
   const [lashInt, setLashInt] = useState<number | "">("");
   const [lashExh, setLashExh] = useState<number | "">("");
+  const [rpmStart, setRpmStart] = useState<number | "">("");
+  const [rpmEnd, setRpmEnd] = useState<number | "">("");
   const [notes, setNotes] = useState("");
 
   const [camCardFile, setCamCardFile] = useState<File | null>(null);
@@ -132,7 +60,7 @@ export default function NewCamSubmissionPage() {
 
   // Make -> Family reset
   useEffect(() => {
-    const list = ENGINE_FAMILIES[engineMake] ?? ENGINE_FAMILIES["Other"];
+    const list = CAM_ENGINE_FAMILIES[engineMake] ?? CAM_ENGINE_FAMILIES["Other"];
     setEngineFamily(list[0]);
   }, [engineMake]);
 
@@ -159,7 +87,7 @@ export default function NewCamSubmissionPage() {
     })();
   }, []);
 
-  const familyOptions = ENGINE_FAMILIES[engineMake] ?? ENGINE_FAMILIES["Other"];
+  const familyOptions = CAM_ENGINE_FAMILIES[engineMake] ?? CAM_ENGINE_FAMILIES["Other"];
 
   async function submit() {
     setMsg(null);
@@ -205,6 +133,8 @@ export default function NewCamSubmissionPage() {
 
       if (lashInt !== "") fd.append("lash_int", String(lashInt));
       if (lashExh !== "") fd.append("lash_exh", String(lashExh));
+      if (rpmStart !== "") fd.append("rpm_start", String(rpmStart));
+      if (rpmEnd !== "") fd.append("rpm_end", String(rpmEnd));
 
       if (notes.trim()) fd.append("notes", notes.trim());
 
@@ -236,6 +166,8 @@ export default function NewCamSubmissionPage() {
       setNotes("");
       setCamCardFile(null);
       setDynoFiles([]);
+      setRpmStart("");
+      setRpmEnd("");
     } catch (e: any) {
       setMsg({ type: "err", text: e?.message || "Submit failed." });
     } finally {
@@ -274,7 +206,7 @@ export default function NewCamSubmissionPage() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-          <Select label="Engine Make (required)" value={engineMake} onChange={(v) => setEngineMake(v as MakeKey)} options={MAKE_OPTIONS} />
+          <Select label="Engine Make (required)" value={engineMake} onChange={(v) => setEngineMake(v as CamMakeKey)} options={CAM_MAKE_OPTIONS} />
           <Select key={engineMake} label="Engine Family (required)" value={engineFamily} onChange={(v) => setEngineFamily(v)} options={familyOptions} />
         </div>
 
@@ -288,6 +220,8 @@ export default function NewCamSubmissionPage() {
           <NumField label="Lift Int" value={liftInt} setValue={setLiftInt} />
 
           <NumField label="Lift Exh" value={liftExh} setValue={setLiftExh} />
+          <NumField label="Cam RPM Start" value={rpmStart} setValue={setRpmStart} />
+          <NumField label="Cam RPM End" value={rpmEnd} setValue={setRpmEnd} />
           <NumField label="Adv Int" value={advInt} setValue={setAdvInt} />
           <NumField label="Adv Exh" value={advExh} setValue={setAdvExh} />
 

@@ -121,6 +121,8 @@ export async function POST(req: Request) {
 
     const lash_int = parseNum(pickText(form, ["lash_int"]));
     const lash_exh = parseNum(pickText(form, ["lash_exh"]));
+    const rpm_start = parseNum(pickText(form, ["rpm_start", "cam_rpm_start", "rpmStart"]));
+    const rpm_end = parseNum(pickText(form, ["rpm_end", "cam_rpm_end", "rpmEnd"]));
 
     const notes = pickText(form, ["notes"]);
     const user_id = pickText(form, ["user_id", "userId"]) || null;
@@ -236,6 +238,8 @@ export async function POST(req: Request) {
       advertised_exh,
       lash_int,
       lash_exh,
+      rpm_start,
+      rpm_end,
       notes: notes || null,
       files: {
         cam_card: { name: camCard.name, type: camCard.type, size: camCard.size, path: cam_card_path },
@@ -262,6 +266,8 @@ export async function POST(req: Request) {
       lift_exh,
       lash_int,
       lash_exh,
+      rpm_start,
+      rpm_end,
       notes: notes || null,
       cam_card_path,
       dyno_paths: dyno_paths.length ? dyno_paths : null,

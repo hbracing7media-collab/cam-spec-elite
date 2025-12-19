@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
         return null;
       };
 
-      const s = (spec && typeof spec === "object") ? (spec as any) : {};
+      const s = spec && typeof spec === "object" ? { ...(spec as any) } : {};
       const lsa = toNumber(form.get("lsa") ?? s.lsa ?? s.LSA ?? null);
       const icl = toNumber(form.get("icl") ?? s.icl ?? s.ICL ?? null);
       const rocker_ratio = toNumber(form.get("rocker_ratio") ?? s.rocker_ratio ?? s.rockerRatio ?? null);
@@ -112,6 +112,12 @@ export async function POST(req: NextRequest) {
       const advertised_exh = toNumber(form.get("advertised_exh") ?? s.adv_exh ?? s.advertised_exh ?? s.advExh ?? null);
       const lash_int = toNumber(form.get("lash_int") ?? s.lash_int ?? s.lashInt ?? null);
       const lash_exh = toNumber(form.get("lash_exh") ?? s.lash_exh ?? s.lashExh ?? null);
+      const rpm_start = toNumber(form.get("rpm_start") ?? s.rpm_start ?? s.rpmStart ?? null);
+      const rpm_end = toNumber(form.get("rpm_end") ?? s.rpm_end ?? s.rpmEnd ?? null);
+
+      if (rpm_start != null) s.rpm_start = rpm_start;
+      if (rpm_end != null) s.rpm_end = rpm_end;
+      const specPayload = Object.keys(s).length ? s : null;
 
       const ts = Date.now();
 
@@ -151,10 +157,12 @@ export async function POST(req: NextRequest) {
           advertised_exh,
           lash_int,
           lash_exh,
+          rpm_start,
+          rpm_end,
           notes: notes || null,
           cam_card_path: camCardPath,
           dyno_paths: dynoPaths.length ? dynoPaths : null,
-          spec: spec ?? null,
+          spec: specPayload,
           status: "pending",
         })
         .select("id")
@@ -187,7 +195,7 @@ export async function POST(req: NextRequest) {
         return null;
       };
 
-      const s = spec ?? {};
+      const s = spec && typeof spec === "object" ? { ...(spec as any) } : {};
       const brand = String(body.brand || "").trim() || null;
       const part_number = String(body.part_number || "").trim() || null;
       const lsa = toNumber(body.lsa ?? s.lsa ?? s.LSA ?? null);
@@ -201,6 +209,12 @@ export async function POST(req: NextRequest) {
       const advertised_exh = toNumber(body.advertised_exh ?? s.advertised_exh ?? s.adv_exh ?? s.advExh ?? null);
       const lash_int = toNumber(body.lash_int ?? s.lash_int ?? s.lashInt ?? null);
       const lash_exh = toNumber(body.lash_exh ?? s.lash_exh ?? s.lashExh ?? null);
+      const rpm_start = toNumber(body.rpm_start ?? s.rpm_start ?? s.rpmStart ?? null);
+      const rpm_end = toNumber(body.rpm_end ?? s.rpm_end ?? s.rpmEnd ?? null);
+
+      if (rpm_start != null) s.rpm_start = rpm_start;
+      if (rpm_end != null) s.rpm_end = rpm_end;
+      const specPayload = Object.keys(s).length ? s : null;
 
       if (!cam_name) {
         return NextResponse.json({ ok: false, error: "cam_name is required" }, { status: 400 });
@@ -227,10 +241,12 @@ export async function POST(req: NextRequest) {
           advertised_exh,
           lash_int,
           lash_exh,
+          rpm_start,
+          rpm_end,
           notes: notes || null,
           cam_card_path: null,
           dyno_paths: null,
-          spec: spec ?? null,
+          spec: specPayload,
           status: "pending",
         })
         .select("id")
