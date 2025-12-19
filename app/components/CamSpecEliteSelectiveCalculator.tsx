@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import type { CamMakeKey, HeadMakeKey } from '@/lib/engineOptions';
+import type { CamMakeKey, HeadMakeKey } from '../../lib/engineOptions';
 
 interface EngineGeometry {
   cid: number;
