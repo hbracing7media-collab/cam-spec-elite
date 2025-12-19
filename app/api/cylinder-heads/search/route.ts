@@ -30,7 +30,7 @@ export async function GET(req: Request) {
 
     const { data, error } = await supabaseAdmin
       .from("cylinder_heads")
-      .select("*")
+      .select(`*, flow_curve:cylinder_heads_flow_data(lift,intake_flow,exhaust_flow)`)
       .eq("engine_make", make)
       .eq("engine_family", family)
       .order("created_at", { ascending: false });
@@ -42,7 +42,22 @@ export async function GET(req: Request) {
       );
     }
 
-    return NextResponse.json({ ok: true, heads: data || [] }, { status: 200 });
+    const normalized = (data ?? []).map((head: any) => {
+      const directFlow = Array.isArray(head.flow_data) ? head.flow_data : undefined;
+      const relationalFlow = Array.isArray(head.flow_curve)
+        ? head.flow_curve.map((point: any) => ({
+            lift: point?.lift,
+            intakeFlow: point?.intake_flow,
+            exhaustFlow: point?.exhaust_flow,
+          }))
+        : undefined;
+
+      const flow_data = directFlow ?? relationalFlow ?? [];
+      const { flow_curve, ...rest } = head;
+      return { ...rest, flow_data };
+    });
+
+    return NextResponse.json({ ok: true, heads: normalized }, { status: 200 });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     return NextResponse.json(
