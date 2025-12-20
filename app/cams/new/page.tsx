@@ -67,7 +67,7 @@ export default function NewCamSubmissionPage() {
   // REAL login detection: ask the server (cookie session)
   useEffect(() => {
     (async () => {
-      const res = await fetch("/api/auth/whoami", { cache: "no-store" }).catch(() => null);
+      const res = await fetch("/api/auth/me", { cache: "no-store" }).catch(() => null);
       if (!res || !res.ok) {
         setUserId("");
         setEmail("");
@@ -75,14 +75,14 @@ export default function NewCamSubmissionPage() {
         return;
       }
       const j: any = await res.json().catch(() => ({}));
-      if (!j?.ok || !j?.id) {
+      if (!j?.ok || !j?.user?.id) {
         setUserId("");
         setEmail("");
         setMsg({ type: "info", text: "Log in to submit a cam." });
         return;
       }
-      setUserId(String(j.id));
-      setEmail(String(j.email || ""));
+      setUserId(String(j.user.id));
+      setEmail(String(j.user.email || ""));
       setMsg(null);
     })();
   }, []);
