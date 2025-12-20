@@ -1,6 +1,7 @@
 import "./globals.css";
 import "../styles/miami-neon.css";
 import Link from "next/link";
+import { ShortBlocksProvider } from "@/lib/context/ShortBlocksContext";
 
 export const metadata = {
   title: "Cam Spec Elite",
@@ -15,22 +16,24 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {/* Global background */}
-        <div className="app-background" />
+        <ShortBlocksProvider>
+          {/* Global background */}
+          <div className="app-background" />
 
-        {/* Global header / home logo */}
-        <header className="app-header">
-          <Link href="/" className="home-logo">
-            <img
-              src="/hbracing-logo.png"
-              alt="HB Racing Home"
-              draggable={false}
-            />
-          </Link>
-        </header>
+          {/* Global header / home logo */}
+          <header className="app-header">
+            <Link href="/" className="home-logo">
+              <img
+                src="/hbracing-logo.png"
+                alt="HB Racing Home"
+                draggable={false}
+              />
+            </Link>
+          </header>
 
-        {/* Page content */}
-        <main className="app-content">{children}</main>
+          {/* Page content */}
+          <main className="app-content">{children}</main>
+        </ShortBlocksProvider>
       </body>
     </html>
   );

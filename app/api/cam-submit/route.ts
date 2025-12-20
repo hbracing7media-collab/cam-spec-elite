@@ -288,6 +288,34 @@ export async function POST(req: Request) {
       );
     }
 
+    // Award appreciation badge for camshaft submission
+    if (user_id) {
+      try {
+        // Get the camshaft contributor award type
+        const { data: awardType } = await supabaseAdmin
+          .from("award_types")
+          .select("id")
+          .eq("slug", "camshaft_contributor")
+          .single();
+
+        if (awardType) {
+          // Award the badge (will ignore if already exists due to UNIQUE constraint)
+          await supabaseAdmin
+            .from("user_awards")
+            .insert({
+              user_id,
+              award_type_id: awardType.id,
+              submission_id: data.id,
+              submission_type: "camshaft",
+            })
+            .select();
+        }
+      } catch (awardError) {
+        console.error("Error awarding badge:", awardError);
+        // Don't fail the submission if award fails
+      }
+    }
+
     return NextResponse.json({ ok: true, submission: data }, { status: 200 });
   } catch (e: any) {
     return NextResponse.json(

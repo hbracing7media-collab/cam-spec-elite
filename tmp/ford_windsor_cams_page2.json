@@ -1,0 +1,852 @@
+[
+  {
+    "index": 101,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-302-8",
+    "duration_type": "adv",
+    "duration": "281/284",
+    "lift": "0.512/0.533",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Roller Tappet, Advertised Duration 281/284, Lift .512/.533, Ford, 5.0L HO, Each"
+  },
+  {
+    "index": 102,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-234-3",
+    "duration_type": "adv",
+    "duration": "256/262",
+    "lift": "0.477/0.484",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 256/262, Lift .477/.484, Ford, 351W, Each"
+  },
+  {
+    "index": 103,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-242-3",
+    "duration_type": "adv",
+    "duration": "268/280",
+    "lift": "0.510/0.512",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 268/280, Lift .510/.512, Ford, 351W, Each"
+  },
+  {
+    "index": 104,
+    "brand": "Edelbrock",
+    "part_number": "EDL-3722",
+    "duration_type": "adv",
+    "duration": "282/282",
+    "lift": "0.498/0.498",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Roller Tappet, Advertised Duration 282/282, Lift .498/.498, Ford, 5.0L, Each"
+  },
+  {
+    "index": 105,
+    "brand": "Howards Cams",
+    "part_number": "HRS-220031-12",
+    "duration_type": "adv",
+    "duration": "269/277",
+    "lift": "0.475/0.496",
+    "lsa": "",
+    "description": "Camshaft, Street Force 2, Hydraulic Flat Tappet, Advertised Duration 269/277, Lift .475/.496, Ford, 351W, Each"
+  },
+  {
+    "index": 106,
+    "brand": "Howards Cams",
+    "part_number": "HRS-220275-12",
+    "duration_type": "adv",
+    "duration": "294/300",
+    "lift": "0.581/0.603",
+    "lsa": "",
+    "description": "Camshaft, Retrofit, Hydraulic Roller Tappet, Advertised Duration 294/300, Lift .581/.603, Ford, 351W, Each"
+  },
+  {
+    "index": 107,
+    "brand": "Howards Cams",
+    "part_number": "HRS-210951-10",
+    "duration_type": "adv",
+    "duration": "275/285",
+    "lift": "0.501/0.501",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 275/285, Lift .501/.501, Ford, 221, 255, 260, 289, 302"
+  },
+  {
+    "index": 108,
+    "brand": "Howards Cams",
+    "part_number": "HRS-217322-14",
+    "duration_type": "adv",
+    "duration": "310/310",
+    "lift": "0.477/0.477",
+    "lsa": "",
+    "description": "Camshaft, Mechanical Flat Tappet, Advertised Duration 310/310, Lift .477/.477, Ford, 221, 255, 260, 289, 302"
+  },
+  {
+    "index": 109,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-556-8",
+    "duration_type": "adv",
+    "duration": "274/286",
+    "lift": "0.555/0.570",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Roller Tappet, Advertised Duration 274/286, Lift .555/.570, Ford, 5.0L HO, Each"
+  },
+  {
+    "index": 110,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-780-9",
+    "duration_type": "adv",
+    "duration": "298/312",
+    "lift": "0.696/0.672",
+    "lsa": "",
+    "description": "Camshaft, Mechanical Roller Tappet, Advertised Duration 298/312, Lift .696/.672, Ford, 351W, Each"
+  },
+  {
+    "index": 111,
+    "brand": "Melling",
+    "part_number": "MEL-SYB-26",
+    "duration_type": "adv",
+    "duration": "257/269",
+    "lift": "0.379/0.395",
+    "lsa": "",
+    "description": "Camshaft, Class 1, Hydraulic Flat Tappet, 257/269 Advertised Duration, .379/.395 Lift, Ford, 255, 302, Each"
+  },
+  {
+    "index": 112,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-235-3",
+    "duration_type": "adv",
+    "duration": "254/262",
+    "lift": "0.477/0.493",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 254/262, Lift .477/.493, Ford, 351W, Each"
+  },
+  {
+    "index": 113,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-238-3",
+    "duration_type": "adv",
+    "duration": "262/270",
+    "lift": "0.493/0.500",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 262/270, Lift .493/.500, Ford, 351W, Each"
+  },
+  {
+    "index": 114,
+    "brand": "COMP Cams",
+    "part_number": "CCA-31-230-3",
+    "duration_type": "adv",
+    "duration": "250/260",
+    "lift": "0.460/0.474",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 250/260, Lift .460/.474, Ford, Small Block, Each"
+  },
+  {
+    "index": 115,
+    "brand": "Melling",
+    "part_number": "MEL-24226",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "CAMSHAFT-ENGINE"
+  },
+  {
+    "index": 116,
+    "brand": "Melling",
+    "part_number": "MEL-24305",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "CAMSHAFT-ENGINE"
+  },
+  {
+    "index": 117,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-831-9",
+    "duration_type": "unspecified",
+    "duration": "288/300",
+    "lift": "0.704/0.672",
+    "lsa": "106",
+    "description": "Camshaft, Mechanical Roller, Duration 288 Int./300 Exh., Lift 0.704 Int./0.672 Exh., Lobe Separation 106, Ford, 351W, Each"
+  },
+  {
+    "index": 118,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-776-8",
+    "duration_type": "adv",
+    "duration": "304/314",
+    "lift": "0.608/0.608",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Roller Tappet, Advertised Duration 304/314, Lift .608/.608, Ford, 5.0L HO, Each"
+  },
+  {
+    "index": 119,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-231-3",
+    "duration_type": "adv",
+    "duration": "250/258",
+    "lift": "0.448/0.483",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 250/258, Lift .448/.483, Ford, 351W, Each"
+  },
+  {
+    "index": 120,
+    "brand": "Melling",
+    "part_number": "MEL-24107",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "Camshaft, Replacement, Hydraulic Flat Tappet, Ford, Marine, Small Block, Each"
+  },
+  {
+    "index": 121,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-600-4",
+    "duration_type": "adv",
+    "duration": "279/297",
+    "lift": "0.490/0.475",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 279/297, Lift .490/.475, Ford, 351W, Each"
+  },
+  {
+    "index": 122,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-601-4",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "Camshaft; Mutha Thumpr; Camshaft; Hydraulic Flat Tappet; 2200-6100rpm; Adver. Dur. 287 Int./305 Exh.; Val"
+  },
+  {
+    "index": 123,
+    "brand": "COMP Cams",
+    "part_number": "CCA-31-234-3",
+    "duration_type": "adv",
+    "duration": "256/268",
+    "lift": "0.477/0.484",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 256/268, Lift .477/.484, Ford, Small Block, Each"
+  },
+  {
+    "index": 124,
+    "brand": "Summit Racing",
+    "part_number": "SUM-3610",
+    "duration_type": "adv",
+    "duration": "310/310",
+    "lift": "0.228/0.228",
+    "lsa": "",
+    "description": "Muscle Car Camshaft, 289 HIPO, Mechanical Flat Tappet, 2,000-4,800 RPM Range, Advertised Duration 310 int./310 exh., Lift 228 int./228 exh., Ford,Each"
+  },
+  {
+    "index": 125,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-562-44",
+    "duration_type": "",
+    "duration": "",
+    "lift": "0.610/0.606",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Roller, 283/281 intake, 295/293 Exhaust, .622/.619 in. Intake Lift, .610/.606 in. Exhaust"
+  },
+  {
+    "index": 126,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-871-13",
+    "duration_type": "unspecified",
+    "duration": "277/290",
+    "lift": "0.577/0.579",
+    "lsa": "111",
+    "description": "Camshaft, Hydraulic Roller, Duration 277 Int./290 Exh., Lift 0.577 Int./0.579 Exh., Lobe Separation 111, Ford, 5.0L, Each"
+  },
+  {
+    "index": 127,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-312-8",
+    "duration_type": "adv",
+    "duration": "276/280",
+    "lift": "0.544/0.560",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Roller Tappet, Advertised Duration 276/280, Lift .544/.560, Ford, 5.0L HO, Each"
+  },
+  {
+    "index": 128,
+    "brand": "Howards Cams",
+    "part_number": "HRS-210021-12",
+    "duration_type": "adv",
+    "duration": "259/267",
+    "lift": "0.448/0.480",
+    "lsa": "",
+    "description": "Camshaft, Street Force 1, Hydraulic Flat Tappet, Advertised Duration 259/267, Lift .448/.480, Ford, 221, 255, 260, 289, 302"
+  },
+  {
+    "index": 129,
+    "brand": "COMP Cams",
+    "part_number": "CCA-31-250-4",
+    "duration_type": "adv",
+    "duration": "284/296",
+    "lift": "0.541/0.544",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 284/296, Lift .541/.544, Ford, Small Block, Each"
+  },
+  {
+    "index": 130,
+    "brand": "Melling",
+    "part_number": "MEL-24224",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "CAMSHAFT-ENGINE"
+  },
+  {
+    "index": 131,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-246-3",
+    "duration_type": "adv",
+    "duration": "274/286",
+    "lift": "0.519/0.523",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 274/286, Lift .519/.523, Ford, 351W, Each"
+  },
+  {
+    "index": 132,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-239-3",
+    "duration_type": "adv",
+    "duration": "262/270",
+    "lift": "0.493/0.512",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 262/270, Lift .493/.512, Ford, 351W, Each"
+  },
+  {
+    "index": 133,
+    "brand": "COMP Cams",
+    "part_number": "CCA-31-110-5",
+    "duration_type": "adv",
+    "duration": "263/261",
+    "lift": "0.478/0.475",
+    "lsa": "",
+    "description": "Camshaft, Mechanical Flat Tappet, Advertised Duration 263/261, Lift .478/.475, Ford, Small Block, Each"
+  },
+  {
+    "index": 134,
+    "brand": "Melling",
+    "part_number": "MEL-24211",
+    "duration_type": "adv",
+    "duration": "298/304",
+    "lift": "0.496/0.520",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 298/304, Lift .496/.520, Ford, 351W, Each"
+  },
+  {
+    "index": 135,
+    "brand": "Melling",
+    "part_number": "MEL-SYB-24",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "CAMSHAFT-ENGINE"
+  },
+  {
+    "index": 136,
+    "brand": "Melling",
+    "part_number": "MEL-24108",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "CAMSHAFT-ENGINE"
+  },
+  {
+    "index": 137,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-602-4",
+    "duration_type": "adv",
+    "duration": "295/313",
+    "lift": "0.512/0.489",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 295/313, Lift .512/.489, Ford, 5.8L/351W, Each"
+  },
+  {
+    "index": 138,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-230-3",
+    "duration_type": "adv",
+    "duration": "250/260",
+    "lift": "0.461/0.474",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 250/260, Lift .461/.474, Ford, 351W, Each"
+  },
+  {
+    "index": 139,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-254-4",
+    "duration_type": "adv",
+    "duration": "294/306",
+    "lift": "0.554/0.558",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 294/306, Lift .554/.558, Ford, 351W, Each"
+  },
+  {
+    "index": 140,
+    "brand": "Howards Cams",
+    "part_number": "HRS-220931-10",
+    "duration_type": "adv",
+    "duration": "269/269",
+    "lift": "0.475/0.475",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 269/269, Lift .475/.475, Ford, 351W, Each"
+  },
+  {
+    "index": 141,
+    "brand": "Melling",
+    "part_number": "MEL-SYB-51",
+    "duration_type": "@.050",
+    "duration": "210/211",
+    "lift": "0.445/0.445",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Roller, Duration @ .050 in. 210/211, Lift .445/.445, Ford, Small Block, Each"
+  },
+  {
+    "index": 142,
+    "brand": "Melling",
+    "part_number": "MEL-SYB-35",
+    "duration_type": "adv",
+    "duration": "283/304",
+    "lift": "0.445/0.453",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 283/304, Lift .445/.453, Ford, 5.8L, Each"
+  },
+  {
+    "index": 143,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-827-9",
+    "duration_type": "unspecified",
+    "duration": "300/307",
+    "lift": "0.651/0.653",
+    "lsa": "108",
+    "description": "Camshaft, Mechanical Roller, Duration 300 Int./307 Exh., Lift 0.651 Int./0.653 Exh., Lobe Separation 108, Ford, 351W, Each"
+  },
+  {
+    "index": 144,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-782-9",
+    "duration_type": "adv",
+    "duration": "318/336",
+    "lift": "0.744/0.731",
+    "lsa": "",
+    "description": "Camshaft, Mechanical Roller Tappet, Advertised Duration 318/336, Lift .744/.731, Ford, 351W, Each"
+  },
+  {
+    "index": 145,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-828-9",
+    "duration_type": "unspecified",
+    "duration": "296/301",
+    "lift": "0.648/0.648",
+    "lsa": "106",
+    "description": "Camshaft, Mechanical Roller, Duration 296 Int./301 Exh., Lift 0.648 Int./0.648 Exh., Lobe Separation 106, Ford, 351W, Each"
+  },
+  {
+    "index": 146,
+    "brand": "Howards Cams",
+    "part_number": "HRS-220355-10",
+    "duration_type": "adv",
+    "duration": "304/310",
+    "lift": "0.592/0.592",
+    "lsa": "",
+    "description": "Camshaft, Retrofit, Hydraulic Roller Tappet, Advertised Duration 304/310, Lift .592/.592, Ford, 351W, Each"
+  },
+  {
+    "index": 147,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-626-5",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "Camshaft, FL280S-6, Oval Track, Mech Flat Tappet, 280/284-250/254-.592/.608-106"
+  },
+  {
+    "index": 148,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-624-5",
+    "duration_type": "unspecified",
+    "duration": "276/280",
+    "lift": "0.584/0.608",
+    "lsa": "106",
+    "description": "Camshaft, Mechanical Flat Tappet, Duration 276 Int./280 Exh., Lift 0.584 Int./0.608 Exh., Lobe Separation 106, Ford, 351W, Each"
+  },
+  {
+    "index": 149,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-609-5",
+    "duration_type": "adv",
+    "duration": "285/295",
+    "lift": "0.568/0.592",
+    "lsa": "",
+    "description": "Camshaft, Mechanical Flat Tappet, Advertised Duration 285/295, Lift .568/.592, Ford, 351W, Each"
+  },
+  {
+    "index": 150,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-620-5",
+    "duration_type": "adv",
+    "duration": "268/276",
+    "lift": "0.568/0.584",
+    "lsa": "",
+    "description": "Camshaft, Mechanical Flat Tappet, Advertised Duration 268/276, Lift .568/.584, Ford, 351W, Each"
+  },
+  {
+    "index": 151,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-635-5",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "Camshaft, 41/15H-6, Oval Track, Hyd Flat Tappet, 297/299-246/250-.448/.448-106"
+  },
+  {
+    "index": 152,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-243-4",
+    "duration_type": "adv",
+    "duration": "270/278",
+    "lift": "0.512/0.531",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 270/278, Lift .512/.531, Ford, 351W, Each"
+  },
+  {
+    "index": 153,
+    "brand": "Melling",
+    "part_number": "MEL-24111",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "CAMSHAFT-ENGINE"
+  },
+  {
+    "index": 154,
+    "brand": "Melling",
+    "part_number": "MEL-24204",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "CAMSHAFT-ENGINE"
+  },
+  {
+    "index": 155,
+    "brand": "Melling",
+    "part_number": "MEL-24280",
+    "duration_type": "unspecified",
+    "duration": "286/292",
+    "lift": "",
+    "lsa": "",
+    "description": "Camshaft, M-Select Class 2, Hydraulic Roller, 286/292 Duration, Street/Strip, 0.512 in./0.512 in. Lift, Ford, 5.0L, Small Block Windsor, Each"
+  },
+  {
+    "index": 156,
+    "brand": "Howards Cams",
+    "part_number": "HRS-211332-08",
+    "duration_type": "adv",
+    "duration": "264/268",
+    "lift": "0.574/0.590",
+    "lsa": "",
+    "description": "Camshaft, Mechanical Flat Tappet, Advertised Duration 264/268, Lift .574/.590, Ford, Small Block, Each"
+  },
+  {
+    "index": 157,
+    "brand": "Howards Cams",
+    "part_number": "HRS-227571-14",
+    "duration_type": "adv",
+    "duration": "260/270",
+    "lift": "0.416/0.445",
+    "lsa": "",
+    "description": "Camshaft, American Muscle, Hydraulic Flat Tappet, Advertised Duration 260/270, Lift .416/.445, Ford, 351W"
+  },
+  {
+    "index": 158,
+    "brand": "Howards Cams",
+    "part_number": "HRS-220951-10",
+    "duration_type": "adv",
+    "duration": "275/285",
+    "lift": "0.501/0.501",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 275/285, Lift .501/.501, Ford, 351W, Each"
+  },
+  {
+    "index": 159,
+    "brand": "Howards Cams",
+    "part_number": "HRS-221133-12",
+    "duration_type": "adv",
+    "duration": "287/299",
+    "lift": "0.640/0.640",
+    "lsa": "",
+    "description": "Camshaft, Mechanical Roller Tappet, Advertised Duration 287/299, Lift .640/.640, Ford, 351W, Each"
+  },
+  {
+    "index": 160,
+    "brand": "Howards Cams",
+    "part_number": "HRS-221815-10",
+    "duration_type": "adv",
+    "duration": "290/298",
+    "lift": "0.597/0.597",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Roller Tappet, Advertised Duration 290/298, Lift .597/.597, Ford, 351W, Each"
+  },
+  {
+    "index": 161,
+    "brand": "Howards Cams",
+    "part_number": "HRS-210991-08",
+    "duration_type": "adv",
+    "duration": "267/267",
+    "lift": "0.543/0.543",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 267/267, Lift .543/.543, Ford, 221, 255, 260, 289, 302"
+  },
+  {
+    "index": 162,
+    "brand": "Howards Cams",
+    "part_number": "HRS-220041-12",
+    "duration_type": "adv",
+    "duration": "275/275",
+    "lift": "0.475/0.475",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 275/275, Lift .475/.475, Ford, 351W, Each"
+  },
+  {
+    "index": 163,
+    "brand": "Howards Cams",
+    "part_number": "HRS-220051-10",
+    "duration_type": "adv",
+    "duration": "277/289",
+    "lift": "0.496/0.520",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 277/289, Lift .496/.520, Ford, 351W, Each"
+  },
+  {
+    "index": 164,
+    "brand": "Howards Cams",
+    "part_number": "HRS-220051-12",
+    "duration_type": "adv",
+    "duration": "277/289",
+    "lift": "0.496/0.520",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 277/289, Lift .496/.520, Ford, 351W, Each"
+  },
+  {
+    "index": 165,
+    "brand": "Melling",
+    "part_number": "MEL-SYB-43",
+    "duration_type": "@.050",
+    "duration": "184/192",
+    "lift": "0.379/0.395",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Roller, Duration @ .050 in. 184/192, Lift .379/.395, Ford, Small Block, 5.0L, Each"
+  },
+  {
+    "index": 166,
+    "brand": "Howards Cams",
+    "part_number": "HRS-222141-10",
+    "duration_type": "adv",
+    "duration": "277/282",
+    "lift": "0.563/0.572",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 277/282, Lift .563/.572, Ford, 351W, Each"
+  },
+  {
+    "index": 167,
+    "brand": "Howards Cams",
+    "part_number": "HRS-222313-06",
+    "duration_type": "adv",
+    "duration": "291/295",
+    "lift": "0.624/0.656",
+    "lsa": "",
+    "description": "Camshaft, Mechanical Roller Tappet, Advertised Duration 291/295, Lift .624/.656, Ford, 351W, Each"
+  },
+  {
+    "index": 168,
+    "brand": "Howards Cams",
+    "part_number": "HRS-222352-06",
+    "duration_type": "adv",
+    "duration": "281/287",
+    "lift": "0.549/0.565",
+    "lsa": "",
+    "description": "Camshaft, Mechanical Flat Tappet, Advertised Duration 281/287, Lift .549/.565, Ford, 351W, Each"
+  },
+  {
+    "index": 169,
+    "brand": "Howards Cams",
+    "part_number": "HRS-222372-08",
+    "duration_type": "adv",
+    "duration": "285/291",
+    "lift": "0.560/0.571",
+    "lsa": "",
+    "description": "Camshaft, Mechanical Flat Tappet, Advertised Duration 285/291, Lift .560/.571, Ford, 351W, Each"
+  },
+  {
+    "index": 170,
+    "brand": "Howards Cams",
+    "part_number": "HRS-222601-08",
+    "duration_type": "adv",
+    "duration": "282/287",
+    "lift": "0.572/0.596",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 282/287, Lift .572/.596, Ford, 351W, Each"
+  },
+  {
+    "index": 171,
+    "brand": "Howards Cams",
+    "part_number": "HRS-222765-13",
+    "duration_type": "adv",
+    "duration": "270/270",
+    "lift": "0.496/0.496",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Roller Tappet, Advertised Duration 270/270, Lift .496/.496, Ford, 302 HO/351W, Each"
+  },
+  {
+    "index": 172,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-622-5",
+    "duration_type": "unspecified",
+    "duration": "272/280",
+    "lift": "0.576/0.592",
+    "lsa": "106",
+    "description": "Camshaft, Mechanical Flat Tappet, Duration 272 Int./280 Exh., Lift 0.576 Int./0.592 Exh., Lobe Separation 106, Ford, 351W, Each"
+  },
+  {
+    "index": 173,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-639-5",
+    "duration_type": "adv",
+    "duration": "242/246",
+    "lift": "0.541/0.522",
+    "lsa": "",
+    "description": "Camshaft, Mechanical Flat Tappet, Advertised Duration 242/246, Lift .541/.522, Ford, 351W, Each"
+  },
+  {
+    "index": 174,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-640-5",
+    "duration_type": "unspecified",
+    "duration": "290/304",
+    "lift": "0.576/0.570",
+    "lsa": "106",
+    "description": "Camshaft, Mechanical Flat Tappet, Duration 290 Int./304 Exh., Lift 0.576 Int./0.570 Exh., Lobe Separation 106, Ford, 351W, Each"
+  },
+  {
+    "index": 175,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-832-9",
+    "duration_type": "unspecified",
+    "duration": "292/304",
+    "lift": "0.704/0.672",
+    "lsa": "106",
+    "description": "Camshaft, Mechanical Roller, Duration 292 Int./304 Exh., Lift 0.704 Int./0.672 Exh., Lobe Separation 106, Ford, 351W, Each"
+  },
+  {
+    "index": 176,
+    "brand": "COMP Cams",
+    "part_number": "CCA-31-603-5",
+    "duration_type": "adv",
+    "duration": "295/312",
+    "lift": "0.512/0.497",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 295/312, Lift .512/.497, Ford, Small Block, Each"
+  },
+  {
+    "index": 177,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-801-9",
+    "duration_type": "adv",
+    "duration": "292/296",
+    "lift": "0.672/0.672",
+    "lsa": "",
+    "description": "Camshaft, Mechanical Roller Tappet, Advertised Duration 292/296, Lift .672/.672, Ford, 351W, Each"
+  },
+  {
+    "index": 178,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-826-9",
+    "duration_type": "unspecified",
+    "duration": "296/301",
+    "lift": "0.648/0.648",
+    "lsa": "106",
+    "description": "Camshaft, Mechanical Roller, Duration 296 Int./301 Exh., Lift 0.648 Int./0.648 Exh., Lobe Separation 106, Ford, 351W, Each"
+  },
+  {
+    "index": 179,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-830-9",
+    "duration_type": "unspecified",
+    "duration": "288/296",
+    "lift": "0.672/0.672",
+    "lsa": "106",
+    "description": "Camshaft, Mechanical Roller, Duration 288 Int./296 Exh., Lift 0.672 Int./0.672 Exh., Lobe Separation 106, Ford, 351W, Each"
+  },
+  {
+    "index": 180,
+    "brand": "Melling",
+    "part_number": "MEL-24214",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "CAMSHAFT-ENGINE"
+  },
+  {
+    "index": 181,
+    "brand": "Melling",
+    "part_number": "MEL-24225",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "CAMSHAFT-ENGINE"
+  },
+  {
+    "index": 182,
+    "brand": "Melling",
+    "part_number": "MEL-24227",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "CAMSHAFT-ENGINE"
+  },
+  {
+    "index": 183,
+    "brand": "Melling",
+    "part_number": "MEL-SYB-30",
+    "duration_type": "adv",
+    "duration": "280/293",
+    "lift": "0.416/0.443",
+    "lsa": "",
+    "description": "Camshaft, Hydraulic Flat Tappet, Advertised Duration 280/293, Lift .416/.443, Ford, 302, 351W, Each"
+  },
+  {
+    "index": 184,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-400-8",
+    "duration_type": "",
+    "duration": "",
+    "lift": "",
+    "lsa": "",
+    "description": "Camshaft, Magnum, Hydraulic Roller Tappet, Ford, Each"
+  },
+  {
+    "index": 185,
+    "brand": "COMP Cams",
+    "part_number": "CCA-35-641-5",
+    "duration_type": "adv",
+    "duration": "300/314",
+    "lift": "0.600/0.593",
+    "lsa": "",
+    "description": "Camshaft, Mechanical Flat Tappet, Advertised Duration 300/314, Lift .600/.593, Ford, 351W, Each"
+  }
+]

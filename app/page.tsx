@@ -90,6 +90,9 @@ export default function Home() {
           <Link href="/cylinder-heads" className="pill">
             Heads
           </Link>
+          <Link href="/dyno-wars" className="pill">
+            Dyno Wars
+          </Link>
         </div>
 
         <hr className="hr" />

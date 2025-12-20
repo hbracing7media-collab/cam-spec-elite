@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useAllShortBlocks, useShortBlocksLoaded } from '@/lib/hooks/useShortBlocks';
+import { CAM_MAKE_OPTIONS, CAM_ENGINE_FAMILIES } from '@/lib/engineOptions';
 
 interface EngineGeometry {
   cid: number;
@@ -91,6 +93,15 @@ export default function CamSpecEliteCalculator() {
   const [dynCrDisplay, setDynCrDisplay] = useState('-');
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const [unitSystem, setUnitSystem] = useState<'imperial' | 'metric'>('imperial');
+  const [searchMake, setSearchMake] = useState<string>('Ford');
+  const [searchFamily, setSearchFamily] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedShortBlockId, setSelectedShortBlockId] = useState<string>('');
+  
+  // Use global short blocks context
+  const userShortBlocks = useAllShortBlocks();
+  const blocksLoaded = useShortBlocksLoaded();
 
   // --------- Unit Conversion Helpers ---------
   const IN_TO_MM = 25.4;
@@ -474,6 +485,117 @@ export default function CamSpecEliteCalculator() {
     setDynCrDisplay(crData.crDynamic > 0 ? crData.crDynamic.toFixed(2) : '-');
   }, [engine, cam]);
 
+  // --------- Load Short Block into Calculator ---------
+  function handleLoadShortBlock(blockId: string) {
+    if (!blockId) return;
+    const block = userShortBlocks.find((b) => b.id === blockId);
+    if (!block) return;
+
+    // Update engine settings from short block
+    const updates: any = { ...engine };
+    
+    if (block.displacement) {
+      // Parse displacement (e.g., "302 ci" -> 302)
+      const cidMatch = block.displacement.match(/\d+/);
+      if (cidMatch) {
+        const cid = parseFloat(cidMatch[0]);
+        // Calculate bore/stroke from CID and rod length
+        // For simplicity, keep existing bore/stroke if we can't parse
+        // or use standard values if displacement is provided
+        updates.cyl = 8; // default
+      }
+    }
+
+    if (block.bore && !isNaN(parseFloat(block.bore))) {
+      updates.bore = parseFloat(block.bore);
+    }
+
+    if (block.stroke && !isNaN(parseFloat(block.stroke))) {
+      updates.stroke = parseFloat(block.stroke);
+    }
+
+    if (block.deck_height && !isNaN(parseFloat(block.deck_height))) {
+      updates.deck = parseFloat(block.deck_height);
+    }
+
+    if (block.piston_dome_dish && !isNaN(parseFloat(block.piston_dome_dish))) {
+      updates.pistonCc = parseFloat(block.piston_dome_dish);
+    }
+
+    if (block.head_gasket_bore && !isNaN(parseFloat(block.head_gasket_bore))) {
+      updates.gasketBore = parseFloat(block.head_gasket_bore);
+    }
+
+    if (block.head_gasket_compressed_thickness && !isNaN(parseFloat(block.head_gasket_compressed_thickness))) {
+      updates.gasketThk = parseFloat(block.head_gasket_compressed_thickness);
+    }
+
+    if (block.rod_length && !isNaN(parseFloat(block.rod_length))) {
+      updates.rod = parseFloat(block.rod_length);
+    }
+
+    setEngine(updates);
+    setSelectedShortBlockId(blockId);
+  }
+
+  // --------- Search Generic Cams ---------
+  async function handleSearchCams() {
+    if (!searchMake || !searchFamily) {
+      alert('Please select engine make and family');
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const params = new URLSearchParams({ make: searchMake, family: searchFamily });
+      const url = `/api/cams/generic-search?${params.toString()}`;
+      console.log('Fetching from:', url);
+      
+      const res = await fetch(url, { cache: 'no-store' });
+      const data = await res.json();
+      
+      console.log('Search response:', data);
+      
+      if (data.ok && Array.isArray(data.cams)) {
+        console.log(`Found ${data.cams.length} cams`);
+        setSearchResults(data.cams);
+      } else {
+        console.warn('No cams found or error:', data.message);
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Cam search failed:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }
+
+  // --------- Add Searched Cam to Library ---------
+  function handleAddSearchedCam(searchCam: any) {
+    const coerceNum = (val: any, fallback: number): number => {
+      const n = Number(val);
+      return isNaN(n) || !isFinite(n) ? fallback : n;
+    };
+
+    const newCam: Cam = {
+      name: (searchCam.cam_name || searchCam.name || '').toString(),
+      intDur: coerceNum(searchCam.duration_int_050, 210),
+      exhDur: coerceNum(searchCam.duration_exh_050, 220),
+      lsa: coerceNum(searchCam.lsa, 112),
+      ivc: 43, // Not available in generic cams, use default
+      intLift: coerceNum(searchCam.lift_int, 0.5),
+      exhLift: coerceNum(searchCam.lift_exh, 0.5),
+      rpmStart: 3000,
+      rpmEnd: coerceNum(searchCam.peak_hp_rpm, 6500),
+    };
+    
+    // Add to library and immediately populate the form
+    setCamLibrary([...camLibrary, newCam]);
+    setCam(newCam);
+    setSelectedCamIdx(''); // Clear selection so it uses the current cam
+  }
+
   // --------- Add Cam to Library ---------
   function handleAddCam() {
     setCamLibrary([...camLibrary, cam]);
@@ -565,6 +687,35 @@ export default function CamSpecEliteCalculator() {
         </div>
 
         {/* STEP 1: ENGINE GEOMETRY */}
+        {/* Load Saved Short Block */}
+        {userShortBlocks.length > 0 && (
+          <div style={{ borderRadius: '12px', padding: '10px 12px', background: 'rgba(124,255,203,0.08)', border: '1px solid rgba(124,255,203,0.25)', marginBottom: '10px' }}>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#7CFFCB' }}>Load Short Block</h3>
+            <select
+              value={selectedShortBlockId}
+              onChange={(e) => handleLoadShortBlock(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid rgba(124,255,203,0.3)',
+                background: 'rgba(6,11,30,0.6)',
+                color: '#d7fff0',
+                fontSize: '13px',
+                fontFamily: 'monospace',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="">-- Select a short block --</option>
+              {userShortBlocks.map((block) => (
+                <option key={block.id} value={block.id}>
+                  {block.block_name}
+                  {block.displacement ? ` (${block.displacement})` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div style={{ borderRadius: '12px', padding: '10px 12px', background: 'rgba(6,11,30,0.78)', border: '1px solid rgba(0,212,255,0.22)', marginBottom: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flex: 1 }}>
@@ -655,6 +806,71 @@ export default function CamSpecEliteCalculator() {
             <span style={{ fontSize: '10px', color: '#a5b4fc' }}>Build & select cam</span>
           </div>
 
+          {/* CAM SEARCH SECTION */}
+          <div style={{ marginBottom: '12px', padding: '8px', borderRadius: '8px', background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.2)' }}>
+            <h4 style={{ margin: '0 0 8px 0', fontSize: '11px', textTransform: 'uppercase', color: '#a5b4fc' }}>Search Generic Cams Catalog</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px', marginBottom: '8px' }}>
+              <div>
+                <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '10px' }}>Engine Make</label>
+                <select
+                  value={searchMake}
+                  onChange={(e) => setSearchMake(e.target.value)}
+                  style={{ width: '100%', padding: '4px 6px', borderRadius: '4px', border: '1px solid rgba(0,212,255,0.3)', background: 'rgba(2,6,23,0.8)', color: '#e5e7eb', fontSize: '11px', outline: 'none' }}
+                >
+                  {CAM_MAKE_OPTIONS.map(make => (
+                    <option key={make} value={make}>{make}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '10px' }}>Engine Family</label>
+                <select
+                  value={searchFamily}
+                  onChange={(e) => setSearchFamily(e.target.value)}
+                  style={{ width: '100%', padding: '4px 6px', borderRadius: '4px', border: '1px solid rgba(0,212,255,0.3)', background: 'rgba(2,6,23,0.8)', color: '#e5e7eb', fontSize: '11px', outline: 'none' }}
+                >
+                  <option value="">Select family...</option>
+                  {searchMake && CAM_ENGINE_FAMILIES[searchMake as any]?.map(family => (
+                    <option key={family} value={family}>{family}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <button
+              onClick={handleSearchCams}
+              disabled={isSearching || !searchFamily}
+              style={{ padding: '4px 10px', borderRadius: '999px', border: '0', background: 'rgba(0,212,255,0.3)', color: '#00d4ff', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', cursor: (isSearching || !searchFamily) ? 'not-allowed' : 'pointer', opacity: (isSearching || !searchFamily) ? 0.5 : 1 }}
+            >
+              {isSearching ? 'Searching...' : 'Search'}
+            </button>
+            
+            {searchResults.length > 0 && (
+              <div style={{ marginTop: '8px', fontSize: '10px' }}>
+                <div style={{ color: '#a5b4fc', marginBottom: '4px' }}>Found {searchResults.length} cam(s):</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto' }}>
+                  {searchResults.map((cam, idx) => (
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', borderRadius: '4px', background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.15)' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ color: '#e5e7eb', fontWeight: 500 }}>{cam.cam_name || cam.name}</div>
+                        <div style={{ color: '#a5b4fc', fontSize: '9px' }}>{cam.brand} {cam.part_number}</div>
+                        <div style={{ color: '#7CFFCB', fontSize: '9px' }}>Int: {cam.duration_int_050}° Exh: {cam.duration_exh_050}° Lift: {cam.lift_int?.toFixed(3)}/{cam.lift_exh?.toFixed(3)}</div>
+                      </div>
+                      <button
+                        onClick={() => handleAddSearchedCam(cam)}
+                        style={{ padding: '4px 8px', borderRadius: '4px', border: '0', background: 'rgba(124,255,203,0.2)', color: '#7CFFCB', fontSize: '9px', fontWeight: 600, cursor: 'pointer', marginLeft: '8px' }}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div style={{ marginTop: '8px', fontSize: '9px', color: '#a5b4fc', fontStyle: 'italic' }}>
+              💡 Or manually enter cam specs below
+            </div>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px', fontSize: '12px', marginBottom: '8px' }}>
             {[
               { key: 'name', label: 'Cam Name', type: 'text' },
@@ -671,7 +887,7 @@ export default function CamSpecEliteCalculator() {
                 <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>{field.label}</label>
                 <input
                   type={field.type}
-                  value={cam[field.key as keyof typeof cam]}
+                  value={isNaN(cam[field.key as keyof typeof cam] as any) ? '' : cam[field.key as keyof typeof cam]}
                   onChange={(e) => setCam({ ...cam, [field.key]: field.type === 'number' ? parseFloat(e.target.value) : e.target.value })}
                   step={field.step}
                   min={field.min}

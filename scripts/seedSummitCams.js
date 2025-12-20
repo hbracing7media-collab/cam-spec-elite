@@ -6,11 +6,12 @@ const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const DATASET_PATH = path.resolve(__dirname, '../tmp/ford_windsor_cams_first100.json');
-const ENGINE_MAKE = 'Ford';
-const ENGINE_FAMILY = 'Ford small block Windsor';
-const SEED_NOTE = 'Seed import: Summit Ford SBF Windsor page 1';
-const SOURCE_ID = 'summit-ford-small-block-windsor-page1';
+const DEFAULT_DATASET_PATH = path.resolve(__dirname, '../tmp/ford_windsor_cams_first100.json');
+const DATASET_PATH = path.resolve(process.env.DATASET_PATH || DEFAULT_DATASET_PATH);
+const ENGINE_MAKE = process.env.SEED_ENGINE_MAKE || 'Ford';
+const ENGINE_FAMILY = process.env.SEED_ENGINE_FAMILY || 'Ford small block Windsor';
+const SEED_NOTE = process.env.SEED_NOTE || 'Seed import: Summit Ford SBF Windsor page 1';
+const SOURCE_ID = process.env.SEED_SOURCE_ID || 'summit-ford-small-block-windsor-page1';
 const SEED_USER_ID = process.env.SEED_USER_ID || 'seed-bot';
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {

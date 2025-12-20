@@ -118,6 +118,34 @@ export async function POST(req: NextRequest) {
       console.log("No flow data provided. flow_data:", flow_data, "is array:", Array.isArray(flow_data), "length:", flow_data?.length);
     }
 
+    // Award appreciation badge for cylinder head submission
+    if (user_id) {
+      try {
+        // Get the cylinder head contributor award type
+        const { data: awardType } = await supabase
+          .from("award_types")
+          .select("id")
+          .eq("slug", "cylinder_head_contributor")
+          .single();
+
+        if (awardType) {
+          // Award the badge (will ignore if already exists due to UNIQUE constraint)
+          await supabase
+            .from("user_awards")
+            .insert({
+              user_id,
+              award_type_id: awardType.id,
+              submission_id: head.id,
+              submission_type: "cylinder_head",
+            })
+            .select();
+        }
+      } catch (awardError) {
+        console.error("Error awarding badge:", awardError);
+        // Don't fail the submission if award fails
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       message: "Submitted for approval",

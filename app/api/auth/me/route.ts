@@ -24,5 +24,19 @@ export async function GET() {
     return NextResponse.json({ ok: false, message: "Not authenticated" }, { status: 401 });
   }
 
-  return NextResponse.json({ ok: true, user: data.user });
+  // Fetch user profile data
+  const { data: profile } = await supabase
+    .from("user_profiles")
+    .select("forum_handle,forum_avatar_url")
+    .eq("id", data.user.id)
+    .single();
+
+  // Merge profile data with auth user
+  const userWithProfile = {
+    ...data.user,
+    forum_handle: profile?.forum_handle || null,
+    forum_avatar_url: profile?.forum_avatar_url || null,
+  };
+
+  return NextResponse.json({ ok: true, user: userWithProfile });
 }

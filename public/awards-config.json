@@ -1,0 +1,79 @@
+{
+  "awards": [
+    {
+      "token_id": "cam_contributor",
+      "slug": "camshaft_contributor",
+      "label": "Cam Contributor",
+      "description": "Awarded for submitting camshaft data and specifications",
+      "icon": "/tokens/cam_contributor.png",
+      "type": "submission",
+      "grant_mode": "automatic",
+      "rarity": "common",
+      "badge_color": "#FF6B6B"
+    },
+    {
+      "token_id": "head_contributor",
+      "slug": "cylinder_head_contributor",
+      "label": "Head Contributor",
+      "description": "Awarded for submitting cylinder head data and flow specifications",
+      "icon": "/tokens/head_contributor.png",
+      "type": "submission",
+      "grant_mode": "automatic",
+      "rarity": "common",
+      "badge_color": "#4ECDC4"
+    },
+    {
+      "token_id": "dyno_king",
+      "slug": "dyno_king",
+      "label": "Dyno King",
+      "description": "Awarded for exceptional dyno sheet submissions or performance wins",
+      "icon": "/tokens/dyno_king.png",
+      "type": "submission",
+      "grant_mode": "automatic",
+      "rarity": "rare",
+      "badge_color": "#FFD700",
+      "threshold": 5
+    },
+    {
+      "token_id": "submission_streak",
+      "slug": "submission_streak",
+      "label": "Submission Streak",
+      "description": "Awarded for consecutive approved submissions",
+      "icon": "/tokens/submission_streak.png",
+      "type": "achievement",
+      "grant_mode": "automatic",
+      "rarity": "epic",
+      "badge_color": "#FF00FF",
+      "threshold": 10
+    },
+    {
+      "token_id": "car_guru",
+      "slug": "car_guru",
+      "label": "Car Guru",
+      "description": "Awarded for high forum engagement and community reputation",
+      "icon": "/tokens/car_guru.png",
+      "type": "forum",
+      "grant_mode": "automatic",
+      "rarity": "epic",
+      "badge_color": "#00D9FF",
+      "threshold": 50
+    },
+    {
+      "token_id": "admin_award",
+      "slug": "admin_award",
+      "label": "Admin Award",
+      "description": "Manually granted by administrators for special contributions or community service",
+      "icon": "/tokens/admin_award.png",
+      "type": "special",
+      "grant_mode": "manual",
+      "rarity": "legendary",
+      "badge_color": "#FFD700"
+    }
+  ],
+  "rarity_colors": {
+    "common": "#4CAF50",
+    "rare": "#2196F3",
+    "epic": "#9C27B0",
+    "legendary": "#FFD700"
+  }
+}

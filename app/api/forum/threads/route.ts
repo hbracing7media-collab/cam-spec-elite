@@ -21,7 +21,25 @@ export async function GET() {
     return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
   }
 
-  return NextResponse.json({ ok: true, threads: data });
+  // Fetch profiles for all thread authors
+  const threadsWithProfiles = await Promise.all(
+    (data || []).map(async (thread) => {
+      let threadWithProfile = { ...thread, user_profiles: null };
+      if (thread.user_id) {
+        const { data: profile } = await supabase
+          .from("user_profiles")
+          .select("forum_handle,forum_avatar_url")
+          .eq("id", thread.user_id)
+          .single();
+        if (profile) {
+          threadWithProfile.user_profiles = profile;
+        }
+      }
+      return threadWithProfile;
+    })
+  );
+
+  return NextResponse.json({ ok: true, threads: threadsWithProfiles });
 }
 
 // POST: Create a new thread

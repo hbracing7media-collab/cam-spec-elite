@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: "Not authenticated" }, { status: 401 });
   }
 
-  const { thread_id, body } = await req.json();
+  const { thread_id, body, tagged_awards } = await req.json();
   if (!thread_id || !body) {
     return NextResponse.json({ ok: false, message: "Thread ID and body required" }, { status: 400 });
   }
@@ -42,5 +42,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
   }
 
-  return NextResponse.json({ ok: true, message: "Reply posted!", post: data?.[0] });
+  const post = data?.[0];
+
+  // Tag awards if provided
+  if (post && Array.isArray(tagged_awards) && tagged_awards.length > 0) {
+    const awardTags = tagged_awards.map((award_id: string) => ({
+      post_id: post.id,
+      user_award_id: award_id,
+    }));
+
+    const { error: tagError } = await supabase
+      .from("forum_post_awards")
+      .insert(awardTags);
+
+    if (tagError) {
+      console.error("Award tag error:", tagError);
+      // Don't fail the post, just log the error
+    }
+  }
+
+  return NextResponse.json({ ok: true, message: "Reply posted!", post });
 }

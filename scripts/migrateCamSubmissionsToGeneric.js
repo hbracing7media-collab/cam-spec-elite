@@ -14,6 +14,7 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SOURCE_NOTE = process.env.MIGRATE_SOURCE_NOTE || 'Seed import: Summit Ford SBF Windsor page 1';
 const DEFAULT_PEAK_HP_RPM = Number(process.env.MIGRATE_DEFAULT_PEAK_HP_RPM || 6200);
 const DEFAULT_BOOST_OK = process.env.MIGRATE_DEFAULT_BOOST_OK || 'either';
+const ALLOW_INCOMPLETE = process.env.MIGRATE_ALLOW_INCOMPLETE === 'true';
 const SHOULD_COMMIT = process.argv.includes('--commit');
 const SHOULD_DELETE_SOURCE = process.argv.includes('--delete-source');
 
@@ -68,20 +69,26 @@ function normalizeRow(row) {
   const liftInt = row.lift_int;
   const liftExh = row.lift_exh;
   const lsa = row.lsa;
-
-  const missingFields = [];
-  if (!durationInt) missingFields.push('duration_int_050');
-  if (!durationExh) missingFields.push('duration_exh_050');
-  if (!liftInt) missingFields.push('lift_int');
-  if (!liftExh) missingFields.push('lift_exh');
-  if (!lsa) missingFields.push('lsa');
-
-  if (missingFields.length) {
-    return { skipped: true, reason: `Missing ${missingFields.join(', ')}` };
+  if (!row.brand || !row.part_number || !row.engine_make || !row.engine_family) {
+    return { skipped: true, reason: 'Missing required identity fields (brand/part/make/family).' };
   }
 
   const peakHpRpm = row.rpm_end || DEFAULT_PEAK_HP_RPM;
   const notes = row.notes || row.spec?.payload?.description || null;
+  const warnings = [];
+  if (!durationInt) warnings.push('duration_int_050');
+  if (!durationExh) warnings.push('duration_exh_050');
+  if (!liftInt) warnings.push('lift_int');
+  if (!liftExh) warnings.push('lift_exh');
+  if (!lsa) warnings.push('lsa');
+
+  if (!ALLOW_INCOMPLETE && warnings.length) {
+    return {
+      skipped: true,
+      reason: `Missing required spec fields: ${warnings.join(', ')}`,
+      warnings,
+    };
+  }
 
   return {
     skipped: false,
@@ -102,6 +109,7 @@ function normalizeRow(row) {
       source_url: row.spec?.payload?.product_url || null,
       family_tags: buildFamilyTags(row.engine_make, row.engine_family),
     },
+    warnings,
   };
 }
 
@@ -148,6 +156,7 @@ async function main() {
   }
 
   const ready = [];
+  const readyIds = [];
   const skipped = [];
 
   sourceRows.forEach((row) => {
@@ -157,6 +166,10 @@ async function main() {
       return;
     }
     ready.push({ ...normalized.record, created_at: row.created_at, updated_at: new Date().toISOString() });
+    readyIds.push(row.id);
+    if (normalized.warnings?.length) {
+      console.warn(`Row ${row.part_number} missing: ${normalized.warnings.join(', ')}`);
+    }
   });
 
   console.table({
@@ -186,8 +199,12 @@ async function main() {
   console.log(`Inserted/updated ${insertedCount} rows in cse_generic_cams.`);
 
   if (SHOULD_DELETE_SOURCE) {
-    const deleted = await deleteSourceRows(sourceRows.map((row) => row.id));
-    console.log(`Deleted ${deleted} rows from cse_cam_submissions_table.`);
+    if (!readyIds.length) {
+      console.log('No rows deleted from cse_cam_submissions_table (nothing was inserted).');
+    } else {
+      const deleted = await deleteSourceRows(readyIds);
+      console.log(`Deleted ${deleted} rows from cse_cam_submissions_table.`);
+    }
   }
 }
 
