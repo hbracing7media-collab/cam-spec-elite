@@ -42,9 +42,14 @@ export default function ForumPage() {
       <div className="card-inner">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
           <h1 className="h1" style={{ marginBottom: 0 }}>Forum</h1>
-          <Link className="pill" href="/forum/new">
-            New Thread
-          </Link>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <Link className="pill" href="/forum/grudge">
+              🏎️ Grudge Match
+            </Link>
+            <Link className="pill" href="/forum/new">
+              New Thread
+            </Link>
+          </div>
         </div>
         <hr className="hr" />
         {threads.length === 0 ? (
