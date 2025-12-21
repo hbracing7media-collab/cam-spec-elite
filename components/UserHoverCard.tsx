@@ -111,7 +111,7 @@ export default function UserHoverCard({
         </div>
       )}
 
-      {/* Tooltip */}
+      {/* Tooltip - positioned with pointer-events so it doesn't block hover */}
       {showTooltip && currentUserId && userId !== currentUserId && (
         <div
           style={{
@@ -127,7 +127,9 @@ export default function UserHoverCard({
             minWidth: "180px",
             boxShadow: "0 0 20px rgba(0, 245, 255, 0.3)",
             backdropFilter: "blur(10px)",
+            pointerEvents: "auto",
           }}
+          onMouseLeave={() => setShowTooltip(false)}
         >
           <div style={{ textAlign: "center", marginBottom: "10px" }}>
             <div style={{ fontWeight: "700", color: "#00f5ff", fontSize: "0.9rem" }}>
