@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import UserHoverCard from "@/components/UserHoverCard";
 
 type Thread = {
   id: string;
@@ -230,17 +231,14 @@ export default function ThreadPage() {
             <div className="card" style={{ background: "rgba(2,6,23,0.55)" }}>
               <div className="card-inner">
                 <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
-                  {(thread as any).user_profiles?.forum_avatar_url ? (
-                    <img
-                      src={(thread as any).user_profiles.forum_avatar_url}
-                      alt="avatar"
-                      style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover" }}
-                    />
-                  ) : (
-                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#7dd3fc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: "bold" }}>
-                      {((thread as any).user_profiles?.forum_handle?.[0] || "?").toUpperCase()}
-                    </div>
-                  )}
+                  <UserHoverCard
+                    userId={thread.user_id}
+                    userName={(thread as any).user_profiles?.forum_handle || "Anonymous"}
+                    avatarUrl={(thread as any).user_profiles?.forum_avatar_url}
+                    handle={(thread as any).user_profiles?.forum_handle}
+                    currentUserId={userId}
+                    size="medium"
+                  />
                   <div>
                     <div style={{ fontWeight: 700, color: "#7dd3fc" }}>
                       {(thread as any).user_profiles?.forum_handle || "Anonymous"}
@@ -280,17 +278,14 @@ export default function ThreadPage() {
                             <div style={{ display: "flex", gap: 10, justifyContent: "space-between" }}>
                               <div style={{ flex: 1 }}>
                                 <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
-                                  {p.user_profiles?.forum_avatar_url ? (
-                                    <img
-                                      src={p.user_profiles.forum_avatar_url}
-                                      alt="avatar"
-                                      style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }}
-                                    />
-                                  ) : (
-                                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#7dd3fc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: "bold" }}>
-                                      {(p.user_profiles?.forum_handle?.[0] || "?").toUpperCase()}
-                                    </div>
-                                  )}
+                                  <UserHoverCard
+                                    userId={p.user_id}
+                                    userName={p.user_profiles?.forum_handle || "Anonymous"}
+                                    avatarUrl={p.user_profiles?.forum_avatar_url}
+                                    handle={p.user_profiles?.forum_handle}
+                                    currentUserId={userId}
+                                    size="small"
+                                  />
                                   <div>
                                     <div style={{ fontWeight: 700, color: "#7dd3fc" }}>
                                       {p.user_profiles?.forum_handle || "Anonymous"}
