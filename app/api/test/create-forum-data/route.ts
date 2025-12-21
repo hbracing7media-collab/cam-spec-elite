@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
     // Create or update user profile
     await db.from("user_profiles").upsert({
-      user_id: userId,
+      id: userId,
       forum_handle: "test",
       forum_avatar_url: null,
     });
