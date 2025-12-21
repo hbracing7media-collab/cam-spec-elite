@@ -69,7 +69,11 @@ export default function UserHoverCard({
 
   return (
     <div
-      style={{ position: "relative", display: "inline-block" }}
+      style={{ 
+        position: "relative", 
+        display: "inline-block",
+        paddingBottom: showTooltip ? "100px" : "0px",
+      }}
       onMouseEnter={() => currentUserId && userId !== currentUserId && setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
@@ -87,6 +91,7 @@ export default function UserHoverCard({
             transition: "all 0.2s ease",
             filter: showTooltip ? "brightness(1.2)" : "brightness(1)",
             border: showTooltip ? "2px solid #00f5ff" : "none",
+            display: "block",
           }}
         />
       ) : (
@@ -111,25 +116,25 @@ export default function UserHoverCard({
         </div>
       )}
 
-      {/* Tooltip - positioned with pointer-events so it doesn't block hover */}
+      {/* Tooltip - stays visible across whole hover zone */}
       {showTooltip && currentUserId && userId !== currentUserId && (
         <div
           style={{
             position: "absolute",
-            top: avatarSize + 8,
+            top: avatarSize + 12,
             left: "50%",
             transform: "translateX(-50%)",
-            background: "linear-gradient(135deg, rgba(10, 10, 20, 0.95), rgba(20, 10, 40, 0.95))",
+            background: "linear-gradient(135deg, rgba(10, 10, 20, 0.98), rgba(20, 10, 40, 0.98))",
             border: "2px solid #00f5ff",
             borderRadius: "8px",
             padding: "12px",
-            zIndex: 1000,
+            zIndex: 10000,
             minWidth: "180px",
-            boxShadow: "0 0 20px rgba(0, 245, 255, 0.3)",
+            boxShadow: "0 4px 30px rgba(0, 245, 255, 0.4)",
             backdropFilter: "blur(10px)",
             pointerEvents: "auto",
+            willChange: "opacity",
           }}
-          onMouseLeave={() => setShowTooltip(false)}
         >
           <div style={{ textAlign: "center", marginBottom: "10px" }}>
             <div style={{ fontWeight: "700", color: "#00f5ff", fontSize: "0.9rem" }}>
