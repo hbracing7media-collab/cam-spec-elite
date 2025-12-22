@@ -432,10 +432,16 @@ export default function ProfilePage() {
       return;
     }
     try {
-      const res = await fetch(`/api/heads/search-by-family?make=${encodeURIComponent(engineMake)}&family=${encodeURIComponent(engineFamily)}`);
+      const url = `/api/heads/search-by-family?make=${encodeURIComponent(engineMake)}&family=${encodeURIComponent(engineFamily)}`;
+      console.log("Fetching heads from:", url);
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
+        console.log("Heads data received:", data);
         setAvailableHeads(data.heads || []);
+        console.log("Available heads state updated:", data.heads || []);
+      } else {
+        console.error("Failed to fetch heads:", res.status);
       }
     } catch (err) {
       console.error("Failed to load heads:", err);
