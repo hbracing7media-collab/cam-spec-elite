@@ -1525,8 +1525,8 @@ export default function ProfilePage() {
                             onChange={(e) => handleUpdateCamBuild(build.id, slot, e.target.value || null)}
                             onFocus={() => {
                               // Load available cams when user focuses on the select
-                              if (build.engine_make && build.engine_family) {
-                                loadAvailableCams(build.engine_make, build.engine_family);
+                              if (block && block.engine_make && block.engine_family) {
+                                loadAvailableCams(block.engine_make, block.engine_family);
                               }
                             }}
                             style={{
