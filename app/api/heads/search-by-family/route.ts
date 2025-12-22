@@ -14,6 +14,8 @@ export async function GET(req: Request) {
     const make = url.searchParams.get("make");
     const family = url.searchParams.get("family");
 
+    console.log(`[Heads API] Searching for: make="${make}", family="${family}"`);
+
     const supabase = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
 
     let query = supabase
@@ -29,6 +31,9 @@ export async function GET(req: Request) {
     }
 
     const { data: heads, error } = await query.order("created_at", { ascending: false });
+
+    console.log(`[Heads API] Found ${heads?.length || 0} heads. Error: ${error?.message || "none"}`);
+    console.log(`[Heads API] Response data:`, JSON.stringify(heads, null, 2));
 
     if (error) {
       console.error("Error fetching heads:", error);
