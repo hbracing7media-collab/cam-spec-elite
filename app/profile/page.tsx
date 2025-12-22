@@ -290,7 +290,9 @@ export default function ProfilePage() {
       if (res.ok) {
         await loadCamBuilds();
       } else {
-        alert("Failed to delete cam build");
+        const errData = await res.json().catch(() => ({}));
+        const errorMsg = errData.message || `HTTP ${res.status}`;
+        alert(`Failed to delete: ${errorMsg}`);
       }
     } catch (err: any) {
       alert("Error deleting cam build: " + err.message);

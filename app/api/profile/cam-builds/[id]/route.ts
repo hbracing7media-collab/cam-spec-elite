@@ -93,6 +93,8 @@ export async function DELETE(
   }
 
   try {
+    console.log(`[DELETE] Deleting cam build ${id} for user ${user.id}`);
+    
     // Verify ownership
     const { data: build, error: fetchError } = await supabase
       .from("user_cam_builds")
@@ -102,6 +104,7 @@ export async function DELETE(
       .single();
 
     if (fetchError || !build) {
+      console.log(`[DELETE] Build not found: fetchError=${fetchError?.message}, build=${build}`);
       return NextResponse.json({ ok: false, message: "Build not found or unauthorized" }, { status: 404 });
     }
 
@@ -111,13 +114,14 @@ export async function DELETE(
       .eq("id", id);
 
     if (deleteError) {
-      console.error("Error deleting cam build:", deleteError);
+      console.error("[DELETE] Error deleting cam build:", deleteError);
       return NextResponse.json({ ok: false, message: deleteError.message }, { status: 400 });
     }
 
+    console.log(`[DELETE] Successfully deleted cam build ${id}`);
     return NextResponse.json({ ok: true, message: "Build deleted" });
   } catch (err: any) {
-    console.error("Exception:", err);
+    console.error("[DELETE] Exception:", err);
     return NextResponse.json({ ok: false, message: err.message }, { status: 500 });
   }
 }
