@@ -225,9 +225,12 @@ export default function ProfilePage() {
         await loadCamBuilds();
         setSelectedBlockForBuild(blockId);
       } else {
-        alert("Failed to create cam build");
+        const errData = await res.json();
+        console.error("Cam build creation error:", errData);
+        alert("Failed to create cam build: " + (errData.message || "Unknown error"));
       }
     } catch (err: any) {
+      console.error("Exception creating cam build:", err);
       alert("Error creating cam build: " + err.message);
     }
   };

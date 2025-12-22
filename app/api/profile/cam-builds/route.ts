@@ -84,8 +84,13 @@ export async function POST(req: Request) {
       .eq("user_id", user.id)
       .single();
 
-    if (blockError || !block) {
-      return NextResponse.json({ ok: false, message: "Short block not found or unauthorized" }, { status: 404 });
+    if (blockError) {
+      console.error("Error finding short block:", blockError);
+      return NextResponse.json({ ok: false, message: "Short block not found or unauthorized: " + blockError.message }, { status: 404 });
+    }
+
+    if (!block) {
+      return NextResponse.json({ ok: false, message: "Short block not found" }, { status: 404 });
     }
 
     const { data: newBuild, error } = await supabase
@@ -102,12 +107,12 @@ export async function POST(req: Request) {
 
     if (error) {
       console.error("Error creating cam build:", error);
-      return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
+      return NextResponse.json({ ok: false, message: "Error creating cam build: " + error.message }, { status: 400 });
     }
 
     return NextResponse.json({ ok: true, build: newBuild });
   } catch (err: any) {
     console.error("Exception:", err);
-    return NextResponse.json({ ok: false, message: err.message }, { status: 500 });
+    return NextResponse.json({ ok: false, message: "Server error: " + err.message }, { status: 500 });
   }
 }
