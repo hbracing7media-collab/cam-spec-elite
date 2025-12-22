@@ -40,6 +40,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
     }
 
+    console.log("Loaded cam builds for user:", user.id, JSON.stringify(builds, null, 2));
     return NextResponse.json({ ok: true, builds: builds || [] });
   } catch (err: any) {
     console.error("Exception:", err);
