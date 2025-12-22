@@ -389,10 +389,56 @@ export default function ProfilePage() {
       if (res.ok) {
         await loadHeadBuilds();
       } else {
-        alert("Failed to delete head build");
+        const errData = await res.json().catch(() => ({}));
+        const errorMsg = errData.message || `HTTP ${res.status}`;
+        alert(`Failed to remove: ${errorMsg}`);
       }
     } catch (err: any) {
-      alert("Error deleting head build: " + err.message);
+      alert("Error removing head build: " + err.message);
+    }
+  };
+
+  const handleUpdateHeadBuild = async (buildId: string, headId: string | null) => {
+    const build = headBuilds.find((b) => b.id === buildId);
+    if (!build) return;
+
+    console.log(`Updating build ${buildId} with head ${headId}`);
+
+    try {
+      const res = await fetch(`/api/profile/head-builds/${buildId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ head_id: headId }),
+      });
+
+      if (res.ok) {
+        console.log("Update successful, reloading builds...");
+        await loadHeadBuilds();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        const errorMsg = errData.message || `HTTP ${res.status}`;
+        console.error("Update failed:", errorMsg);
+        alert(`Failed to update head: ${errorMsg}`);
+      }
+    } catch (err: any) {
+      console.error("Error updating head build:", err);
+      alert("Error updating head build: " + err.message);
+    }
+  };
+
+  const loadAvailableHeads = async (engineMake: string, engineFamily: string) => {
+    if (!engineMake || !engineFamily) {
+      setAvailableHeads([]);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/heads/search-by-family?make=${encodeURIComponent(engineMake)}&family=${encodeURIComponent(engineFamily)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setAvailableHeads(data.heads || []);
+      }
+    } catch (err) {
+      console.error("Failed to load heads:", err);
     }
   };
 
@@ -1666,7 +1712,9 @@ export default function ProfilePage() {
             <div style={{ marginBottom: 12 }}>
               {headBuilds.map((build) => {
                 const blockName = shortBlocks.find((b) => b.id === build.short_block_id)?.block_name || "Unknown Block";
+                const block = shortBlocks.find((b) => b.id === build.short_block_id);
                 const head = build.cylinder_heads;
+                const currentHeadId = build.head_id;
                 
                 return (
                   <div
@@ -1687,15 +1735,8 @@ export default function ProfilePage() {
                         marginBottom: 6,
                       }}
                     >
-                      <div>
-                        <div style={{ fontWeight: 700, color: "#00d4ff", fontSize: 12 }}>
-                          {blockName}
-                        </div>
-                        {head && (
-                          <div style={{ color: "rgba(226,232,240,0.8)", fontSize: 11 }}>
-                            {head.brand} {head.part_number}
-                          </div>
-                        )}
+                      <div style={{ fontWeight: 700, color: "#00d4ff", fontSize: 12 }}>
+                        {blockName}
                       </div>
                       <button
                         onClick={() => handleDeleteHeadBuild(build.id)}
@@ -1709,9 +1750,52 @@ export default function ProfilePage() {
                           cursor: "pointer",
                         }}
                       >
-                        Remove
+                        Delete
                       </button>
                     </div>
+                    
+                    <div
+                      style={{
+                        padding: 6,
+                        marginBottom: 8,
+                        borderRadius: 4,
+                        background: "rgba(0,212,255,0.05)",
+                        border: "1px solid rgba(0,212,255,0.1)",
+                        fontSize: 10,
+                      }}
+                    >
+                      <div style={{ color: "rgba(226,232,240,0.6)", marginBottom: 3 }}>
+                        Head: {head?.brand || "—"} {head?.part_number || "None"}
+                      </div>
+                      <select
+                        value={currentHeadId || ""}
+                        onFocus={() => {
+                          if (block && block.engine_make && block.engine_family) {
+                            loadAvailableHeads(block.engine_make, block.engine_family);
+                          }
+                        }}
+                        onChange={(e) => handleUpdateHeadBuild(build.id, e.target.value || null)}
+                        style={{
+                          width: "100%",
+                          padding: "4px 6px",
+                          borderRadius: 3,
+                          border: "1px solid rgba(125,211,252,0.15)",
+                          background: "rgba(2,6,23,0.6)",
+                          color: "#e2e8f0",
+                          fontSize: 10,
+                          fontFamily: "monospace",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <option value="">-- Select --</option>
+                        {availableHeads.map((h) => (
+                          <option key={h.id} value={h.id}>
+                            {h.brand} {h.part_number}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
                     {head && (
                       <>
                         {head.chamber_cc && (
