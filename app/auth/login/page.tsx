@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signupWithEmail } from "../../../lib/auth";
 
 interface Message {
   type: "ok" | "err";
@@ -40,23 +39,33 @@ export default function AuthPage() {
         setLoading(false);
         return;
       }
+      
+      // Use server endpoint for signup with email confirmation
       try {
-        const { error } = await signupWithEmail(email, password);
-        if (error) {
-          setMsg({ type: "err", text: error.message });
+        const res = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const result = await res.json();
+        
+        if (!res.ok) {
+          setMsg({ type: "err", text: result.message || "Signup failed." });
           setLoading(false);
           return;
         }
+        
+        setMsg({ 
+          type: "ok", 
+          text: "Signup successful! Please check your email to confirm your account." 
+        });
+        setTimeout(() => setMode("login"), 3000);
       } catch (err) {
         setMsg({
           type: "err",
           text: err instanceof Error ? err.message : "Signup failed.",
         });
-        setLoading(false);
-        return;
       }
-      setMsg({ type: "ok", text: "Signup successful! Check your email to confirm." });
-      setTimeout(() => setMode("login"), 2000);
       setLoading(false);
       return;
     }

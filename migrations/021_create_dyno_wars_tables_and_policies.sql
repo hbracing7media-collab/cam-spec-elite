@@ -81,30 +81,26 @@ CREATE POLICY "Public submissions visible to all" ON dyno_submissions
   FOR SELECT
   USING (visibility = 'public' AND status = 'approved');
 
--- Policy 3: Service Role (server-side) can SELECT all submissions
--- Note: Admin operations via service role key are handled server-side
-CREATE POLICY "Service role can view all submissions" ON dyno_submissions
-  FOR SELECT
-  USING (true);
+-- Note: Service Role (server-side) bypasses RLS automatically
+-- No policy needed for service role - it has full access via SUPABASE_SERVICE_ROLE_KEY
 
--- Policy 4: Authenticated users can INSERT new submissions
+-- Policy 3: Authenticated users can INSERT new submissions
 CREATE POLICY "Users can insert own submissions" ON dyno_submissions
   FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
--- Policy 5: Users can UPDATE their own pending/approved submissions
+-- Policy 4: Users can UPDATE their own pending/approved submissions
 CREATE POLICY "Users can update own submissions" ON dyno_submissions
   FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
--- Policy 6: Users can DELETE their own submissions (soft delete via status)
+-- Policy 5: Users can DELETE their own submissions (soft delete via status)
 CREATE POLICY "Users can delete own submissions" ON dyno_submissions
   FOR DELETE
   USING (auth.uid() = user_id);
 
--- Policy 7: Service role (server-side) handles admin operations
--- No client-side admin policies needed - all admin operations use service role key
+-- Note: Admin operations use SUPABASE_SERVICE_ROLE_KEY on the server
 
 -- Function to auto-update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_dyno_submissions_updated_at()
