@@ -1516,11 +1516,17 @@ export default function ProfilePage() {
                           }}
                         >
                           <div style={{ color: "rgba(226,232,240,0.6)", marginBottom: 3 }}>
-                            Cam {slot}: {currentCam?.brand || "—"} {currentCam?.name || "None"}
+                            Cam {slot}: {currentCam?.brand || "—"} {currentCam?.cam_name || "None"}
                           </div>
                           <select
                             value={currentCamId || ""}
                             onChange={(e) => handleUpdateCamBuild(build.id, slot, e.target.value || null)}
+                            onFocus={() => {
+                              // Load available cams when user focuses on the select
+                              if (build.engine_make && build.engine_family) {
+                                loadAvailableCams(build.engine_make, build.engine_family);
+                              }
+                            }}
                             style={{
                               width: "100%",
                               padding: "4px 6px",
