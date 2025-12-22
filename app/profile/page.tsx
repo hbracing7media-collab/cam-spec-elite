@@ -901,6 +901,74 @@ export default function ProfilePage() {
                       <strong>HG Thickness:</strong> {block.head_gasket_compressed_thickness}
                     </div>
                   )}
+
+                  {/* Quick Action Buttons */}
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      marginTop: 12,
+                      paddingTop: 8,
+                      borderTop: "1px solid rgba(125,211,252,0.15)",
+                    }}
+                  >
+                    <button
+                      onClick={() => {
+                        setSelectedBlockForBuild(block.id);
+                        if (block.engine_make && block.engine_family) {
+                          loadAvailableCams(block.engine_make, block.engine_family);
+                        }
+                        setShowNewBuildForm(true);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: "6px 8px",
+                        borderRadius: 4,
+                        border: "1px solid rgba(56,189,248,0.3)",
+                        background: "rgba(56,189,248,0.1)",
+                        color: "#7dd3fc",
+                        fontSize: 10,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.target as HTMLButtonElement).style.background = "rgba(56,189,248,0.2)";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.target as HTMLButtonElement).style.background = "rgba(56,189,248,0.1)";
+                      }}
+                    >
+                      Link Cams
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setSelectedBlockForHeadBuild(block.id);
+                        handleCreateHeadBuild(block.id);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: "6px 8px",
+                        borderRadius: 4,
+                        border: "1px solid rgba(56,189,248,0.3)",
+                        background: "rgba(56,189,248,0.1)",
+                        color: "#7dd3fc",
+                        fontSize: 10,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.target as HTMLButtonElement).style.background = "rgba(56,189,248,0.2)";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.target as HTMLButtonElement).style.background = "rgba(56,189,248,0.1)";
+                      }}
+                    >
+                      Link Heads
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
