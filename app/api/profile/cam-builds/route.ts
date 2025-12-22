@@ -28,9 +28,9 @@ export async function GET(req: Request) {
       .from("user_cam_builds")
       .select(`
         *,
-        cam1:cam1_id(id, name, brand, part_number),
-        cam2:cam2_id(id, name, brand, part_number),
-        cam3:cam3_id(id, name, brand, part_number)
+        cam1:cam1_id(id, cam_name, brand, part_number),
+        cam2:cam2_id(id, cam_name, brand, part_number),
+        cam3:cam3_id(id, cam_name, brand, part_number)
       `)
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
