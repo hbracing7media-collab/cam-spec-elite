@@ -53,11 +53,13 @@ export async function POST(req: Request) {
   const cookieStore = await cookies();
 
   if (!supabaseUrl || !serviceRole) {
+    console.error("Server misconfigured: missing env vars");
     return NextResponse.json({ ok: false, message: "Server misconfigured" }, { status: 500 });
   }
 
   const access_token = cookieStore.get("sb-access-token")?.value;
   if (!access_token) {
+    console.warn("No access token found");
     return NextResponse.json({ ok: false, message: "Not authenticated" }, { status: 401 });
   }
 
@@ -65,12 +67,15 @@ export async function POST(req: Request) {
   const { data: { user }, error: userError } = await supabase.auth.getUser(access_token);
 
   if (userError || !user) {
+    console.error("User auth error:", userError);
     return NextResponse.json({ ok: false, message: "Not authenticated" }, { status: 401 });
   }
 
   try {
     const body = await req.json();
     const { short_block_id, cam1_id, cam2_id, cam3_id } = body;
+
+    console.log("Creating cam build for user:", user.id, "block:", short_block_id);
 
     if (!short_block_id) {
       return NextResponse.json({ ok: false, message: "Short block ID is required" }, { status: 400 });
@@ -85,13 +90,16 @@ export async function POST(req: Request) {
       .single();
 
     if (blockError) {
-      console.error("Error finding short block:", blockError);
-      return NextResponse.json({ ok: false, message: "Short block not found or unauthorized: " + blockError.message }, { status: 404 });
+      console.error("Block lookup error:", blockError);
+      return NextResponse.json({ ok: false, message: "Short block not found: " + blockError.message }, { status: 404 });
     }
 
     if (!block) {
+      console.warn("Block not found for user");
       return NextResponse.json({ ok: false, message: "Short block not found" }, { status: 404 });
     }
+
+    console.log("Block found, creating cam build...");
 
     const { data: newBuild, error } = await supabase
       .from("user_cam_builds")
@@ -106,13 +114,14 @@ export async function POST(req: Request) {
       .single();
 
     if (error) {
-      console.error("Error creating cam build:", error);
+      console.error("Insert error:", error);
       return NextResponse.json({ ok: false, message: "Error creating cam build: " + error.message }, { status: 400 });
     }
 
+    console.log("Build created successfully:", newBuild.id);
     return NextResponse.json({ ok: true, build: newBuild });
   } catch (err: any) {
-    console.error("Exception:", err);
+    console.error("Exception in POST /cam-builds:", err);
     return NextResponse.json({ ok: false, message: "Server error: " + err.message }, { status: 500 });
   }
 }

@@ -211,13 +211,19 @@ export default function ProfilePage() {
 
   const handleCreateCamBuild = async (blockId: string) => {
     try {
+      console.log("Creating cam build for block:", blockId);
       const res = await fetch("/api/profile/cam-builds", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ short_block_id: blockId }),
       });
 
+      console.log("Response status:", res.status);
+      console.log("Response headers:", res.headers);
+
       if (res.ok) {
+        const data = await res.json();
+        console.log("Build created successfully:", data);
         const block = shortBlocks.find((b) => b.id === blockId);
         if (block && block.engine_make && block.engine_family) {
           await loadAvailableCams(block.engine_make, block.engine_family);
@@ -225,8 +231,15 @@ export default function ProfilePage() {
         await loadCamBuilds();
         setSelectedBlockForBuild(blockId);
       } else {
-        const errData = await res.json();
-        console.error("Cam build creation error:", errData);
+        const text = await res.text();
+        console.error("Error response text:", text);
+        let errData;
+        try {
+          errData = JSON.parse(text);
+        } catch {
+          errData = { message: text || `HTTP ${res.status}` };
+        }
+        console.error("Parsed error:", errData);
         alert("Failed to create cam build: " + (errData.message || "Unknown error"));
       }
     } catch (err: any) {
@@ -1523,7 +1536,7 @@ export default function ProfilePage() {
                             <option value="">-- Select --</option>
                             {availableCams.map((cam) => (
                               <option key={cam.id} value={cam.id}>
-                                {cam.brand} {cam.name}
+                                {cam.brand} {cam.cam_name}
                               </option>
                             ))}
                           </select>

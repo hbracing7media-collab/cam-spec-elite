@@ -22,12 +22,12 @@ export async function GET(req: Request) {
 
     const { data: cams, error } = await supabase
       .from("cse_cam_submissions_table")
-      .select("id, name, brand, part_number, engine_make, engine_family, status")
+      .select("id, cam_name, brand, part_number, engine_make, engine_family, status")
       .eq("engine_make", engine_make)
       .eq("engine_family", engine_family)
       .eq("status", "approved")
       .order("brand", { ascending: true })
-      .order("name", { ascending: true });
+      .order("cam_name", { ascending: true });
 
     if (error) {
       console.error("Error fetching cams:", error);
