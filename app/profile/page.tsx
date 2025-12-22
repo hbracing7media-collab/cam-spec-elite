@@ -262,6 +262,8 @@ export default function ProfilePage() {
     if (camSlot === 2) updates.cam2_id = camId;
     if (camSlot === 3) updates.cam3_id = camId;
 
+    console.log(`Updating build ${buildId} slot ${camSlot} with cam ${camId}:`, updates);
+
     try {
       const res = await fetch(`/api/profile/cam-builds/${buildId}`, {
         method: "PUT",
@@ -270,11 +272,16 @@ export default function ProfilePage() {
       });
 
       if (res.ok) {
+        console.log("Update successful, reloading builds...");
         await loadCamBuilds();
       } else {
-        alert("Failed to update cam build");
+        const errData = await res.json().catch(() => ({}));
+        const errorMsg = errData.message || `HTTP ${res.status}`;
+        console.error("Update failed:", errorMsg);
+        alert(`Failed to update cam build: ${errorMsg}`);
       }
     } catch (err: any) {
+      console.error("Error updating cam build:", err);
       alert("Error updating cam build: " + err.message);
     }
   };
