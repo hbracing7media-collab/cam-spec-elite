@@ -388,8 +388,28 @@ const TUNE_DEFAULT = {
   rpmStep: 250,
 };
 
-export default function CamSpecEliteSelectiveCalculator() {
+// Accept shortBlocks as prop for profile page integration
+interface CamSpecEliteSelectiveCalculatorProps {
+  shortBlocks?: Array<{
+    id: string;
+    block_name: string;
+    bore?: string;
+    stroke?: string;
+    rod_length?: string;
+    chamber_volume?: number;
+    piston_dome_dish?: string;
+    head_gasket_bore?: string;
+    head_gasket_compressed_thickness?: string;
+    deck_height?: string;
+    deck_clearance?: string;
+    displacement?: string;
+    cylinders?: number;
+  }>;
+}
+
+export default function CamSpecEliteSelectiveCalculator({ shortBlocks }: CamSpecEliteSelectiveCalculatorProps) {
   const [engine, setEngine] = useState<EngineState>(ENGINE_DEFAULT);
+  const [selectedShortBlockId, setSelectedShortBlockId] = useState<string>("");
   const [cam, setCam] = useState<Cam>(CAM_DEFAULT);
   const [camDrafts, setCamDrafts] = useState<Partial<Record<CamFieldKey, string>>>({});
   const [tune, setTune] = useState(TUNE_DEFAULT);
@@ -466,7 +486,25 @@ export default function CamSpecEliteSelectiveCalculator() {
     }
   }, [availableFamilies, selectedFamilyId]);
 
-  // --------- Unit Conversion Helpers ---------
+  // --------- Short Block Selection (Profile Page) ---------
+  useEffect(() => {
+    if (!shortBlocks || !selectedShortBlockId) return;
+    const block = shortBlocks.find((b) => b.id === selectedShortBlockId);
+    if (!block) return;
+    // Only update geometry fields, not portCfm or cam
+    setEngine((prev) => ({
+      ...prev,
+      bore: block.bore ? parseFloat(block.bore) : prev.bore,
+      stroke: block.stroke ? parseFloat(block.stroke) : prev.stroke,
+      rod: block.rod_length ? parseFloat(block.rod_length) : prev.rod,
+      cyl: block.cylinders || prev.cyl,
+      chamber: typeof block.chamber_volume === 'number' ? block.chamber_volume : prev.chamber,
+      pistonCc: block.piston_dome_dish ? parseFloat(block.piston_dome_dish) : prev.pistonCc,
+      gasketBore: block.head_gasket_bore ? parseFloat(block.head_gasket_bore) : prev.gasketBore,
+      gasketThk: block.head_gasket_compressed_thickness ? parseFloat(block.head_gasket_compressed_thickness) : prev.gasketThk,
+      deck: block.deck_clearance ? parseFloat(block.deck_clearance) : prev.deck,
+    }));
+  }, [selectedShortBlockId, shortBlocks]);
   const IN_TO_MM = 25.4;
   const CID_TO_CC = 16.387;
   
@@ -1331,12 +1369,29 @@ export default function CamSpecEliteSelectiveCalculator() {
 
         {/* STEP 1: ENGINE GEOMETRY */}
         <div style={{ borderRadius: '12px', padding: '10px 12px', background: 'rgba(6,11,30,0.78)', border: '1px solid rgba(0,212,255,0.22)', marginBottom: '10px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flex: 1 }}>
               <h3 style={{ margin: '0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#e5e7eb' }}>Step 1 • Engine Geometry</h3>
               <span style={{ fontSize: '10px', color: '#a5b4fc' }}>Bore • Stroke • Rod • Volumes</span>
             </div>
-            
+            {/* Short Block Dropdown (Profile Page only) */}
+            {shortBlocks && shortBlocks.length > 0 && (
+              <div style={{ minWidth: 220, marginLeft: 12 }}>
+                <label style={{ color: '#7dd3fc', fontSize: 11, fontWeight: 600, marginBottom: 2, display: 'block' }}>Select My Short Block</label>
+                <select
+                  value={selectedShortBlockId}
+                  onChange={e => setSelectedShortBlockId(e.target.value)}
+                  style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+                >
+                  <option value="">-- Select Short Block --</option>
+                  {shortBlocks.map((block) => (
+                    <option key={block.id} value={block.id}>
+                      {block.block_name} {block.displacement ? `(${block.displacement})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {/* Unit Toggle Slider */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginLeft: 'auto' }}>
               <span style={{ fontSize: '10px', color: unitSystem === 'imperial' ? '#00d4ff' : '#7CFFCB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', minWidth: '50px', textAlign: 'center' }}>

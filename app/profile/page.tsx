@@ -6,6 +6,8 @@ import Link from "next/link";
 import { CAM_MAKE_OPTIONS, CAM_ENGINE_FAMILIES } from "@/lib/engineOptions";
 import { UserAwardsProfile } from "@/components/UserAwardsProfile";
 import { UserDynoSubmissions } from "@/components/UserDynoSubmissions";
+import CamSpecEliteSelectiveCalculator from "@/app/components/CamSpecEliteSelectiveCalculator";
+import PersonalCamCalculator from "@/app/components/PersonalCamCalculator";
 
 interface UserProfile {
   email: string;
@@ -23,10 +25,19 @@ interface ShortBlock {
   bore?: string;
   stroke?: string;
   deck_height?: string;
+  deck_clearance?: string;
   piston_dome_dish?: string;
   head_gasket_bore?: string;
   head_gasket_compressed_thickness?: string;
   rod_length?: string;
+  attachedHead?: {
+    id: string;
+    head_name: string;
+    intake_ports?: number;
+    exhaust_ports?: number;
+    chamber_volume?: number;
+    flow_data?: any;
+  } | null;
 }
 
 export default function ProfilePage() {
@@ -51,6 +62,7 @@ export default function ProfilePage() {
     bore: "",
     stroke: "",
     deck_height: "",
+    deck_clearance: "",
     piston_dome_dish: "",
     head_gasket_bore: "",
     head_gasket_compressed_thickness: "",
@@ -173,6 +185,7 @@ export default function ProfilePage() {
           bore: "",
           stroke: "",
           deck_height: "",
+          deck_clearance: "",
           piston_dome_dish: "",
           head_gasket_bore: "",
           head_gasket_compressed_thickness: "",
@@ -310,12 +323,17 @@ export default function ProfilePage() {
   const loadHeadBuilds = async () => {
     try {
       const res = await fetch("/api/profile/head-builds");
+      console.log(`[loadHeadBuilds] Status: ${res.status}`);
       if (res.ok) {
         const data = await res.json();
+        console.log("[loadHeadBuilds] Success, builds:", data);
         setHeadBuilds(data.builds || []);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        console.error("[loadHeadBuilds] Failed:", errData);
       }
     } catch (err) {
-      console.error("Failed to load head builds:", err);
+      console.error("[loadHeadBuilds] Exception:", err);
     }
   };
 
@@ -339,11 +357,19 @@ export default function ProfilePage() {
       });
       const headsRes = await fetch(`/api/heads/search-by-family?${searchParams}`);
       if (!headsRes.ok) {
-        alert("Failed to fetch available heads");
+        const errData = await headsRes.json().catch(() => ({}));
+        alert("Failed to fetch available heads: " + (errData.message || headsRes.status));
         return;
       }
 
       const headsData = await headsRes.json();
+      console.log("Head search response:", headsData);
+      
+      if (!headsData.heads || headsData.heads.length === 0) {
+        alert(`No cylinder heads found for ${block.engine_make} / ${block.engine_family}`);
+        return;
+      }
+      
       setAvailableHeads(headsData.heads || []);
 
       // Create a head build (user will select head from dropdown)
@@ -367,14 +393,20 @@ export default function ProfilePage() {
       });
 
       if (res.ok) {
+        console.log("Head build created successfully!");
         await loadHeadBuilds();
         setShowNewHeadBuildForm(false);
         setAvailableHeads([]);
+        alert("Head linked successfully!");
       } else {
-        alert("Failed to add head build");
+        const errData = await res.json().catch(() => ({}));
+        const errorMsg = errData.message || `HTTP ${res.status}`;
+        alert("Failed to add head build: " + errorMsg);
+        console.error("Head build creation error:", errData);
       }
     } catch (err: any) {
       alert("Error adding head build: " + err.message);
+      console.error("Exception:", err);
     }
   };
 
@@ -958,6 +990,11 @@ export default function ProfilePage() {
                       <strong>Deck Height:</strong> {block.deck_height}
                     </div>
                   )}
+                  {block.deck_clearance && (
+                    <div style={{ color: "rgba(226,232,240,0.75)" }}>
+                      <strong>Deck Clearance:</strong> {block.deck_clearance}
+                    </div>
+                  )}
                   {block.piston_dome_dish && (
                     <div style={{ color: "rgba(226,232,240,0.75)" }}>
                       <strong>Piston:</strong> {block.piston_dome_dish}
@@ -978,6 +1015,38 @@ export default function ProfilePage() {
                       <strong>HG Thickness:</strong> {block.head_gasket_compressed_thickness}
                     </div>
                   )}
+
+                  {/* Linked Cams */}
+                  <div style={{ marginTop: 12, paddingTop: 8, borderTop: "1px solid rgba(125,211,252,0.15)" }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: "#7dd3fc", marginBottom: 6 }}>Cams:</div>
+                    {camBuilds.filter((b) => b.short_block_id === block.id).length > 0 ? (
+                      camBuilds
+                        .filter((b) => b.short_block_id === block.id)
+                        .map((build) => (
+                          <div key={build.id} style={{ fontSize: 10, color: "rgba(226,232,240,0.8)", marginBottom: 4 }}>
+                            • {build.cam1_id ? `Cam1: ${build.cam1?.cam_name}` : "Cam1: —"} | {build.cam2_id ? `Cam2: ${build.cam2?.cam_name}` : "Cam2: —"} | {build.cam3_id ? `Cam3: ${build.cam3?.cam_name}` : "Cam3: —"}
+                          </div>
+                        ))
+                    ) : (
+                      <div style={{ fontSize: 10, color: "rgba(226,232,240,0.5)" }}>None linked</div>
+                    )}
+                  </div>
+
+                  {/* Linked Heads */}
+                  <div style={{ marginTop: 8 }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: "#7dd3fc", marginBottom: 6 }}>Heads:</div>
+                    {headBuilds.filter((b) => b.short_block_id === block.id).length > 0 ? (
+                      headBuilds
+                        .filter((b) => b.short_block_id === block.id)
+                        .map((build) => (
+                          <div key={build.id} style={{ fontSize: 10, color: "rgba(226,232,240,0.8)", marginBottom: 4 }}>
+                            • {build.cylinder_heads ? `${build.cylinder_heads.brand} ${build.cylinder_heads.part_number}` : "— None"}
+                          </div>
+                        ))
+                    ) : (
+                      <div style={{ fontSize: 10, color: "rgba(226,232,240,0.5)" }}>None linked</div>
+                    )}
+                  </div>
 
                   {/* Quick Action Buttons */}
                   <div
@@ -1300,6 +1369,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
+
               <div style={{ marginBottom: 12 }}>
                 <label
                   style={{
@@ -1343,15 +1413,15 @@ export default function ProfilePage() {
                     marginBottom: 4,
                   }}
                 >
-                  Piston Dome/Dish
+                  Deck Clearance
                 </label>
                 <input
                   type="text"
-                  value={newBlock.piston_dome_dish}
+                  value={newBlock.deck_clearance}
                   onChange={(e) =>
-                    setNewBlock({ ...newBlock, piston_dome_dish: e.target.value })
+                    setNewBlock({ ...newBlock, deck_clearance: e.target.value })
                   }
-                  placeholder="e.g., -14cc Dish"
+                  placeholder="e.g., 0.010 in the hole"
                   style={{
                     width: "100%",
                     padding: "8px",
@@ -1364,6 +1434,42 @@ export default function ProfilePage() {
                     boxSizing: "border-box",
                   }}
                 />
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <label
+                  style={{
+                    display: "block",
+                    fontWeight: 600,
+                    color: "#7dd3fc",
+                    fontSize: 12,
+                    marginBottom: 4,
+                  }}
+                >
+                  Piston Dome or Dish Volume (cc)
+                </label>
+                <input
+                  type="text"
+                  value={newBlock.piston_dome_dish}
+                  onChange={(e) =>
+                    setNewBlock({ ...newBlock, piston_dome_dish: e.target.value })
+                  }
+                  placeholder="e.g., -14 (Dome), 4 (Dish), 0 (Flat)"
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: 6,
+                    border: "1px solid rgba(148,163,184,0.3)",
+                    background: "rgba(2,6,23,0.6)",
+                    color: "#e2e8f0",
+                    fontSize: 12,
+                    fontFamily: "inherit",
+                    boxSizing: "border-box",
+                  }}
+                />
+                <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 2 }}>
+                  Dome is negative, dish is positive, 0 is flat. Example: -14 (dome), 4 (dish), 0 (flat)
+                </div>
               </div>
 
               <div style={{ marginBottom: 12 }}>
@@ -1856,8 +1962,11 @@ export default function ProfilePage() {
                 Select Cylinder Head for {shortBlocks.find((b) => b.id === selectedBlockForHeadBuild)?.block_name}
               </label>
               <select
+                value=""
                 onChange={(e) => {
+                  console.log(`[HEAD SELECT onChange] value: "${e.target.value}", selectedBlockForHeadBuild: "${selectedBlockForHeadBuild}"`);
                   if (e.target.value) {
+                    console.log(`[HEAD SELECT] selectedBlockForHeadBuild: "${selectedBlockForHeadBuild}", headId: "${e.target.value}"`);
                     handleAddHeadToBlock(selectedBlockForHeadBuild, e.target.value);
                   }
                 }}
@@ -2376,6 +2485,22 @@ export default function ProfilePage() {
               </button>
             </form>
           )}
+        </div>
+
+        {/* My Cam Spec Elite Calculator */}
+        <div
+          style={{
+            gridColumn: "1 / -1",
+            borderRadius: 18,
+            padding: 36,
+            border: "1px solid rgba(56,189,248,0.35)",
+            background: "rgba(2,6,23,0.85)",
+            boxShadow: "0 18px 50px rgba(0,0,0,0.6)",
+            color: "#e2e8f0",
+            fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+          }}
+        >
+          <CamSpecEliteSelectiveCalculator shortBlocks={shortBlocks} />
         </div>
 
         {/* My Dyno Submissions Section */}

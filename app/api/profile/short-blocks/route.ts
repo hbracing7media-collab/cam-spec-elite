@@ -24,21 +24,79 @@ export async function GET(req: Request) {
   }
 
   try {
+
+    // Fetch short blocks with head builds
     const { data: blocks, error } = await supabase
       .from("user_short_blocks")
-      .select("*")
+      .select(`*, user_head_builds!left(id, head_id, cylinder_heads!inner(id, brand, part_number, engine_make, engine_family, intake_valve_size, exhaust_valve_size, max_lift, max_rpm, intake_runner_cc, chamber_cc, notes))`)
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching blocks:", error);
-      return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
+      return NextResponse.json({ ok: false, message: error.message, details: error }, { status: 400 });
     }
 
-    return NextResponse.json({ ok: true, blocks });
+    // Fetch all cam builds for these blocks
+    const blockIds = (blocks || []).map((b: any) => b.id);
+    let camBuilds: any[] = [];
+    if (blockIds.length > 0) {
+      const { data: camBuildRows, error: camBuildsError } = await supabase
+        .from("user_cam_builds")
+        .select(`id, short_block_id, cam1:cam1_id(*), cam2:cam2_id(*), cam3:cam3_id(*)`)
+        .in("short_block_id", blockIds);
+      if (camBuildsError) {
+        console.error("Error fetching cam builds:", camBuildsError);
+      } else {
+        camBuilds = camBuildRows || [];
+      }
+    }
+
+    if (error) {
+      console.error("Error fetching blocks:", error);
+      return NextResponse.json({ ok: false, message: error.message, details: error }, { status: 400 });
+    }
+
+    if (!blocks) {
+      console.error("No blocks returned from Supabase");
+      return NextResponse.json({ ok: false, message: "No blocks returned from Supabase" }, { status: 500 });
+    }
+
+    // Attach the most recent head build and cam builds to each block
+    const blocksWithHeadsAndCams = (blocks || []).map((block: any) => {
+      // Attach head
+      let attachedHead = null;
+      if (block.user_head_builds && Array.isArray(block.user_head_builds) && block.user_head_builds.length > 0) {
+        const sorted = [...block.user_head_builds].sort((a, b) => {
+          if (a.created_at && b.created_at) return new Date(b.created_at) - new Date(a.created_at);
+          return 0;
+        });
+        const headBuild = sorted[0];
+        if (headBuild && headBuild.cylinder_heads) {
+          attachedHead = {
+            ...headBuild.cylinder_heads,
+            chamber_volume: headBuild.cylinder_heads.chamber_cc,
+            intake_ports: headBuild.cylinder_heads.intake_ports,
+            exhaust_ports: headBuild.cylinder_heads.exhaust_ports,
+          };
+        }
+      }
+      // Attach cams
+      const blockCamBuilds = camBuilds.filter((cb) => cb.short_block_id === block.id);
+      // Flatten all cam slots into a single array, filter out nulls
+      const attachedCams = blockCamBuilds.flatMap((cb) => [cb.cam1, cb.cam2, cb.cam3]).filter(Boolean);
+      return {
+        ...block,
+        attachedHead,
+        attachedCams,
+        user_head_builds: undefined,
+      };
+    });
+
+    return NextResponse.json({ ok: true, blocks: blocksWithHeadsAndCams });
   } catch (err: any) {
-    console.error("Exception:", err);
-    return NextResponse.json({ ok: false, message: err.message }, { status: 500 });
+    console.error("Exception in /api/profile/short-blocks:", err);
+    return NextResponse.json({ ok: false, message: err.message, stack: err.stack }, { status: 500 });
   }
 }
 

@@ -29,12 +29,11 @@ export async function POST(req: NextRequest) {
       auth: { persistSession: false },
     });
 
-    // Delete the rejected head submission
+    // Delete the rejected head submission from submissions table
     const { error } = await supabase
-      .from("cylinder_heads")
+      .from("cylinder_heads_submissions")
       .delete()
-      .eq("id", headId)
-      .eq("status", "pending");
+      .eq("id", headId);
 
     if (error) {
       return NextResponse.json(

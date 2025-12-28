@@ -782,12 +782,13 @@ export default function CamSpecEliteCalculator() {
               <div key={field.key}>
                 <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>{field.label}</label>
                 <input
-                  type="number"
+                  type={field.key === 'pistonCc' ? 'text' : 'number'}
+                  inputMode={field.key === 'pistonCc' ? 'decimal' : undefined}
                   value={engine[field.key as keyof typeof engine]}
-                  onChange={(e) => setEngine({ ...engine, [field.key]: parseFloat(e.target.value) || 0 })}
-                  step={field.step}
-                  min={field.min}
-                  max={field.max}
+                  onChange={(e) => setEngine({ ...engine, [field.key]: field.key === 'pistonCc' ? (isNaN(parseFloat(e.target.value)) ? e.target.value : parseFloat(e.target.value)) : parseFloat(e.target.value) || 0 })}
+                  step={field.key === 'pistonCc' ? undefined : field.step}
+                  min={field.key === 'pistonCc' ? undefined : field.min}
+                  max={field.key === 'pistonCc' ? undefined : field.max}
                   style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
                 />
               </div>

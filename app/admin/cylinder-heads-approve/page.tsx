@@ -71,7 +71,7 @@ export default function CylinderHeadsApprovePage() {
       const res = await fetch("/api/admin/cylinder-heads/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ headId }),
+        body: JSON.stringify({ submission_id: headId }),
       });
 
       if (res.ok) {

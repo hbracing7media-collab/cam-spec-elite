@@ -20,9 +20,9 @@ export async function GET(req: NextRequest) {
       auth: { persistSession: false },
     });
 
-    // Fetch all pending heads
+    // Fetch all pending heads from submissions table
     const { data, error } = await supabase
-      .from("cylinder_heads")
+      .from("cylinder_heads_submissions")
       .select("*")
       .eq("status", "pending")
       .order("created_at", { ascending: false });
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      submissions: data || [],
+      heads: data || [],
     });
   } catch (error: unknown) {
     console.error("Error fetching pending heads:", error);

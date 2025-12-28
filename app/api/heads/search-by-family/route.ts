@@ -27,13 +27,20 @@ export async function GET(req: Request) {
     }
 
     if (family) {
-      query = query.ilike("engine_family", `%${family}%`);
+      // Extract just the base family name (before any parentheses) for more flexible matching
+      // E.g., "Small Block Windsor (221/260/289/302/351W)" -> search for "Small Block Windsor"
+      const baseFamily = family.split('(')[0].trim();
+      console.log(`[Heads API] Searching with baseFamily: "${baseFamily}" (original: "${family}")`);
+      query = query.ilike("engine_family", `%${baseFamily}%`);
     }
 
     const { data: heads, error } = await query.order("created_at", { ascending: false });
 
     console.log(`[Heads API] Found ${heads?.length || 0} heads. Error: ${error?.message || "none"}`);
-    console.log(`[Heads API] Response data:`, JSON.stringify(heads, null, 2));
+    if (heads && heads.length > 0) {
+      console.log(`[Heads API] First head make/family: ${heads[0].engine_make}/${heads[0].engine_family}`);
+    }
+    console.log(`[Heads API] Query was - make: "${make}", family: "${family}"`);
 
     if (error) {
       console.error("Error fetching heads:", error);
