@@ -115,7 +115,8 @@ export async function DELETE(
     const { error: deleteError } = await supabase
       .from("user_cam_builds")
       .delete()
-      .eq("id", id);
+      .eq("id", id)
+      .eq("user_id", user.id);
 
     if (deleteError) {
       console.error("[DELETE] Error deleting cam build:", deleteError);
