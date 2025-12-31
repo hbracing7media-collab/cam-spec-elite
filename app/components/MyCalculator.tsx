@@ -1518,8 +1518,8 @@ export default function MyCalculator() {
                   const block = myShortBlocks.find(b => b.id === e.target.value);
                   if (block) {
                     // Get chamber from attached head if available
-                    const chamberVolume = block.attachedHead?.chamber_cc ?? block.attachedHead?.chamber_volume ?? 56;
-                    console.log('MyCalculator: Loading short block, chamber from attached head:', chamberVolume, 'raw:', block.attachedHead?.chamber_cc, block.attachedHead?.chamber_volume);
+                    const chamberVolume = block.attachedHead?.chamber_volume ?? 56;
+                    console.log('MyCalculator: Loading short block, chamber from attached head:', chamberVolume, 'raw:', block.attachedHead?.chamber_volume);
                     console.log('MyCalculator: Short block piston_dome_dish:', block.piston_dome_dish);
                     setEngine({
                       bore: parseFloat(block.bore || '4.0'),
