@@ -28,7 +28,13 @@ interface Match {
   opponent_quarter_et: number | null;
   opponent_quarter_mph: number | null;
   // Roll race specific fields
+  challenger_roll_sixty_to_hundred: number | null;
+  challenger_roll_hundred_to_one_twenty: number | null;
+  challenger_roll_one_twenty_to_one_thirty: number | null;
   challenger_roll_total: number | null;
+  opponent_roll_sixty_to_hundred: number | null;
+  opponent_roll_hundred_to_one_twenty: number | null;
+  opponent_roll_one_twenty_to_one_thirty: number | null;
   opponent_roll_total: number | null;
   winner_id: string | null;
   created_at: string;
