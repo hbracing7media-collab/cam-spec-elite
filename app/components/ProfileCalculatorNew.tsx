@@ -13,17 +13,21 @@ interface ShortBlock {
   rod_length?: string;
   cyl?: number;
   deck_height?: string;
+  deck_clearance?: string;
   piston_dome_dish?: string;
   head_gasket_bore?: string;
   head_gasket_compressed_thickness?: string;
   attachedHead?: {
     id: string;
     head_name: string;
+    brand?: string;
+    part_number?: string;
     intake_ports?: number;
     exhaust_ports?: number;
     chamber_volume?: number;
     flow_data?: any;
   } | null;
+  attachedCams?: any[];
 }
 
 interface EngineGeometry {
