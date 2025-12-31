@@ -781,7 +781,7 @@ export default function ProfileCalculator({ shortBlocks = [] }: { shortBlocks?: 
           id: ah.id,
           label: ah.head_name || 'Attached Head',
           flowCfm: peakFlow || ENGINE_DEFAULT.portCfm,
-          chamberCc: ah.chamber_volume ?? ah.chamber_cc ?? undefined,
+          chamberCc: ah.chamber_volume ?? undefined,
           flowCurve,
         };
         return [injected, ...filtered];
