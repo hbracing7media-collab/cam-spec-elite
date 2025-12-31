@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import { DynoGraph } from "./DynoGraph";
 
 interface DynoSubmission {
@@ -28,19 +27,16 @@ export function UserDynoSubmissions({ userId }: { userId: string }) {
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
+        // Use API route instead of direct Supabase client to ensure proper filtering
+        const res = await fetch("/api/profile/dyno-submissions");
+        const data = await res.json();
 
-        const { data, error } = await supabase
-          .from("dyno_submissions")
-          .select("*")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          setError(error.message);
+        if (!data.ok) {
+          setError(data.message || "Failed to load submissions");
           return;
         }
 
-        setSubmissions(data || []);
+        setSubmissions(data.submissions || []);
       } catch (err: any) {
         setError(err.message);
       } finally {
