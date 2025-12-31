@@ -13,6 +13,7 @@ interface ShortBlock {
   rod_length?: string;
   cyl?: number;
   deck_height?: string;
+  deck_clearance?: string;
   piston_dome_dish?: string;
   head_gasket_bore?: string;
   head_gasket_compressed_thickness?: string;
