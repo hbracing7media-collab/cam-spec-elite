@@ -31,6 +31,24 @@ type Attachment = {
   created_at: string;
 };
 
+type GrudgeMatch = {
+  id: string;
+  challenger_id: string;
+  opponent_id: string;
+  status: string;
+  winner_id: string | null;
+  challenger_reaction_ms: number | null;
+  opponent_reaction_ms: number | null;
+  challenger_quarter_et: number | null;
+  challenger_quarter_mph: number | null;
+  opponent_quarter_et: number | null;
+  opponent_quarter_mph: number | null;
+  created_at: string;
+  challenger_profile?: { forum_handle: string };
+  opponent_profile?: { forum_handle: string };
+  winner_profile?: { forum_handle: string };
+};
+
 function makeSupabase(): SupabaseClient | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -51,6 +69,7 @@ export default function ThreadPage() {
   const [thread, setThread] = useState<Thread | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [grudgeMatches, setGrudgeMatches] = useState<GrudgeMatch[]>([]);
 
   const [replyBody, setReplyBody] = useState("");
   const [replyImage, setReplyImage] = useState<File | null>(null);
@@ -101,6 +120,7 @@ export default function ThreadPage() {
       setThread(threadData.thread);
       setPosts(threadData.posts || []);
       setAttachments(threadData.attachments || []);
+      setGrudgeMatches(threadData.grudgeMatches || []);
     } catch (e: any) {
       setStatus(e?.message ?? "Load error");
     } finally {
@@ -238,6 +258,7 @@ export default function ThreadPage() {
                     handle={(thread as any).user_profiles?.forum_handle}
                     currentUserId={userId}
                     size="medium"
+                    threadId={threadId}
                   />
                   <div>
                     <div style={{ fontWeight: 700, color: "#7dd3fc" }}>
@@ -254,6 +275,108 @@ export default function ThreadPage() {
                 <p className="small" style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>{thread.body}</p>
               </div>
             </div>
+
+            {/* Grudge Matches for this thread */}
+            {grudgeMatches.length > 0 && (
+              <>
+                <div className="card" style={{ background: "rgba(2,6,23,0.55)", borderLeft: "3px solid #f97316" }}>
+                  <div className="card-inner">
+                    <div style={{ fontWeight: 800, letterSpacing: "0.10em", textTransform: "uppercase", fontSize: 12, color: "#f97316", marginBottom: 12 }}>
+                      🏁 Grudge Matches
+                    </div>
+
+                    <div style={{ display: "grid", gap: 12 }}>
+                      {grudgeMatches.map((match) => {
+                        const isCompleted = match.status === "completed";
+                        const isPending = match.status === "pending";
+                        const isAccepted = match.status === "accepted";
+                        const isWaiting = match.status === "waiting_opponent";
+                        
+                        return (
+                          <div key={match.id} style={{ 
+                            background: "rgba(249,115,22,0.1)", 
+                            borderRadius: 8, 
+                            padding: 12,
+                            border: isCompleted ? "1px solid #22c55e" : "1px solid rgba(249,115,22,0.3)"
+                          }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                              <div style={{ fontWeight: 700, color: "#f97316" }}>
+                                {match.challenger_profile?.forum_handle || "Unknown"} vs {match.opponent_profile?.forum_handle || "Unknown"}
+                              </div>
+                              <div style={{ 
+                                fontSize: 11, 
+                                padding: "2px 8px", 
+                                borderRadius: 4,
+                                background: isCompleted ? "#22c55e" : isPending ? "#eab308" : isAccepted ? "#3b82f6" : "#f97316",
+                                color: "#000",
+                                fontWeight: 700,
+                                textTransform: "uppercase"
+                              }}>
+                                {isCompleted ? "Finished" : isPending ? "Pending" : isAccepted ? "Accepted" : isWaiting ? "In Progress" : match.status}
+                              </div>
+                            </div>
+
+                            {isCompleted && (
+                              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 8 }}>
+                                {/* Challenger result */}
+                                <div style={{ 
+                                  background: match.winner_id === match.challenger_id ? "rgba(34,197,94,0.2)" : "rgba(255,255,255,0.05)",
+                                  borderRadius: 6, 
+                                  padding: 8,
+                                  border: match.winner_id === match.challenger_id ? "1px solid #22c55e" : "1px solid transparent"
+                                }}>
+                                  <div style={{ fontSize: 11, color: "#7dd3fc", fontWeight: 700, marginBottom: 4 }}>
+                                    {match.challenger_profile?.forum_handle || "Challenger"}
+                                    {match.winner_id === match.challenger_id && <span style={{ color: "#22c55e", marginLeft: 6 }}>🏆 WINNER</span>}
+                                  </div>
+                                  <div style={{ fontSize: 12, fontFamily: "monospace" }}>
+                                    <div>RT: {match.challenger_reaction_ms != null ? (match.challenger_reaction_ms / 1000).toFixed(3) : "-"}s</div>
+                                    <div>1/4 ET: {match.challenger_quarter_et?.toFixed(3) || "-"}s</div>
+                                    <div>1/4 MPH: {match.challenger_quarter_mph?.toFixed(2) || "-"}</div>
+                                  </div>
+                                </div>
+
+                                {/* Opponent result */}
+                                <div style={{ 
+                                  background: match.winner_id === match.opponent_id ? "rgba(34,197,94,0.2)" : "rgba(255,255,255,0.05)",
+                                  borderRadius: 6, 
+                                  padding: 8,
+                                  border: match.winner_id === match.opponent_id ? "1px solid #22c55e" : "1px solid transparent"
+                                }}>
+                                  <div style={{ fontSize: 11, color: "#7dd3fc", fontWeight: 700, marginBottom: 4 }}>
+                                    {match.opponent_profile?.forum_handle || "Opponent"}
+                                    {match.winner_id === match.opponent_id && <span style={{ color: "#22c55e", marginLeft: 6 }}>🏆 WINNER</span>}
+                                  </div>
+                                  <div style={{ fontSize: 12, fontFamily: "monospace" }}>
+                                    <div>RT: {match.opponent_reaction_ms != null ? (match.opponent_reaction_ms / 1000).toFixed(3) : "-"}s</div>
+                                    <div>1/4 ET: {match.opponent_quarter_et?.toFixed(3) || "-"}s</div>
+                                    <div>1/4 MPH: {match.opponent_quarter_mph?.toFixed(2) || "-"}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {!isCompleted && (
+                              <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>
+                                {isPending && "⏳ Waiting for opponent to accept..."}
+                                {isAccepted && "🏎️ Both racers ready - waiting for first run"}
+                                {isWaiting && "🏎️ One racer has finished - waiting for opponent"}
+                              </div>
+                            )}
+
+                            <div style={{ fontSize: 10, color: "#64748b", marginTop: 8 }}>
+                              {new Date(match.created_at).toLocaleString()}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <hr className="hr" />
+              </>
+            )}
 
             <hr className="hr" />
 
@@ -285,6 +408,7 @@ export default function ThreadPage() {
                                     handle={p.user_profiles?.forum_handle}
                                     currentUserId={userId}
                                     size="small"
+                                    threadId={threadId}
                                   />
                                   <div>
                                     <div style={{ fontWeight: 700, color: "#7dd3fc" }}>

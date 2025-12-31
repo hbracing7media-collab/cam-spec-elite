@@ -24,7 +24,6 @@ interface ShortBlock {
     chamber_volume?: number;
     flow_data?: any;
   } | null;
-  attachedCams?: any[];
 }
 
 interface EngineGeometry {
@@ -412,10 +411,11 @@ const TUNE_DEFAULT = {
   rpmStep: 250,
 };
 
-export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { shortBlocks?: ShortBlock[] } = {}) {
+export default function MyCalculator() {
 
   const [engine, setEngine] = useState<EngineState>(ENGINE_DEFAULT);
   const [selectedShortBlockId, setSelectedShortBlockId] = useState<string>('');
+  const [myShortBlocks, setMyShortBlocks] = useState<ShortBlock[]>([]);
   const [cam, setCam] = useState<Cam>(CAM_DEFAULT);
   const [camDrafts, setCamDrafts] = useState<Partial<Record<CamFieldKey, string>>>({});
   const [tune, setTune] = useState(TUNE_DEFAULT);
@@ -433,8 +433,24 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
   const [chartData, setChartData] = useState<CurvePoint[]>([]);
   const [geomDisplay, setGeomDisplay] = useState({ cid: '-', crStatic: '-' });
 
+  // Fetch user's short blocks from API
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/profile/short-blocks');
+        if (res.ok) {
+          const data = await res.json();
+          console.log('MyCalculator: Fetched short blocks:', data);
+          setMyShortBlocks(data.blocks || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch short blocks:', err);
+      }
+    })();
+  }, []);
+
   // Debug: show selected block, attached head, and headOptions
-  const debugBlock = shortBlocks.find(b => b.id === selectedShortBlockId);
+  const debugBlock = myShortBlocks.find(b => b.id === selectedShortBlockId);
   const debugAttachedHead = debugBlock?.attachedHead;
   const [dynCrDisplay, setDynCrDisplay] = useState('-');
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
@@ -715,8 +731,13 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
   useEffect(() => {
     if (!selectedHead) return;
     const headSpec = headOptions.find((h) => h.id === selectedHead);
-    if (!headSpec || typeof headSpec.chamberCc !== 'number') return;
+    console.log('MyCalculator: Head selection effect - selectedHead:', selectedHead, 'headSpec:', headSpec);
+    if (!headSpec || typeof headSpec.chamberCc !== 'number') {
+      console.log('MyCalculator: Head selection effect - no valid chamberCc, skipping chamber update');
+      return;
+    }
     setEngine((prev) => {
+      console.log('MyCalculator: Updating chamber from', prev.chamber, 'to', headSpec.chamberCc);
       if (Math.abs(prev.chamber - headSpec.chamberCc) < 0.01) {
         return prev;
       }
@@ -759,42 +780,58 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
   // Auto-load attached head from short block
   // Always inject attached head from short block into headOptions and select it
   useEffect(() => {
-    if (!selectedShortBlockId || shortBlocks.length === 0) return;
-    const block = shortBlocks.find(b => b.id === selectedShortBlockId);
+    if (!selectedShortBlockId || myShortBlocks.length === 0) return;
+    const block = myShortBlocks.find(b => b.id === selectedShortBlockId);
     if (block?.attachedHead?.id) {
       // Remove any previous injected attached head with the same id
       setHeadOptions(prev => {
         const filtered = prev.filter(h => h.id !== block.attachedHead!.id);
         // Build a complete HeadOption from attachedHead
         const ah = block.attachedHead;
+        console.log('MyCalculator: Attached head data:', ah);
+        console.log('MyCalculator: Attached head flow_data:', ah.flow_data);
         const flowCurve = Array.isArray(ah.flow_data)
           ? ah.flow_data.map((fd: any) => ({
               lift: Number(fd.lift) || 0,
-              intakeFlow: Number(fd.intakeFlow) || undefined,
-              exhaustFlow: Number(fd.exhaustFlow) || undefined,
+              intakeFlow: fd.intakeFlow != null ? Number(fd.intakeFlow) : undefined,
+              exhaustFlow: fd.exhaustFlow != null ? Number(fd.exhaustFlow) : undefined,
             })).filter((pt: any) => typeof pt.lift === 'number' && (pt.intakeFlow || pt.exhaustFlow))
           : [];
+        console.log('MyCalculator: Built flowCurve:', flowCurve);
         const peakFlow = flowCurve.reduce((max, pt) => {
           const candidate = pt.intakeFlow ?? pt.exhaustFlow ?? 0;
           return candidate > max ? candidate : max;
         }, 0);
+        const headLabel = [ah.brand, ah.part_number].filter(Boolean).join(' ') || 'Attached Head';
         const injected: HeadOption = {
           id: ah.id,
-          label: ah.head_name || 'Attached Head',
+          label: headLabel,
           flowCfm: peakFlow || ENGINE_DEFAULT.portCfm,
-          chamberCc: ah.chamber_volume ?? undefined,
+          chamberCc: ah.chamber_volume ?? ah.chamber_cc ?? undefined,
           flowCurve,
         };
+        console.log('MyCalculator: Injected head option:', injected);
         return [injected, ...filtered];
       });
       setSelectedHead(block.attachedHead.id);
     }
-  }, [selectedShortBlockId, shortBlocks]);
+  }, [selectedShortBlockId, myShortBlocks]);
 
   // --------- Engine Geometry & Compression Ratios ---------
   function computeEngineGeometry() {
     const PI = Math.PI;
     const CC_TO_IN3 = 0.0610237441;
+
+    console.log('computeEngineGeometry INPUT:', {
+      bore: engine.bore,
+      stroke: engine.stroke,
+      chamber: engine.chamber,
+      pistonCc: engine.pistonCc,
+      gasketBore: engine.gasketBore,
+      gasketThk: engine.gasketThk,
+      deck: engine.deck,
+      cyl: engine.cyl
+    });
 
     // Cross-sectional areas
     const A = (PI / 4) * engine.bore * engine.bore;
@@ -803,9 +840,19 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
     // Volumes in cubic inches
     const Vs = A * engine.stroke;
     const Vch = engine.chamber * CC_TO_IN3;
-    const Vp = engine.pistonCc * CC_TO_IN3; // positive = dome, negative = dish
+    const Vp = engine.pistonCc * CC_TO_IN3; // positive = dish (adds clearance), negative = dome (reduces clearance)
     const Vg = Ag * engine.gasketThk;
     const Vd = A * engine.deck;
+
+    console.log('computeEngineGeometry VOLUMES (in³):', {
+      A_bore_area: A.toFixed(4),
+      Ag_gasket_area: Ag.toFixed(4),
+      Vs_swept: Vs.toFixed(4),
+      Vch_chamber: Vch.toFixed(4),
+      Vp_piston: Vp.toFixed(4),
+      Vg_gasket: Vg.toFixed(4),
+      Vd_deck: Vd.toFixed(4)
+    });
 
     // Clearance volume
     const Vc = Vch + Vp + Vg + Vd;
@@ -815,6 +862,12 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
 
     // CID
     const cid = Vs * engine.cyl;
+
+    console.log('computeEngineGeometry RESULT:', {
+      Vc_clearance: Vc.toFixed(4),
+      crStatic: crStatic.toFixed(2),
+      cid: cid.toFixed(1)
+    });
 
     return { cid, crStatic, Vc, A, Vs };
   }
@@ -1249,10 +1302,12 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
   function handleRunCalc() {
     try {
       const geom = computeEngineGeometry();
-      console.log('geom:', geom);
+      console.log('geom:', geom, 'CID:', geom.cid.toFixed(1), 'Static CR:', geom.crStatic.toFixed(2));
       
       const crData = calculateDynamicAndStaticCR();
-      console.log('crData:', crData);
+      console.log('crData:', 'Static:', crData.crStatic.toFixed(2), 'Dynamic:', crData.crDynamic.toFixed(2));
+      
+      console.log('engine state:', 'bore:', engine.bore, 'stroke:', engine.stroke, 'chamber:', engine.chamber, 'pistonCc:', engine.pistonCc, 'gasketBore:', engine.gasketBore, 'gasketThk:', engine.gasketThk, 'deck:', engine.deck);
       
       const engFull = { ...geom, rod: engine.rod, stroke: engine.stroke, cyl: engine.cyl, portCfm: engine.portCfm };
       console.log('engFull:', engFull);
@@ -1399,15 +1454,14 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flex: 1 }}>
               <h3 style={{ margin: '0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#e5e7eb' }}>
-                Step 1 • {shortBlocks.length > 0 ? 'Select Short Block' : 'Engine Geometry'}
+                Step 1 • Engine Geometry
               </h3>
               <span style={{ fontSize: '10px', color: '#a5b4fc' }}>
-                {shortBlocks.length > 0 ? 'Load engine specs' : 'Bore • Stroke • Rod • Volumes'}
+                Bore • Stroke • Rod • Volumes
               </span>
             </div>
             
-            {/* Unit Toggle Slider - only show if not using short blocks */}
-            {shortBlocks.length === 0 && (
+            {/* Unit Toggle Slider */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginLeft: 'auto' }}>
               <span style={{ fontSize: '10px', color: unitSystem === 'imperial' ? '#00d4ff' : '#7CFFCB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', minWidth: '50px', textAlign: 'center' }}>
                 {unitSystem === 'imperial' ? 'Imperial' : 'Metric'}
@@ -1448,50 +1502,52 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
                 </span>
               </button>
             </div>
-            )}
           </div>
 
-          {/* SHORT BLOCK SELECTOR */}
-          {shortBlocks.length > 0 && (
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '6px', fontSize: '11px', fontWeight: 600 }}>Select Short Block</label>
+          {/* MY SHORT BLOCKS LOADER - Profile only */}
+          {myShortBlocks.length > 0 && (
+            <div style={{ marginBottom: '12px', padding: '8px 10px', borderRadius: '8px', background: 'rgba(124,255,203,0.05)', border: '1px solid rgba(124,255,203,0.25)' }}>
+              <label style={{ display: 'block', color: '#7CFFCB', marginBottom: '6px', fontSize: '11px', fontWeight: 600 }}>Load from My Short Blocks</label>
               <select
                 value={selectedShortBlockId}
                 onChange={(e) => {
                   setSelectedShortBlockId(e.target.value);
-                  const block = shortBlocks.find(b => b.id === e.target.value);
+                  const block = myShortBlocks.find(b => b.id === e.target.value);
                   if (block) {
+                    // Get chamber from attached head if available
+                    const chamberVolume = block.attachedHead?.chamber_cc ?? block.attachedHead?.chamber_volume ?? 56;
+                    console.log('MyCalculator: Loading short block, chamber from attached head:', chamberVolume, 'raw:', block.attachedHead?.chamber_cc, block.attachedHead?.chamber_volume);
+                    console.log('MyCalculator: Short block piston_dome_dish:', block.piston_dome_dish);
                     setEngine({
                       bore: parseFloat(block.bore || '4.0'),
                       stroke: parseFloat(block.stroke || '3.5'),
                       rod: parseFloat(block.rod_length || '5.956'),
                       cyl: parseInt(String(block.cyl || 8), 10),
-                      chamber: 56,
-                      pistonCc: parseFloat(block.piston_dome_dish || '19.5'),
+                      chamber: chamberVolume,
+                      pistonCc: parseFloat(block.piston_dome_dish || '0'),
                       gasketBore: parseFloat(block.head_gasket_bore || '4.06'),
                       gasketThk: parseFloat(block.head_gasket_compressed_thickness || '0.04'),
-                      deck: parseFloat(block.deck_height || '0.015'),
-                      portCfm: 300,
+                      deck: parseFloat(block.deck_clearance || '0.015'),  // Use deck_clearance, NOT deck_height!
+                      portCfm: 300, // Will be updated by head selection effect
                     });
                   }
                 }}
-                style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(124,255,203,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
               >
-                <option value="">Choose a short block...</option>
-                {shortBlocks.map(block => (
+                <option value="">Choose a short block to load specs...</option>
+                {myShortBlocks.map(block => (
                   <option key={block.id} value={block.id}>{block.block_name}</option>
                 ))}
               </select>
               {selectedShortBlockId && (
-                <div style={{ marginTop: '8px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(2,6,23,0.85)', border: '1px solid rgba(255,43,214,0.30)', fontSize: '11px', color: '#e5e7eb' }}>
-                  Displacement: {geomDisplay.cid} CID • Static CR: {geomDisplay.crStatic} : 1
+                <div style={{ marginTop: '6px', fontSize: '10px', color: '#7CFFCB' }}>
+                  ✓ Specs loaded — edit values below if needed
                 </div>
               )}
             </div>
           )}
 
-          {/* ENGINE GEOMETRY INPUTS - only show if not using short blocks */}
-          {shortBlocks.length === 0 && (
+          {/* ENGINE GEOMETRY INPUTS - always visible */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px', fontSize: '12px' }}>
             {[
               { key: 'bore', label: unitSystem === 'imperial' ? 'Bore (in)' : 'Bore (mm)', step: unitSystem === 'imperial' ? 0.001 : 0.1, min: unitSystem === 'imperial' ? 2 : 50, max: unitSystem === 'imperial' ? 6 : 152 },
@@ -1519,54 +1575,24 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
               </div>
             ))}
           </div>
-          )}
 
-          {shortBlocks.length === 0 && (
           <div style={{ marginTop: '8px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(2,6,23,0.85)', border: '1px solid rgba(255,43,214,0.30)', fontSize: '11px', color: '#e5e7eb' }}>
             Displacement: {geomDisplay.cid} CID • Static CR: {geomDisplay.crStatic} : 1
           </div>
-          )}
         </div>
 
-        {/* STEP 2: ATTACHED HEAD OR CATALOG SELECTION */}
+        {/* STEP 2: CATALOG SELECTION */}
         <div style={{ borderRadius: '12px', padding: '10px 12px', background: 'rgba(6,11,30,0.78)', border: '1px solid rgba(0,212,255,0.22)', marginBottom: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <h3 style={{ margin: 0, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#e5e7eb' }}>
-              Step 2 • {shortBlocks.length > 0 && selectedShortBlockId ? 'Cylinder Head' : 'Catalog Selection'}
+              Step 2 • Catalog Selection
             </h3>
             <span style={{ fontSize: '10px', color: '#a5b4fc' }}>
-              {shortBlocks.length > 0 && selectedShortBlockId ? 'From short block' : 'Make → Family → Cam → Head'}
+              Make → Family → Cam → Head
             </span>
           </div>
 
-          {/* ATTACHED HEAD FROM SHORT BLOCK - DISPLAY ONLY */}
-          {shortBlocks.length > 0 && selectedShortBlockId && (
-            (() => {
-              const block = shortBlocks.find(b => b.id === selectedShortBlockId);
-              const attachedHeadId = block?.attachedHead?.id;
-              const selected = headOptions.find(h => h.id === selectedHead);
-              const isAttached = attachedHeadId && selectedHead === attachedHeadId;
-              return (
-                <div style={{ padding: '8px 10px', borderRadius: '8px', background: isAttached ? 'rgba(124,255,203,0.08)' : 'rgba(255,43,214,0.08)', border: isAttached ? '1px solid rgba(124,255,203,0.25)' : '1px solid rgba(255,43,214,0.25)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ color: '#f9fafb', fontSize: '12px', fontWeight: 500 }}>
-                        {selected?.label || 'No head attached'}
-                        {isAttached && <span style={{ color: '#7CFFCB', marginLeft: 8, fontSize: 10 }}>(From short block)</span>}
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'right', fontSize: '10px', color: '#a5b4fc' }}>
-                      <div>Chamber: {selected?.chamberCc ?? '-' } cc</div>
-                      {/* Optionally, show more info if available */}
-                    </div>
-                  </div>
-                </div>
-              );
-            })()
-          )}
-
-          {/* FULL CATALOG SELECTION - ONLY WHEN NOT USING SHORT BLOCKS */}
-          {shortBlocks.length === 0 && (
+          {/* FULL CATALOG SELECTION - always visible */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px', fontSize: '12px' }}>
             <div>
               <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>Engine Make</label>
@@ -1626,7 +1652,6 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
               {headError && <div style={{ color: '#fb7185', fontSize: '10px', marginTop: '2px' }}>{headError}</div>}
             </div>
           </div>
-          )}
 
           <div style={{ marginTop: '8px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(2,6,23,0.85)', border: '1px solid rgba(255,43,214,0.30)', fontSize: '11px', color: '#e5e7eb', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
             <span>Dynamic CR (est): {dynCrDisplay} : 1</span>
@@ -1637,49 +1662,18 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
           </div>
         </div>
 
-        {/* STEP 3: CAMSHAFT SELECTION OR CAM SPECIFICATIONS */}
+        {/* STEP 3: CAM SPECIFICATIONS */}
         <div style={{ borderRadius: '12px', padding: '10px 12px', background: 'rgba(6,11,30,0.78)', border: '1px solid rgba(255,43,214,0.22)', marginBottom: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <h3 style={{ margin: '0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#e5e7eb' }}>
-              Step 3 • {shortBlocks.length > 0 && selectedShortBlockId ? 'Camshaft Selection' : 'Cam Specifications'}
+              Step 3 • Cam Specifications
             </h3>
             <span style={{ fontSize: '10px', color: '#a5b4fc' }}>
-              {shortBlocks.length > 0 && selectedShortBlockId ? 'Choose from catalog' : 'Auto-filled from catalog — tweak as needed'}
+              Auto-filled from catalog — tweak as needed
             </span>
           </div>
 
-          {/* SIMPLE CAM SELECTION - WHEN USING SHORT BLOCKS */}
-          {shortBlocks.length > 0 && selectedShortBlockId && (() => {
-            // Only show camshafts attached to the selected short block
-            const block = shortBlocks.find(b => b.id === selectedShortBlockId);
-            const attachedCams = Array.isArray(block?.attachedCams) ? block.attachedCams : [];
-            return (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', fontSize: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>Camshaft</label>
-                  <select
-                    value={selectedCatalogCam}
-                    onChange={(e) => setSelectedCatalogCam(e.target.value)}
-                    disabled={attachedCams.length === 0}
-                    style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(255,43,214,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none', opacity: attachedCams.length === 0 ? 0.5 : 1, cursor: attachedCams.length === 0 ? 'not-allowed' : 'pointer' }}
-                  >
-                    <option value="">{attachedCams.length === 0 ? 'No camshafts attached' : 'Select Camshaft...'}</option>
-                    {attachedCams.map((option: any) => (
-                      <option key={option.id} value={option.id}>{option.label || option.name || option.part_number || 'Camshaft'}</option>
-                    ))}
-                  </select>
-                </div>
-                {selectedCatalogCam && (
-                  <div style={{ padding: '6px 8px', borderRadius: '8px', background: 'rgba(2,6,23,0.85)', border: '1px solid rgba(255,43,214,0.30)', fontSize: '11px', color: '#e5e7eb' }}>
-                    <div>Selected: {attachedCams.find((c: any) => c.id === selectedCatalogCam)?.label || attachedCams.find((c: any) => c.id === selectedCatalogCam)?.name}</div>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-
-          {/* FULL CAM SPECIFICATIONS - ONLY WHEN NOT USING SHORT BLOCKS */}
-          {shortBlocks.length === 0 && (
+          {/* FULL CAM SPECIFICATIONS - always visible */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px', fontSize: '12px', marginBottom: '8px' }}>
             {CAM_FIELD_CONFIG.map((field) => {
               const numericProps = field.type === 'number'
@@ -1701,7 +1695,6 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
               );
             })}
           </div>
-          )}
         </div>
 
         {/* STEP 4: TUNE / INTAKE / FUEL / BOOST */}

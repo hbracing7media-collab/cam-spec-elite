@@ -93,6 +93,9 @@ export default function Home() {
           <Link href="/dyno-wars" className="pill">
             Dyno Wars
           </Link>
+          <Link href="/shop" className="pill" style={{ gridColumn: "1 / -1" }}>
+            Shop & Support
+          </Link>
         </div>
 
         <hr className="hr" />

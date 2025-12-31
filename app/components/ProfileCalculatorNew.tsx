@@ -24,7 +24,6 @@ interface ShortBlock {
     chamber_volume?: number;
     flow_data?: any;
   } | null;
-  attachedCams?: any[];
 }
 
 interface EngineGeometry {
@@ -412,7 +411,7 @@ const TUNE_DEFAULT = {
   rpmStep: 250,
 };
 
-export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { shortBlocks?: ShortBlock[] } = {}) {
+export default function ProfileCalculator({ shortBlocks = [] }: { shortBlocks?: ShortBlock[] } = {}) {
 
   const [engine, setEngine] = useState<EngineState>(ENGINE_DEFAULT);
   const [selectedShortBlockId, setSelectedShortBlockId] = useState<string>('');
@@ -782,7 +781,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
           id: ah.id,
           label: ah.head_name || 'Attached Head',
           flowCfm: peakFlow || ENGINE_DEFAULT.portCfm,
-          chamberCc: ah.chamber_volume ?? undefined,
+          chamberCc: ah.chamber_volume ?? ah.chamber_cc ?? undefined,
           flowCurve,
         };
         return [injected, ...filtered];

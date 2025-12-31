@@ -124,12 +124,6 @@ export default async function CalculatorSlugPage({ params }: PageProps) {
           </div>
         </div>
         )}
-
-        <hr className="hr" />
-
-        <div className="small" style={{ opacity: 0.85 }}>
-          Status: route + layout are working. Math and components will be plugged in per calculator.
-        </div>
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ interface UserHoverCardProps {
   handle?: string;
   currentUserId?: string | null;
   size?: "small" | "medium";
+  threadId?: string;
 }
 
 export default function UserHoverCard({
@@ -19,14 +20,15 @@ export default function UserHoverCard({
   handle,
   currentUserId,
   size = "small",
+  threadId,
 }: UserHoverCardProps) {
   const router = useRouter();
   const [showTooltip, setShowTooltip] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
 
   const avatarSize = size === "small" ? 40 : 48;
 
-  const handleChallenge = async (e: React.MouseEvent) => {
+  const handleChallenge = async (e: React.MouseEvent, matchType: "simple" | "roll-60-130") => {
     e.stopPropagation();
     
     if (!currentUserId) {
@@ -39,7 +41,7 @@ export default function UserHoverCard({
       return;
     }
 
-    setLoading(true);
+    setLoading(matchType);
 
     try {
       const res = await fetch("/api/forum/grudge/challenge", {
@@ -47,13 +49,15 @@ export default function UserHoverCard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           opponent_id: userId,
-          match_type: "simple",
+          match_type: matchType,
+          thread_id: threadId,
         }),
       });
 
       if (res.ok) {
         const data = await res.json();
-        alert(`Challenge sent to ${handle || "opponent"}! 🏎️`);
+        const raceType = matchType === "roll-60-130" ? "60-130 Roll Race" : "1/4 Mile Drag Race";
+        alert(`${raceType} challenge sent to ${handle || "opponent"}! 🏎️`);
         setShowTooltip(false);
       } else {
         const error = await res.json();
@@ -63,7 +67,7 @@ export default function UserHoverCard({
       console.error("Error:", error);
       alert("Error sending challenge");
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
   };
 
@@ -129,7 +133,7 @@ export default function UserHoverCard({
             borderRadius: "8px",
             padding: "12px",
             zIndex: 10000,
-            minWidth: "180px",
+            minWidth: "200px",
             boxShadow: "0 4px 30px rgba(0, 245, 255, 0.4)",
             backdropFilter: "blur(10px)",
             pointerEvents: "auto",
@@ -140,27 +144,52 @@ export default function UserHoverCard({
             <div style={{ fontWeight: "700", color: "#00f5ff", fontSize: "0.9rem" }}>
               {handle || "Unknown"}
             </div>
+            <div style={{ fontSize: "0.7rem", color: "#888", marginTop: "4px" }}>
+              Pick your race type:
+            </div>
           </div>
-          <button
-            onClick={handleChallenge}
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "8px 12px",
-              background: "linear-gradient(135deg, #00f5ff, #ff3bd4)",
-              color: "#000",
-              border: "none",
-              borderRadius: "6px",
-              fontWeight: "bold",
-              cursor: loading ? "not-allowed" : "pointer",
-              fontSize: "0.85rem",
-              textTransform: "uppercase",
-              transition: "all 0.2s ease",
-              opacity: loading ? 0.6 : 1,
-            }}
-          >
-            {loading ? "Sending..." : "🏎️ Challenge"}
-          </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <button
+              onClick={(e) => handleChallenge(e, "simple")}
+              disabled={loading !== null}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                background: "linear-gradient(135deg, #00f5ff, #ff3bd4)",
+                color: "#000",
+                border: "none",
+                borderRadius: "6px",
+                fontWeight: "bold",
+                cursor: loading !== null ? "not-allowed" : "pointer",
+                fontSize: "0.8rem",
+                textTransform: "uppercase",
+                transition: "all 0.2s ease",
+                opacity: loading !== null ? 0.6 : 1,
+              }}
+            >
+              {loading === "simple" ? "Sending..." : "🏁 1/4 Mile Drag"}
+            </button>
+            <button
+              onClick={(e) => handleChallenge(e, "roll-60-130")}
+              disabled={loading !== null}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                background: "linear-gradient(135deg, #ff8c00, #ff3bd4)",
+                color: "#000",
+                border: "none",
+                borderRadius: "6px",
+                fontWeight: "bold",
+                cursor: loading !== null ? "not-allowed" : "pointer",
+                fontSize: "0.8rem",
+                textTransform: "uppercase",
+                transition: "all 0.2s ease",
+                opacity: loading !== null ? 0.6 : 1,
+              }}
+            >
+              {loading === "roll-60-130" ? "Sending..." : "🚀 60-130 Roll"}
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -2,20 +2,34 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import DragSimulator from "@/components/DragSimulator";
+import DragSimulator, { TimeSlip } from "@/components/DragSimulator";
+import RollRaceSimulator, { RollTimeSlip } from "@/components/RollRaceSimulator";
 
 interface Match {
   id: string;
   challenger_id: string;
   opponent_id: string;
-  match_type: "simple" | "pro";
-  status: "pending" | "accepted" | "in_progress" | "completed";
+  match_type: "simple" | "pro" | "roll-60-130";
+  status: "pending" | "accepted" | "in_progress" | "waiting_opponent" | "completed";
   challenger_weight_lbs: number | null;
   challenger_hp: number | null;
   opponent_weight_lbs: number | null;
   opponent_hp: number | null;
   challenger_reaction_ms: number | null;
   opponent_reaction_ms: number | null;
+  challenger_sixty_ft: number | null;
+  challenger_eighth_et: number | null;
+  challenger_eighth_mph: number | null;
+  challenger_quarter_et: number | null;
+  challenger_quarter_mph: number | null;
+  opponent_sixty_ft: number | null;
+  opponent_eighth_et: number | null;
+  opponent_eighth_mph: number | null;
+  opponent_quarter_et: number | null;
+  opponent_quarter_mph: number | null;
+  // Roll race specific fields
+  challenger_roll_total: number | null;
+  opponent_roll_total: number | null;
   winner_id: string | null;
   created_at: string;
 }
@@ -114,32 +128,81 @@ function GrudgeMatchContent() {
     }
   };
 
-  const handleFinishRace = async (reactionTime: number, raceTime: number) => {
+  const handleFinishRace = async (timeSlip: TimeSlip) => {
     if (!match || !currentUser) return;
+
+    const isChallenger = currentUser.id === match.challenger_id;
 
     try {
       const res = await fetch(`/api/forum/grudge/match/${match.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          challenger_reaction_ms:
-            currentUser.id === match.challenger_id ? reactionTime : match.challenger_reaction_ms,
-          opponent_reaction_ms:
-            currentUser.id === match.opponent_id ? reactionTime : match.opponent_reaction_ms,
-          challenger_time_ms: raceTime,
-          opponent_time_ms: raceTime,
+          user_role: isChallenger ? "challenger" : "opponent",
+          time_slip: {
+            reaction_time: timeSlip.reactionTime,
+            sixty_foot: timeSlip.sixtyFoot,
+            eighth_et: timeSlip.eighthET,
+            eighth_mph: timeSlip.eighthMPH,
+            quarter_et: timeSlip.quarterET,
+            quarter_mph: timeSlip.quarterMPH,
+          },
         }),
       });
 
       if (res.ok) {
         const data = await res.json();
         setMatch(data.match);
-        alert(
-          `Race finished! Winner: ${data.match.winner_id === currentUser.id ? "You" : "Opponent"}`
-        );
+        
+        if (data.match.status === "completed") {
+          alert(
+            `Race finished! Winner: ${data.match.winner_id === currentUser.id ? "You" : "Opponent"}`
+          );
+        } else {
+          alert("Results submitted! Waiting for opponent to complete their run.");
+        }
       }
     } catch (error) {
       console.error("Error finishing race:", error);
+    }
+  };
+
+  const handleFinishRollRace = async (timeSlip: RollTimeSlip) => {
+    if (!match || !currentUser) return;
+
+    const isChallenger = currentUser.id === match.challenger_id;
+
+    try {
+      const res = await fetch(`/api/forum/grudge/match/${match.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_role: isChallenger ? "challenger" : "opponent",
+          match_type: "roll-60-130",
+          roll_slip: {
+            reaction_time: timeSlip.reactionTime,
+            sixty_to_hundred: timeSlip.sixtyToHundred,
+            hundred_to_one_twenty: timeSlip.hundredToOneTwenty,
+            one_twenty_to_one_thirty: timeSlip.oneTwentyToOneThirty,
+            total_time: timeSlip.totalTime,
+          },
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setMatch(data.match);
+        
+        if (data.match.status === "completed") {
+          alert(
+            `Race finished! Winner: ${data.match.winner_id === currentUser.id ? "You" : "Opponent"}`
+          );
+        } else {
+          alert("Results submitted! Waiting for opponent to complete their run.");
+        }
+      }
+    } catch (error) {
+      console.error("Error finishing roll race:", error);
     }
   };
 
@@ -147,30 +210,132 @@ function GrudgeMatchContent() {
 
   if (!currentUser) return <div>Redirecting to login...</div>;
 
-  // Active match view
-  if (match && match.status === "in_progress") {
-    const isChallenger = currentUser.id === match.challenger_id;
+  // Check if user needs to run their pass
+  const isChallenger = match ? currentUser.id === match.challenger_id : false;
+  const userHasSubmitted = match ? (
+    isChallenger 
+      ? (match.match_type === "roll-60-130" ? match.challenger_roll_total !== null : match.challenger_reaction_ms !== null)
+      : (match.match_type === "roll-60-130" ? match.opponent_roll_total !== null : match.opponent_reaction_ms !== null)
+  ) : false;
 
+  // Active match view - show simulator if match is active and user hasn't submitted yet
+  if (match && (match.status === "in_progress" || match.status === "waiting_opponent") && !userHasSubmitted) {
+    return (
+      <div className="grudge-match-container">
+        <h1>{match.match_type === "roll-60-130" ? "🚀 60-130 Roll Race" : "🏎️ Grudge Match"}</h1>
+
+        {match.match_type === "roll-60-130" ? (
+          <RollRaceSimulator
+            matchId={match.id}
+            userRole={isChallenger ? "challenger" : "opponent"}
+            challenger={{
+              name: "Challenger",
+              weight_lbs: match.challenger_weight_lbs || 3500,
+              hp: match.challenger_hp || 500,
+            }}
+            opponent={{
+              name: "Opponent",
+              weight_lbs: match.opponent_weight_lbs || 3500,
+              hp: match.opponent_hp || 500,
+            }}
+            onFinish={handleFinishRollRace}
+          />
+        ) : (
+          <DragSimulator
+            matchId={match.id}
+            userRole={isChallenger ? "challenger" : "opponent"}
+            challenger={{
+              name: "Challenger",
+              weight_lbs: match.challenger_weight_lbs || 3500,
+              hp: match.challenger_hp || 500,
+            }}
+            opponent={{
+              name: "Opponent",
+              weight_lbs: match.opponent_weight_lbs || 3500,
+              hp: match.opponent_hp || 500,
+            }}
+            onFinish={handleFinishRace}
+          />
+        )}
+
+        <button
+          onClick={() => {
+            setMatch(null);
+            router.push("/forum/grudge");
+          }}
+          className="btn btn-secondary"
+        >
+          Back to Challenges
+        </button>
+      </div>
+    );
+  }
+
+  // Waiting for opponent view - user has submitted but opponent hasn't
+  if (match && match.status === "waiting_opponent" && userHasSubmitted) {
+    const isRollRace = match.match_type === "roll-60-130";
+    
     return (
       <div className="grudge-match-container">
         <h1>🏎️ Grudge Match</h1>
-
-        <DragSimulator
-          matchId={match.id}
-          userRole={isChallenger ? "challenger" : "opponent"}
-          challenger={{
-            name: "Challenger",
-            weight_lbs: match.challenger_weight_lbs || 3500,
-            hp: match.challenger_hp || 500,
-          }}
-          opponent={{
-            name: "Opponent",
-            weight_lbs: match.opponent_weight_lbs || 3500,
-            hp: match.opponent_hp || 500,
-          }}
-          onFinish={handleFinishRace}
-        />
-
+        <div className="waiting-panel">
+          <h2>✅ Results Submitted!</h2>
+          <p>Waiting for your opponent to complete their run...</p>
+          <div className="your-slip">
+            <h3>Your Time Slip</h3>
+            {isRollRace ? (
+              <div className="slip-data">
+                <div className="slip-row">
+                  <span>R/T</span>
+                  <span>{((isChallenger ? match.challenger_reaction_ms : match.opponent_reaction_ms) / 1000).toFixed(3)}</span>
+                </div>
+                <div className="slip-row">
+                  <span>60-100</span>
+                  <span>{(isChallenger ? match.challenger_roll_sixty_to_hundred : match.opponent_roll_sixty_to_hundred)?.toFixed(3) || "---"}</span>
+                </div>
+                <div className="slip-row">
+                  <span>100-120</span>
+                  <span>{(isChallenger ? match.challenger_roll_hundred_to_one_twenty : match.opponent_roll_hundred_to_one_twenty)?.toFixed(3) || "---"}</span>
+                </div>
+                <div className="slip-row">
+                  <span>120-130</span>
+                  <span>{(isChallenger ? match.challenger_roll_one_twenty_to_one_thirty : match.opponent_roll_one_twenty_to_one_thirty)?.toFixed(3) || "---"}</span>
+                </div>
+                <div className="slip-row highlight">
+                  <span>60-130 Total</span>
+                  <span>{(isChallenger ? match.challenger_roll_total : match.opponent_roll_total)?.toFixed(3) || "---"}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="slip-data">
+                <div className="slip-row">
+                  <span>R/T</span>
+                  <span>{((isChallenger ? match.challenger_reaction_ms : match.opponent_reaction_ms) / 1000).toFixed(3)}</span>
+                </div>
+                <div className="slip-row">
+                  <span>60&apos;</span>
+                  <span>{(isChallenger ? match.challenger_sixty_ft : match.opponent_sixty_ft)?.toFixed(3) || "---"}</span>
+                </div>
+                <div className="slip-row">
+                  <span>1/8 ET</span>
+                  <span>{(isChallenger ? match.challenger_eighth_et : match.opponent_eighth_et)?.toFixed(3) || "---"}</span>
+                </div>
+                <div className="slip-row">
+                  <span>1/8 MPH</span>
+                  <span>{(isChallenger ? match.challenger_eighth_mph : match.opponent_eighth_mph)?.toFixed(2) || "---"}</span>
+                </div>
+                <div className="slip-row highlight">
+                  <span>1/4 ET</span>
+                  <span>{(isChallenger ? match.challenger_quarter_et : match.opponent_quarter_et)?.toFixed(3) || "---"}</span>
+                </div>
+                <div className="slip-row highlight">
+                  <span>1/4 MPH</span>
+                  <span>{(isChallenger ? match.challenger_quarter_mph : match.opponent_quarter_mph)?.toFixed(2) || "---"}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
         <button
           onClick={() => {
             setMatch(null);
@@ -201,14 +366,14 @@ function GrudgeMatchContent() {
               <div key={challenge.id} className="challenge-card">
                 <div className="card-header">
                   <span className={`badge ${challenge.match_type}`}>
-                    {challenge.match_type.toUpperCase()}
+                    {challenge.match_type === "roll-60-130" ? "60-130 ROLL" : challenge.match_type.toUpperCase()}
                   </span>
                   <span className="time-ago">
                     {new Date(challenge.created_at).toLocaleDateString()}
                   </span>
                 </div>
 
-                {challenge.match_type === "simple" && (
+                {(challenge.match_type === "simple" || challenge.match_type === "roll-60-130") && (
                   <div className="vehicle-specs">
                     <div className="spec">
                       <p className="label">Their Vehicle:</p>
@@ -360,6 +525,11 @@ function GrudgeMatchContent() {
           color: #ff3bd4;
         }
 
+        .badge.roll-60-130 {
+          background: rgba(255, 140, 0, 0.2);
+          color: #ff8c00;
+        }
+
         .time-ago {
           color: #aaa;
           font-size: 0.9rem;
@@ -454,6 +624,69 @@ function GrudgeMatchContent() {
           padding: 40px;
           color: #00f5ff;
           font-size: 1.2rem;
+        }
+
+        .waiting-panel {
+          background: linear-gradient(135deg, rgba(10, 10, 20, 0.95), rgba(20, 10, 40, 0.95));
+          border: 2px solid rgba(34, 197, 94, 0.4);
+          border-radius: 12px;
+          padding: 30px;
+          text-align: center;
+          margin: 20px 0;
+        }
+
+        .waiting-panel h2 {
+          color: #22c55e;
+          margin-bottom: 10px;
+        }
+
+        .waiting-panel p {
+          color: #94a3b8;
+          margin-bottom: 20px;
+        }
+
+        .your-slip {
+          background: rgba(0, 0, 0, 0.3);
+          border-radius: 8px;
+          padding: 20px;
+          max-width: 300px;
+          margin: 0 auto;
+        }
+
+        .your-slip h3 {
+          color: #00f5ff;
+          font-size: 0.9rem;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          margin-bottom: 15px;
+        }
+
+        .slip-data {
+          font-family: 'Courier New', monospace;
+        }
+
+        .slip-data .slip-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 6px 0;
+          border-bottom: 1px dashed #334155;
+          color: #e2e8f0;
+        }
+
+        .slip-data .slip-row span:first-child {
+          color: #94a3b8;
+        }
+
+        .slip-data .slip-row.highlight {
+          background: rgba(0, 245, 255, 0.1);
+          margin: 0 -10px;
+          padding: 8px 10px;
+          border-radius: 4px;
+        }
+
+        .slip-data .slip-row.highlight span:last-child {
+          color: #fbbf24;
+          font-weight: bold;
         }
       `}</style>
     </div>

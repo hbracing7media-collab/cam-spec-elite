@@ -84,11 +84,60 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       // Don't fail if attachments can't be loaded
     }
 
+    // Fetch grudge matches for this thread
+    const { data: grudgeMatches, error: grudgeError } = await supabase
+      .from("grudge_matches")
+      .select("id,challenger_id,opponent_id,status,winner_id,challenger_reaction_ms,opponent_reaction_ms,challenger_quarter_et,challenger_quarter_mph,opponent_quarter_et,opponent_quarter_mph,created_at")
+      .eq("thread_id", threadId)
+      .order("created_at", { ascending: false });
+
+    if (grudgeError) {
+      console.error("Grudge matches fetch error:", grudgeError);
+      // Don't fail if grudge matches can't be loaded
+    }
+
+    // Fetch profiles for grudge match participants
+    const grudgeMatchesWithProfiles = await Promise.all(
+      (grudgeMatches || []).map(async (match) => {
+        let matchWithProfiles: any = { ...match, challenger_profile: null, opponent_profile: null, winner_profile: null };
+        
+        if (match.challenger_id) {
+          const { data: profile } = await supabase
+            .from("user_profiles")
+            .select("forum_handle")
+            .eq("id", match.challenger_id)
+            .single();
+          if (profile) matchWithProfiles.challenger_profile = profile;
+        }
+        
+        if (match.opponent_id) {
+          const { data: profile } = await supabase
+            .from("user_profiles")
+            .select("forum_handle")
+            .eq("id", match.opponent_id)
+            .single();
+          if (profile) matchWithProfiles.opponent_profile = profile;
+        }
+        
+        if (match.winner_id) {
+          const { data: profile } = await supabase
+            .from("user_profiles")
+            .select("forum_handle")
+            .eq("id", match.winner_id)
+            .single();
+          if (profile) matchWithProfiles.winner_profile = profile;
+        }
+        
+        return matchWithProfiles;
+      })
+    );
+
     return NextResponse.json({
       ok: true,
       thread: threadWithProfile,
       posts: postsWithProfiles,
-      attachments: attachments || []
+      attachments: attachments || [],
+      grudgeMatches: grudgeMatchesWithProfiles
     });
   } catch (err: any) {
     console.error("Thread API error:", err);

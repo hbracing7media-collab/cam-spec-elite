@@ -6,8 +6,8 @@ import Link from "next/link";
 import { CAM_MAKE_OPTIONS, CAM_ENGINE_FAMILIES } from "@/lib/engineOptions";
 import { UserAwardsProfile } from "@/components/UserAwardsProfile";
 import { UserDynoSubmissions } from "@/components/UserDynoSubmissions";
-import CamSpecEliteSelectiveCalculator from "@/app/components/CamSpecEliteSelectiveCalculator";
 import PersonalCamCalculator from "@/app/components/PersonalCamCalculator";
+import MyCalculator from "@/app/components/MyCalculator";
 
 interface UserProfile {
   email: string;
@@ -99,6 +99,11 @@ export default function ProfilePage() {
   });
   const [savingEngine, setSavingEngine] = useState(false);
 
+  // Grudge Match state
+  const [pendingChallenges, setPendingChallenges] = useState<any[]>([]);
+  const [activeMatches, setActiveMatches] = useState<any[]>([]);
+  const [acceptingChallenge, setAcceptingChallenge] = useState<string | null>(null);
+
   useEffect(() => {
     const checkAuth = async () => {
       const res = await fetch("/api/auth/me");
@@ -116,10 +121,49 @@ export default function ProfilePage() {
         await loadCamBuilds();
         await loadHeadBuilds();
         await loadEngineSubmissions();
+        await loadGrudgeMatches(data.user.id);
       }
     };
     checkAuth();
   }, [router]);
+
+  const loadGrudgeMatches = async (userId: string) => {
+    try {
+      const res = await fetch(`/api/forum/grudge/challenge?user_id=${userId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPendingChallenges(data.pendingChallenges || []);
+        setActiveMatches(data.activeMatches || []);
+      }
+    } catch (err) {
+      console.error("Failed to load grudge matches:", err);
+    }
+  };
+
+  const handleAcceptChallenge = async (challengeId: string) => {
+    setAcceptingChallenge(challengeId);
+    try {
+      const res = await fetch("/api/forum/grudge/accept", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ match_id: challengeId }),
+      });
+
+      if (res.ok) {
+        // Reload matches
+        if (user?.id) {
+          await loadGrudgeMatches(user.id);
+        }
+      } else {
+        const err = await res.json();
+        alert("Failed to accept challenge: " + err.message);
+      }
+    } catch (err) {
+      console.error("Error accepting challenge:", err);
+    } finally {
+      setAcceptingChallenge(null);
+    }
+  };
 
   const loadShortBlocks = async () => {
     try {
@@ -2487,7 +2531,362 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* My Cam Spec Elite Calculator */}
+        {/* Grudge Match Challenges - Left Box */}
+        <div
+          style={{
+            borderRadius: 18,
+            padding: 24,
+            border: "1px solid rgba(249,115,22,0.35)",
+            background: "rgba(2,6,23,0.85)",
+            boxShadow: "0 18px 50px rgba(0,0,0,0.6)",
+            color: "#e2e8f0",
+            fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+          }}
+        >
+          <h2
+            style={{
+              margin: "0 0 16px 0",
+              fontSize: 16,
+              fontWeight: 700,
+              color: "#f97316",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            🏎️ Grudge Challenges
+            {pendingChallenges.length > 0 && (
+              <span
+                style={{
+                  background: "#ef4444",
+                  color: "white",
+                  padding: "2px 8px",
+                  borderRadius: 12,
+                  fontSize: 11,
+                  fontWeight: 600,
+                }}
+              >
+                {pendingChallenges.length}
+              </span>
+            )}
+          </h2>
+
+          {/* Pending Challenges */}
+          {pendingChallenges.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <h3 style={{ fontSize: 12, color: "#f97316", marginBottom: 8, textTransform: "uppercase" }}>
+                ⚡ Incoming
+              </h3>
+              <div style={{ display: "grid", gap: 10 }}>
+                {pendingChallenges.map((challenge) => (
+                  <div
+                    key={challenge.id}
+                    style={{
+                      background: "rgba(249, 115, 22, 0.1)",
+                      border: "1px solid rgba(249, 115, 22, 0.3)",
+                      borderRadius: 10,
+                      padding: 12,
+                    }}
+                  >
+                    {/* Challenger info */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                      {challenge.challenger_profile?.forum_avatar_url ? (
+                        <img
+                          src={challenge.challenger_profile.forum_avatar_url}
+                          alt=""
+                          style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", border: "2px solid #f97316" }}
+                        />
+                      ) : (
+                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(249,115,22,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🏎️</div>
+                      )}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700, color: "#f97316", fontSize: 13 }}>
+                          {challenge.challenger_profile?.forum_handle || "Unknown Racer"}
+                        </div>
+                        <div style={{ fontSize: 10, color: "#94a3b8" }}>wants to race!</div>
+                      </div>
+                      <span style={{
+                        background: challenge.match_type === "pro" ? "linear-gradient(135deg, #8b5cf6, #6366f1)" : "linear-gradient(135deg, #22c55e, #16a34a)",
+                        padding: "3px 8px",
+                        borderRadius: 5,
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "white",
+                        textTransform: "uppercase",
+                      }}>
+                        {challenge.match_type}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleAcceptChallenge(challenge.id)}
+                      disabled={acceptingChallenge === challenge.id}
+                      style={{
+                        width: "100%",
+                        padding: "8px 12px",
+                        background: "linear-gradient(135deg, #f97316, #ea580c)",
+                        border: "none",
+                        borderRadius: 6,
+                        color: "white",
+                        fontWeight: 600,
+                        fontSize: 12,
+                        cursor: acceptingChallenge === challenge.id ? "not-allowed" : "pointer",
+                        opacity: acceptingChallenge === challenge.id ? 0.6 : 1,
+                      }}
+                    >
+                      {acceptingChallenge === challenge.id ? "Accepting..." : "Accept"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Active Matches (not completed) */}
+          {activeMatches.filter(m => m.status !== "completed").length > 0 && (
+            <div>
+              <h3 style={{ fontSize: 12, color: "#22c55e", marginBottom: 8, textTransform: "uppercase" }}>
+                🏁 Active
+              </h3>
+              <div style={{ display: "grid", gap: 10 }}>
+                {activeMatches.filter(m => m.status !== "completed").map((match) => {
+                  const opponentProfile = match.challenger_id === user?.id ? match.opponent_profile : match.challenger_profile;
+                  return (
+                  <div
+                    key={match.id}
+                    style={{
+                      background: "rgba(34, 197, 94, 0.1)",
+                      border: "1px solid rgba(34, 197, 94, 0.3)",
+                      borderRadius: 10,
+                      padding: 12,
+                    }}
+                  >
+                    {/* Opponent info */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                      {opponentProfile?.forum_avatar_url ? (
+                        <img
+                          src={opponentProfile.forum_avatar_url}
+                          alt=""
+                          style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", border: "2px solid #22c55e" }}
+                        />
+                      ) : (
+                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(34,197,94,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🏎️</div>
+                      )}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700, color: "#22c55e", fontSize: 13 }}>
+                          vs {opponentProfile?.forum_handle || "Unknown Racer"}
+                        </div>
+                      </div>
+                      <span style={{
+                        background: match.status === "waiting_opponent" ? "linear-gradient(135deg, #eab308, #ca8a04)" : "linear-gradient(135deg, #22c55e, #16a34a)",
+                        padding: "3px 8px",
+                        borderRadius: 5,
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "white",
+                        textTransform: "uppercase",
+                      }}>
+                        {match.status.replace("_", " ")}
+                      </span>
+                    </div>
+                    {match.status === "waiting_opponent" && (
+                      <p style={{ fontSize: 11, color: "#eab308", marginBottom: 8 }}>⏳ Waiting for {opponentProfile?.forum_handle || "opponent"}...</p>
+                    )}
+                    <Link
+                      href={`/forum/grudge?match=${match.id}`}
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        padding: "8px 12px",
+                        background: match.status === "waiting_opponent" ? "linear-gradient(135deg, #f97316, #ea580c)" : "linear-gradient(135deg, #22c55e, #16a34a)",
+                        border: "none",
+                        borderRadius: 6,
+                        color: "white",
+                        fontWeight: 600,
+                        fontSize: 12,
+                        textAlign: "center",
+                        textDecoration: "none",
+                      }}
+                    >
+                      {match.status === "waiting_opponent" ? "View" : "Race!"}
+                    </Link>
+                  </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {pendingChallenges.length === 0 && activeMatches.filter(m => m.status !== "completed").length === 0 && (
+            <p style={{ color: "#94a3b8", textAlign: "center", padding: 16, fontSize: 13 }}>
+              No active challenges. Visit the{" "}
+              <Link href="/forum" style={{ color: "#38bdf8", textDecoration: "underline" }}>Forum</Link>
+              {" "}to challenge racers!
+            </p>
+          )}
+        </div>
+
+        {/* Grudge Match Results - Right Box */}
+        <div
+          style={{
+            borderRadius: 18,
+            padding: 24,
+            border: "1px solid rgba(34,197,94,0.35)",
+            background: "rgba(2,6,23,0.85)",
+            boxShadow: "0 18px 50px rgba(0,0,0,0.6)",
+            color: "#e2e8f0",
+            fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+          }}
+        >
+          <h2
+            style={{
+              margin: "0 0 16px 0",
+              fontSize: 16,
+              fontWeight: 700,
+              color: "#22c55e",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+            }}
+          >
+            🏆 Race Results
+          </h2>
+
+          {activeMatches.filter(m => m.status === "completed").length > 0 ? (
+            <div style={{ display: "grid", gap: 12, maxHeight: 400, overflowY: "auto" }}>
+              {activeMatches.filter(m => m.status === "completed").map((match) => {
+                const opponentProfile = match.challenger_id === user?.id ? match.opponent_profile : match.challenger_profile;
+                const isRollRace = match.match_type === "roll-60-130";
+                return (
+                <div
+                  key={match.id}
+                  style={{
+                    background: match.winner_id === user?.id ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                    border: `1px solid ${match.winner_id === user?.id ? "rgba(34, 197, 94, 0.3)" : "rgba(239, 68, 68, 0.3)"}`,
+                    borderRadius: 10,
+                    padding: 12,
+                  }}
+                >
+                  {/* Opponent info with result */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                    {opponentProfile?.forum_avatar_url ? (
+                      <img
+                        src={opponentProfile.forum_avatar_url}
+                        alt=""
+                        style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", border: `2px solid ${match.winner_id === user?.id ? "#22c55e" : "#ef4444"}` }}
+                      />
+                    ) : (
+                      <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(100,100,100,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>🏎️</div>
+                    )}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, color: "#e2e8f0", fontSize: 12 }}>
+                        vs {opponentProfile?.forum_handle || "Unknown"}
+                      </div>
+                      <div style={{ fontSize: 9, color: isRollRace ? "#ff8c00" : "#00f5ff" }}>
+                        {isRollRace ? "60-130 Roll" : "1/4 Mile"}
+                      </div>
+                    </div>
+                    <span style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: match.winner_id === user?.id ? "#22c55e" : "#ef4444",
+                    }}>
+                      {match.winner_id === user?.id ? "🏆 WIN" : "💨 LOSS"}
+                    </span>
+                  </div>
+                  
+                  {/* Time Slip Comparison */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    {/* Your Run */}
+                    <div style={{
+                      background: "rgba(0, 245, 255, 0.1)",
+                      border: "1px solid rgba(0, 245, 255, 0.2)",
+                      borderRadius: 6,
+                      padding: 8,
+                    }}>
+                      <p style={{ fontSize: 9, color: "#00f5ff", marginBottom: 4, textTransform: "uppercase" }}>You</p>
+                      <div style={{ fontFamily: "monospace", fontSize: 10, color: "#e2e8f0" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <span style={{ color: "#94a3b8" }}>R/T</span>
+                          <span style={{ color: match.winner_id === user?.id ? "#22c55e" : "#e2e8f0" }}>
+                            {match.challenger_id === user?.id 
+                              ? ((match.challenger_reaction_ms || 0) / 1000).toFixed(3)
+                              : ((match.opponent_reaction_ms || 0) / 1000).toFixed(3)}
+                          </span>
+                        </div>
+                        {isRollRace ? (
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span style={{ color: "#94a3b8" }}>60-130</span>
+                            <span style={{ color: "#fbbf24" }}>
+                              {match.challenger_id === user?.id 
+                                ? (match.challenger_roll_total || 0).toFixed(3)
+                                : (match.opponent_roll_total || 0).toFixed(3)}
+                            </span>
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span style={{ color: "#94a3b8" }}>1/4</span>
+                            <span style={{ color: "#fbbf24" }}>
+                              {match.challenger_id === user?.id 
+                                ? (match.challenger_quarter_et || 0).toFixed(3)
+                                : (match.opponent_quarter_et || 0).toFixed(3)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Opponent Run */}
+                    <div style={{
+                      background: "rgba(239, 68, 68, 0.1)",
+                      border: "1px solid rgba(239, 68, 68, 0.2)",
+                      borderRadius: 6,
+                      padding: 8,
+                    }}>
+                      <p style={{ fontSize: 9, color: "#ef4444", marginBottom: 4, textTransform: "uppercase" }}>{opponentProfile?.forum_handle?.slice(0, 8) || "Opp"}</p>
+                      <div style={{ fontFamily: "monospace", fontSize: 10, color: "#e2e8f0" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <span style={{ color: "#94a3b8" }}>R/T</span>
+                          <span style={{ color: match.winner_id !== user?.id ? "#22c55e" : "#e2e8f0" }}>
+                            {match.challenger_id !== user?.id 
+                              ? ((match.challenger_reaction_ms || 0) / 1000).toFixed(3)
+                              : ((match.opponent_reaction_ms || 0) / 1000).toFixed(3)}
+                          </span>
+                        </div>
+                        {isRollRace ? (
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span style={{ color: "#94a3b8" }}>60-130</span>
+                            <span style={{ color: "#fbbf24" }}>
+                              {match.challenger_id !== user?.id 
+                                ? (match.challenger_roll_total || 0).toFixed(3)
+                                : (match.opponent_roll_total || 0).toFixed(3)}
+                            </span>
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span style={{ color: "#94a3b8" }}>1/4</span>
+                            <span style={{ color: "#fbbf24" }}>
+                              {match.challenger_id !== user?.id 
+                                ? (match.challenger_quarter_et || 0).toFixed(3)
+                                : (match.opponent_quarter_et || 0).toFixed(3)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p style={{ color: "#94a3b8", textAlign: "center", padding: 16, fontSize: 13 }}>
+              No completed races yet. Challenge someone from the forum!
+            </p>
+          )}
+        </div>
+
+        {/* My Calculator Section */}
         <div
           style={{
             gridColumn: "1 / -1",
@@ -2500,7 +2899,7 @@ export default function ProfilePage() {
             fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
           }}
         >
-          <CamSpecEliteSelectiveCalculator shortBlocks={shortBlocks} />
+          <MyCalculator />
         </div>
 
         {/* My Dyno Submissions Section */}

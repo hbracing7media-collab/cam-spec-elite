@@ -24,6 +24,7 @@ export default function AppHeader() {
           <Link className="pill" href="/calculators">Calculators</Link>
           <Link className="pill" href="/cams">Cams</Link>
           <Link className="pill" href="/cylinder-heads">Heads</Link>
+          <Link className="pill" href="/shop">Shop</Link>
           <Link className="pill" href="/profile">Profile</Link>
         </div>
       </div>

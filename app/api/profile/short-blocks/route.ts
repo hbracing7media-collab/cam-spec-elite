@@ -25,10 +25,10 @@ export async function GET(req: Request) {
 
   try {
 
-    // Fetch short blocks with head builds
+    // Fetch short blocks with head builds (including flow data)
     const { data: blocks, error } = await supabase
       .from("user_short_blocks")
-      .select(`*, user_head_builds!left(id, head_id, cylinder_heads!inner(id, brand, part_number, engine_make, engine_family, intake_valve_size, exhaust_valve_size, max_lift, max_rpm, intake_runner_cc, chamber_cc, notes))`)
+      .select(`*, user_head_builds!left(id, head_id, cylinder_heads!inner(id, brand, part_number, engine_make, engine_family, intake_valve_size, exhaust_valve_size, max_lift, max_rpm, intake_runner_cc, chamber_cc, notes, flow_curve:cylinder_heads_flow_data(lift,intake_flow,exhaust_flow)))`)
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -68,16 +68,28 @@ export async function GET(req: Request) {
       let attachedHead = null;
       if (block.user_head_builds && Array.isArray(block.user_head_builds) && block.user_head_builds.length > 0) {
         const sorted = [...block.user_head_builds].sort((a, b) => {
-          if (a.created_at && b.created_at) return new Date(b.created_at) - new Date(a.created_at);
+          if (a.created_at && b.created_at) return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
           return 0;
         });
         const headBuild = sorted[0];
         if (headBuild && headBuild.cylinder_heads) {
+          const ch = headBuild.cylinder_heads;
+          // Transform flow_curve from DB format to calculator format
+          const flow_data = Array.isArray(ch.flow_curve) 
+            ? ch.flow_curve.map((row: any) => ({
+                lift: Number(row.lift) || 0,
+                intakeFlow: row.intake_flow != null ? Number(row.intake_flow) : undefined,
+                exhaustFlow: row.exhaust_flow != null ? Number(row.exhaust_flow) : undefined,
+              })).sort((a: any, b: any) => a.lift - b.lift)
+            : [];
           attachedHead = {
-            ...headBuild.cylinder_heads,
-            chamber_volume: headBuild.cylinder_heads.chamber_cc,
-            intake_ports: headBuild.cylinder_heads.intake_ports,
-            exhaust_ports: headBuild.cylinder_heads.exhaust_ports,
+            ...ch,
+            chamber_volume: ch.chamber_cc,
+            chamber_cc: ch.chamber_cc,
+            intake_ports: ch.intake_ports,
+            exhaust_ports: ch.exhaust_ports,
+            flow_data,
+            flow_curve: undefined, // Remove raw DB format
           };
         }
       }

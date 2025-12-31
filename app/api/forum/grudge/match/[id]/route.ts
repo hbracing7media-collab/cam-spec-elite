@@ -1,19 +1,39 @@
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
+interface TimeSlipData {
+  reaction_time: number;
+  sixty_foot: number;
+  eighth_et: number;
+  eighth_mph: number;
+  quarter_et: number;
+  quarter_mph: number;
+}
+
+interface RollSlipData {
+  reaction_time: number;
+  sixty_to_hundred: number;
+  hundred_to_one_twenty: number;
+  one_twenty_to_one_thirty: number;
+  total_time: number;
+}
+
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: match_id } = await params;
     const body = await request.json();
-    const { challenger_reaction_ms, opponent_reaction_ms, challenger_time_ms, opponent_time_ms } =
-      body;
+    const { user_role, time_slip, roll_slip, match_type } = body as { 
+      user_role: "challenger" | "opponent"; 
+      time_slip?: TimeSlipData;
+      roll_slip?: RollSlipData;
+      match_type?: string;
+    };
 
-    if (
-      typeof challenger_reaction_ms !== "number" ||
-      typeof opponent_reaction_ms !== "number"
-    ) {
+    const isRollRace = match_type === "roll-60-130" || roll_slip !== undefined;
+
+    if (!user_role || (!time_slip && !roll_slip)) {
       return Response.json(
-        { ok: false, message: "Missing or invalid reaction times" },
+        { ok: false, message: "Missing user_role or time slip data" },
         { status: 400 }
       );
     }
@@ -54,31 +74,120 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return Response.json({ ok: false, message: "Match not found" }, { status: 404 });
     }
 
-    // Verify user is participant
-    if (user.id !== match.challenger_id && user.id !== match.opponent_id) {
+    // Verify user is participant and matches their role
+    const isChallenger = user.id === match.challenger_id;
+    const isOpponent = user.id === match.opponent_id;
+    
+    if (!isChallenger && !isOpponent) {
       return Response.json(
         { ok: false, message: "You are not part of this match" },
         { status: 403 }
       );
     }
 
-    // Determine winner based on reaction time (faster wins)
-    const winner_id =
-      challenger_reaction_ms < opponent_reaction_ms ? match.challenger_id : match.opponent_id;
+    if ((user_role === "challenger" && !isChallenger) || (user_role === "opponent" && !isOpponent)) {
+      return Response.json(
+        { ok: false, message: "User role mismatch" },
+        { status: 403 }
+      );
+    }
 
-    // Update match with results
+    // Build update based on which player is submitting
+    const updateData: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (isRollRace && roll_slip) {
+      // Roll race submission
+      if (user_role === "challenger") {
+        updateData.challenger_reaction_ms = Math.round(roll_slip.reaction_time * 1000);
+        updateData.challenger_roll_sixty_to_hundred = roll_slip.sixty_to_hundred;
+        updateData.challenger_roll_hundred_to_one_twenty = roll_slip.hundred_to_one_twenty;
+        updateData.challenger_roll_one_twenty_to_one_thirty = roll_slip.one_twenty_to_one_thirty;
+        updateData.challenger_roll_total = roll_slip.total_time;
+      } else {
+        updateData.opponent_reaction_ms = Math.round(roll_slip.reaction_time * 1000);
+        updateData.opponent_roll_sixty_to_hundred = roll_slip.sixty_to_hundred;
+        updateData.opponent_roll_hundred_to_one_twenty = roll_slip.hundred_to_one_twenty;
+        updateData.opponent_roll_one_twenty_to_one_thirty = roll_slip.one_twenty_to_one_thirty;
+        updateData.opponent_roll_total = roll_slip.total_time;
+      }
+    } else if (time_slip) {
+      // Standard drag race submission
+      if (user_role === "challenger") {
+        updateData.challenger_reaction_ms = Math.round(time_slip.reaction_time * 1000);
+        updateData.challenger_sixty_ft = time_slip.sixty_foot;
+        updateData.challenger_eighth_et = time_slip.eighth_et;
+        updateData.challenger_eighth_mph = time_slip.eighth_mph;
+        updateData.challenger_quarter_et = time_slip.quarter_et;
+        updateData.challenger_quarter_mph = time_slip.quarter_mph;
+        updateData.challenger_time_ms = Math.round(time_slip.quarter_et * 1000);
+      } else {
+        updateData.opponent_reaction_ms = Math.round(time_slip.reaction_time * 1000);
+        updateData.opponent_sixty_ft = time_slip.sixty_foot;
+        updateData.opponent_eighth_et = time_slip.eighth_et;
+        updateData.opponent_eighth_mph = time_slip.eighth_mph;
+        updateData.opponent_quarter_et = time_slip.quarter_et;
+        updateData.opponent_quarter_mph = time_slip.quarter_mph;
+        updateData.opponent_time_ms = Math.round(time_slip.quarter_et * 1000);
+      }
+    }
+
+    // Check if opponent has already submitted - check the appropriate field based on race type
+    const otherPlayerSubmitted = isRollRace
+      ? (user_role === "challenger" ? match.opponent_roll_total !== null : match.challenger_roll_total !== null)
+      : (user_role === "challenger" ? match.opponent_reaction_ms !== null : match.challenger_reaction_ms !== null);
+
+    console.log("Grudge match submission:", {
+      user_role,
+      match_status: match.status,
+      isRollRace,
+      challenger_reaction_ms: match.challenger_reaction_ms,
+      opponent_reaction_ms: match.opponent_reaction_ms,
+      otherPlayerSubmitted,
+    });
+
+    if (otherPlayerSubmitted) {
+      // Both players done - determine winner and complete match
+      let challengerTime: number;
+      let opponentTime: number;
+
+      if (isRollRace && roll_slip) {
+        // For roll race, compare total 60-130 times (lower is better)
+        challengerTime = user_role === "challenger" 
+          ? roll_slip.total_time 
+          : match.challenger_roll_total;
+        opponentTime = user_role === "opponent" 
+          ? roll_slip.total_time 
+          : match.opponent_roll_total;
+      } else if (time_slip) {
+        // For drag race, compare reaction times (lower is better)
+        challengerTime = user_role === "challenger" 
+          ? time_slip.reaction_time * 1000 
+          : match.challenger_reaction_ms;
+        opponentTime = user_role === "opponent" 
+          ? time_slip.reaction_time * 1000 
+          : match.opponent_reaction_ms;
+      } else {
+        challengerTime = 0;
+        opponentTime = 0;
+      }
+
+      console.log("Both players done - determining winner:", { challengerTime, opponentTime });
+
+      updateData.status = "completed";
+      updateData.winner_id = challengerTime < opponentTime ? match.challenger_id : match.opponent_id;
+      updateData.completed_at = new Date().toISOString();
+    } else {
+      // First player done - waiting for opponent
+      console.log("First player done - waiting for opponent");
+      updateData.status = "waiting_opponent";
+    }
+
+    // Update match
     const { data: updatedMatch, error: updateError } = await db
       .from("grudge_matches")
-      .update({
-        status: "completed",
-        challenger_reaction_ms,
-        opponent_reaction_ms,
-        challenger_time_ms,
-        opponent_time_ms,
-        winner_id,
-        completed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq("id", match_id)
       .select()
       .single();
@@ -91,9 +200,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       );
     }
 
-    // Update stats for both users
-    await updateUserStats(db, match.challenger_id, winner_id === match.challenger_id, challenger_reaction_ms);
-    await updateUserStats(db, match.opponent_id, winner_id === match.opponent_id, opponent_reaction_ms);
+    // Update stats if match is completed
+    if (updatedMatch.status === "completed") {
+      await updateUserStats(db, match.challenger_id, updatedMatch.winner_id === match.challenger_id, updatedMatch.challenger_reaction_ms);
+      await updateUserStats(db, match.opponent_id, updatedMatch.winner_id === match.opponent_id, updatedMatch.opponent_reaction_ms);
+    }
 
     return Response.json({ ok: true, match: updatedMatch });
   } catch (error) {
