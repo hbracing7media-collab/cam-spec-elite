@@ -2,6 +2,7 @@ export type CamMakeKey =
   | "Ford"
   | "Chevrolet"
   | "Dodge/Mopar"
+  | "Jeep"
   | "Toyota"
   | "Honda"
   | "Nissan"
@@ -17,6 +18,7 @@ export const CAM_MAKE_OPTIONS: CamMakeKey[] = [
   "Ford",
   "Chevrolet",
   "Dodge/Mopar",
+  "Jeep",
   "Toyota",
   "Honda",
   "Nissan",
@@ -61,6 +63,19 @@ export const CAM_ENGINE_FAMILIES: Record<CamMakeKey, string[]> = {
     "Slant-6",
     "Other Mopar",
   ],
+  Jeep: [
+    "AMC Inline-6 (4.0L/4.2L)",
+    "Pentastar V6 (3.6L)",
+    "Hurricane I4 (2.0L Turbo)",
+    "Hurricane I6 (3.0L Twin-Turbo)",
+    "Hemi V8 (5.7/6.4)",
+    "AMC V8 (304/360/401)",
+    "GM 2.5L Iron Duke",
+    "Willys Go-Devil (L-134)",
+    "Willys Hurricane (F-134)",
+    "Buick Dauntless V6 (225)",
+    "Other Jeep",
+  ],
   Toyota: ["2JZ", "1JZ", "UZ (1UZ/2UZ/3UZ)", "UR", "GR", "Other Toyota"],
   Honda: ["B-Series", "K-Series", "D-Series", "H-Series", "J-Series", "Other Honda"],
   Nissan: ["SR", "RB", "VG", "VQ", "VR", "Other Nissan"],
@@ -77,6 +92,7 @@ export type HeadMakeKey =
   | "Ford"
   | "GM"
   | "Mopar"
+  | "Jeep"
   | "Toyota"
   | "Honda"
   | "Nissan"
@@ -93,6 +109,7 @@ export const HEAD_MAKE_OPTIONS: HeadMakeKey[] = [
   "Ford",
   "GM",
   "Mopar",
+  "Jeep",
   "Toyota",
   "Honda",
   "Nissan",
@@ -134,6 +151,14 @@ export const HEAD_ENGINE_FAMILIES: Record<HeadMakeKey, string[]> = {
     "Magnum Small Block",
     "B/RB Big Block",
     "Slant-6",
+  ],
+  Jeep: [
+    "AMC Inline-6 (4.0L/4.2L)",
+    "Pentastar V6 (3.6L)",
+    "Hurricane I4 (2.0L Turbo)",
+    "Hurricane I6 (3.0L Twin-Turbo)",
+    "Hemi V8 (5.7/6.4)",
+    "AMC V8 (304/360/401)",
   ],
   Toyota: ["2JZ", "1JZ", "3S", "1UZ/3UZ", "2UZ", "GR (3.5/4.0/4.3)"],
   Honda: ["B-Series", "K-Series", "D-Series", "H/F-Series", "J-Series"],
