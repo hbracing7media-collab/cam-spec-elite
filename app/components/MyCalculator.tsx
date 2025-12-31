@@ -810,7 +810,7 @@ export default function MyCalculator() {
           id: ah.id,
           label: headLabel,
           flowCfm: peakFlow || ENGINE_DEFAULT.portCfm,
-          chamberCc: ah.chamber_volume ?? ah.chamber_cc ?? undefined,
+          chamberCc: ah.chamber_volume ?? undefined,
           flowCurve,
         };
         console.log('MyCalculator: Injected head option:', injected);
