@@ -120,6 +120,15 @@ const merchItems: MerchItem[] = [
     category: "apparel",
   },
   {
+    id: "hat-beanie",
+    name: "HBR7 Beanie",
+    description: "Keep warm at the track with the HB Racing 7 beanie.",
+    price: 30.00,
+    image: "/shop/beanie-hbr7.png",
+    isRealImage: true,
+    category: "apparel",
+  },
+  {
     id: "hat-baseball",
     name: "Baseball Cap",
     description: "Classic baseball cap with HB Racing 7 embroidered logo.",
