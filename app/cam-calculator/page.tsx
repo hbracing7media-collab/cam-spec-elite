@@ -270,21 +270,3 @@ export default function CamCalculatorLanding() {
     </>
   );
 }
-                display: "inline-block",
-                padding: "14px 40px",
-                fontSize: "1.1rem",
-              }}
-            >
-              Get Started Free →
-            </Link>
-          </div>
-        </article>
-
-        {/* Footer */}
-        <footer style={{ textAlign: "center", marginTop: 32, opacity: 0.6, fontSize: "0.85rem" }}>
-          <p>© {new Date().getFullYear()} Cam Spec Elite. Built for enthusiasts.</p>
-        </footer>
-      </main>
-    </>
-  );
-}
