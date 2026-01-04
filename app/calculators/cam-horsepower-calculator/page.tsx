@@ -153,34 +153,6 @@ export default function CamHorsepowerCalculatorPage() {
 
       <div className="card">
         <div className="card-inner">
-          {/* Breadcrumb Navigation */}
-          <nav aria-label="Breadcrumb" style={{ marginBottom: 16 }}>
-            <ol
-              style={{
-                display: "flex",
-                gap: 8,
-                listStyle: "none",
-                padding: 0,
-                margin: 0,
-                fontSize: "0.85rem",
-              }}
-            >
-              <li>
-                <Link href="/" style={{ color: "#7dd3fc" }}>
-                  Home
-                </Link>
-              </li>
-              <li style={{ color: "#64748b" }}>/</li>
-              <li>
-                <Link href="/calculators" style={{ color: "#7dd3fc" }}>
-                  Calculators
-                </Link>
-              </li>
-              <li style={{ color: "#64748b" }}>/</li>
-              <li style={{ color: "#94a3b8" }}>Cam HP Calculator</li>
-            </ol>
-          </nav>
-
           {/* Hero Section */}
           <header style={{ textAlign: "center", padding: "40px 20px 50px" }}>
             <h1
