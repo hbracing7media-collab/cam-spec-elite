@@ -25,8 +25,8 @@ export default function LaunchCalculatorButton({
       const data = await res.json().catch(() => ({}));
       
       if (res.ok && data?.user) {
-        // User is authenticated - go to calculator
-        window.location.href = calculatorPath;
+        // User is authenticated - go to home page
+        window.location.href = "/";
       } else {
         // Not authenticated - redirect to login
         window.location.href = "/auth/login";
