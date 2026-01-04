@@ -888,6 +888,41 @@ export default function ShopPage() {
           </p>
         </div>
 
+        {/* Parts Store Banner */}
+        <Link
+          href="/shop/parts"
+          style={{
+            display: "block",
+            marginBottom: 32,
+            padding: "24px 32px",
+            background: "linear-gradient(135deg, rgba(0, 255, 0, 0.1), rgba(0, 255, 255, 0.1))",
+            borderRadius: 12,
+            border: "1px solid rgba(0, 255, 0, 0.3)",
+            textDecoration: "none",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: 32, marginBottom: 8 }}>🔧</div>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: "#0f0", margin: "0 0 8px 0" }}>
+            Performance Parts Store
+          </h2>
+          <p style={{ color: "#94a3b8", fontSize: 14, margin: 0 }}>
+            Shop camshafts, lifters, and more. In-stock & dropship available.
+          </p>
+          <span style={{
+            display: "inline-block",
+            marginTop: 12,
+            padding: "8px 20px",
+            background: "rgba(0, 255, 0, 0.2)",
+            borderRadius: 6,
+            color: "#0f0",
+            fontWeight: 600,
+            fontSize: 14,
+          }}>
+            Browse Parts →
+          </span>
+        </Link>
+
         {/* Donation Section */}
         <div style={{
           display: "grid",
