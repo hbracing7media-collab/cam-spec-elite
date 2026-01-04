@@ -25,12 +25,12 @@ export default function LaunchCalculatorButton({
       if (user) {
         router.push(calculatorPath);
       } else {
-        // Redirect to login with return URL
-        router.push(`/auth/login?redirect=${encodeURIComponent(calculatorPath)}`);
+        // Redirect to login - after login they'll go to home page
+        router.push("/auth/login");
       }
     } catch (error) {
       // On error, send to login
-      router.push(`/auth/login?redirect=${encodeURIComponent(calculatorPath)}`);
+      router.push("/auth/login");
     } finally {
       setIsLoading(false);
     }
