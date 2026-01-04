@@ -21,19 +21,19 @@ export default function LaunchCalculatorButton({
     setIsLoading(true);
     try {
       // Use the API endpoint that checks server-side cookies
-      const res = await fetch("/api/auth/me");
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.user) {
-          router.push(calculatorPath);
-          return;
-        }
+      const res = await fetch("/api/auth/me", { cache: "no-store" });
+      const data = await res.json().catch(() => ({}));
+      
+      if (res.ok && data?.user) {
+        // User is authenticated - go to calculator
+        window.location.href = calculatorPath;
+      } else {
+        // Not authenticated - redirect to login
+        window.location.href = "/auth/login";
       }
-      // Not authenticated - redirect to login
-      router.push("/auth/login");
     } catch (error) {
       // On error, send to login
-      router.push("/auth/login");
+      window.location.href = "/auth/login";
     } finally {
       setIsLoading(false);
     }
