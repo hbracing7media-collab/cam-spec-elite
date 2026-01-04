@@ -1,35 +1,7 @@
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Cam Horsepower Calculator | Predict Engine Power from Cam Specs",
-  description:
-    "Free cam horsepower calculator. Enter your camshaft duration, lift, and LSA to estimate peak HP and torque. Works for Ford, Chevy, Mopar, and more.",
-  keywords: [
-    "cam calculator",
-    "camshaft horsepower calculator",
-    "cam duration calculator",
-    "engine power calculator",
-    "cam specs",
-    "horsepower estimator",
-  ],
-  openGraph: {
-    title: "Cam Horsepower Calculator | Predict Engine Power from Cam Specs",
-    description:
-      "Free cam horsepower calculator. Enter your camshaft duration, lift, and LSA to estimate peak HP and torque.",
-    type: "website",
-    url: "https://camspecelite.com/cam-calculator",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Cam Horsepower Calculator",
-    description:
-      "Free cam horsepower calculator. Estimate peak HP and torque from cam specs.",
-  },
-  alternates: {
-    canonical: "https://camspecelite.com/cam-calculator",
-  },
-};
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -79,6 +51,32 @@ const faqJsonLd = {
 };
 
 export default function CamCalculatorLanding() {
+  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { cache: "no-store" });
+        setIsLoggedIn(res.ok);
+      } catch {
+        setIsLoggedIn(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const handleLaunch = () => {
+    if (isLoggedIn) {
+      router.push("/");
+    } else {
+      router.push("/auth/login");
+    }
+  };
+
+  const buttonText = isLoggedIn === null ? "Loading..." : "🔥 Launch Calculator";
+  const subText = isLoggedIn ? "Go to dashboard" : "Free account required";
+
   return (
     <>
       <script
@@ -131,8 +129,9 @@ export default function CamCalculatorLanding() {
 
           {/* CTA */}
           <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <Link
-              href="/auth/login"
+            <button
+              onClick={handleLaunch}
+              disabled={isLoggedIn === null}
               className="pill"
               style={{
                 display: "inline-block",
@@ -141,12 +140,14 @@ export default function CamCalculatorLanding() {
                 background: "linear-gradient(90deg, #0ff, #0aa)",
                 color: "#000",
                 fontWeight: 700,
+                cursor: isLoggedIn === null ? "wait" : "pointer",
+                border: "none",
               }}
             >
-              🔥 Launch Calculator
-            </Link>
+              {buttonText}
+            </button>
             <p style={{ marginTop: 12, fontSize: "0.9rem", opacity: 0.7 }}>
-              Free account required
+              {subText}
             </p>
           </div>
 
@@ -244,10 +245,31 @@ export default function CamCalculatorLanding() {
 
           {/* Bottom CTA */}
           <div style={{ textAlign: "center" }}>
-            <Link
-              href="/auth/login"
+            <button
+              onClick={handleLaunch}
+              disabled={isLoggedIn === null}
               className="pill"
               style={{
+                display: "inline-block",
+                padding: "14px 40px",
+                fontSize: "1.1rem",
+                cursor: isLoggedIn === null ? "wait" : "pointer",
+                border: "none",
+              }}
+            >
+              Get Started Free →
+            </button>
+          </div>
+        </article>
+
+        {/* Footer */}
+        <footer style={{ textAlign: "center", marginTop: 32, opacity: 0.6, fontSize: "0.85rem" }}>
+          <p>© {new Date().getFullYear()} Cam Spec Elite. Built for enthusiasts.</p>
+        </footer>
+      </main>
+    </>
+  );
+}
                 display: "inline-block",
                 padding: "14px 40px",
                 fontSize: "1.1rem",
