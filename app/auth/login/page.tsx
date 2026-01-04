@@ -82,9 +82,10 @@ export default function AuthPage() {
       setLoading(false);
       return;
     }
-    setMsg({ type: "ok", text: "Login successful!" });
-    setTimeout(() => router.push("/"), 1000);
-    setLoading(false);
+    setMsg({ type: "ok", text: "Login successful! Redirecting..." });
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 500);
   };
 
   return (
