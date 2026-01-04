@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth";
 
 interface LaunchCalculatorButtonProps {
   calculatorPath: string;
@@ -21,13 +20,17 @@ export default function LaunchCalculatorButton({
   async function handleClick() {
     setIsLoading(true);
     try {
-      const user = await getCurrentUser();
-      if (user) {
-        router.push(calculatorPath);
-      } else {
-        // Redirect to login - after login they'll go to home page
-        router.push("/auth/login");
+      // Use the API endpoint that checks server-side cookies
+      const res = await fetch("/api/auth/me");
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.user) {
+          router.push(calculatorPath);
+          return;
+        }
       }
+      // Not authenticated - redirect to login
+      router.push("/auth/login");
     } catch (error) {
       // On error, send to login
       router.push("/auth/login");
