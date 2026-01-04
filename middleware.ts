@@ -1,14 +1,11 @@
 ﻿import { NextResponse, type NextRequest } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 
-// Routes that require authentication
-const PROTECTED_ROUTES = [
-  "/forum/new",
-  "/cams/new",
-  "/cylinder-heads/submit",
-  "/dyno-wars/submit",
-  "/profile",
-  "/admin",
+// Public routes that don't require authentication
+const PUBLIC_ROUTES = [
+  "/cam-calculator",
+  "/auth",
+  "/api",
+  "/logout",
 ];
 
 export async function middleware(req: NextRequest) {
@@ -18,36 +15,17 @@ export async function middleware(req: NextRequest) {
 
   const pathname = req.nextUrl.pathname;
 
-  // Check if this is a protected route
-  const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
-  
-  if (!isProtectedRoute) {
+  // Allow public routes
+  const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+  if (isPublic) {
     return res;
   }
 
-  // Check for the sb-access-token cookie (used by this app's auth system)
+  // Check for sb-access-token cookie (your existing auth system)
   const accessToken = req.cookies.get("sb-access-token")?.value;
 
   if (!accessToken) {
-    const loginUrl = new URL("/auth/login", req.url);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // Validate the token with Supabase
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (supabaseUrl && supabaseKey) {
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: { persistSession: false },
-    });
-
-    const { data, error } = await supabase.auth.getUser(accessToken);
-
-    if (error || !data.user) {
-      const loginUrl = new URL("/auth/login", req.url);
-      return NextResponse.redirect(loginUrl);
-    }
+    return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
   return res;

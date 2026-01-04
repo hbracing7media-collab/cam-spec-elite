@@ -1,23 +1,6 @@
 import Link from "next/link";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Free Performance Calculators | HP, Dyno Curve, Cam & Engine Tools | Cam Spec Elite",
-  description:
-    "Free performance calculators for engine builders. Camshaft HP calculator, drag simulator, boost estimator, turbo sizing, gear ratio, and more. No signup required.",
-  keywords: [
-    "performance calculators",
-    "engine calculator",
-    "HP calculator",
-    "camshaft calculator",
-    "drag calculator",
-    "boost calculator",
-    "turbo calculator",
-  ],
-};
 
 const CALCULATORS: { slug: string; name: string; desc: string }[] = [
-  { slug: "cam-horsepower-calculator", name: "📖 How to Use Our Calculators", desc: "Learn how camshaft HP calculations work, what inputs you need, and how to interpret your results." },
   { slug: "cam-spec-elite", name: "Cam Spec Elite Basic HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
   { slug: "cam-spec-elite-selective", name: "Cam Spec Elite Selective HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
   { slug: "cam-spec-elite-generative", name: "Cam Spec Elite Generative", desc: "AI-assisted cam + power curve estimator." },
