@@ -26,11 +26,11 @@ export default function LaunchCalculatorButton({
         router.push(calculatorPath);
       } else {
         // Redirect to login with return URL
-        router.push(`/login?redirect=${encodeURIComponent(calculatorPath)}`);
+        router.push(`/auth/login?redirect=${encodeURIComponent(calculatorPath)}`);
       }
     } catch (error) {
       // On error, send to login
-      router.push(`/login?redirect=${encodeURIComponent(calculatorPath)}`);
+      router.push(`/auth/login?redirect=${encodeURIComponent(calculatorPath)}`);
     } finally {
       setIsLoading(false);
     }

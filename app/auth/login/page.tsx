@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Message {
   type: "ok" | "err";
   text: string;
 }
 
-export default function AuthPage() {
+function AuthForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -83,7 +85,7 @@ export default function AuthPage() {
       return;
     }
     setMsg({ type: "ok", text: "Login successful!" });
-    setTimeout(() => router.push("/"), 1000);
+    setTimeout(() => router.push(redirectTo), 1000);
     setLoading(false);
   };
 
@@ -329,5 +331,13 @@ export default function AuthPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div style={{ color: "#94a3b8", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>Loading...</div>}>
+      <AuthForm />
+    </Suspense>
   );
 }
