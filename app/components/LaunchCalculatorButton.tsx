@@ -39,12 +39,16 @@ export default function LaunchCalculatorButton({
     }
   }
 
-  return (
-    <button
-      onClick={handleClick}
-      disabled={isLoading}
-      className={className}
-      style={{
+  // If className includes "pill", use minimal inline styles and let CSS class handle styling
+  const isPill = className.includes("pill");
+
+  const baseStyle = isPill
+    ? {
+        cursor: isLoading ? "wait" : "pointer",
+        textAlign: "center" as const,
+        padding: "12px 16px",
+      }
+    : {
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
@@ -52,7 +56,7 @@ export default function LaunchCalculatorButton({
         padding: "16px 32px",
         fontSize: "1.1rem",
         fontWeight: 700,
-        textTransform: "uppercase",
+        textTransform: "uppercase" as const,
         letterSpacing: "0.1em",
         background: "linear-gradient(135deg, #06b6d4, #8b5cf6, #ec4899)",
         color: "#fff",
@@ -61,35 +65,28 @@ export default function LaunchCalculatorButton({
         cursor: isLoading ? "wait" : "pointer",
         transition: "transform 0.2s, box-shadow 0.2s",
         boxShadow: "0 4px 20px rgba(139, 92, 246, 0.4)",
-      }}
+      };
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={isLoading}
+      className={className}
+      style={baseStyle}
       onMouseEnter={(e) => {
-        if (!isLoading) {
+        if (!isLoading && !isPill) {
           e.currentTarget.style.transform = "translateY(-2px)";
           e.currentTarget.style.boxShadow = "0 6px 30px rgba(139, 92, 246, 0.6)";
         }
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = "0 4px 20px rgba(139, 92, 246, 0.4)";
+        if (!isPill) {
+          e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.boxShadow = "0 4px 20px rgba(139, 92, 246, 0.4)";
+        }
       }}
     >
-      {isLoading ? (
-        <>
-          <span
-            style={{
-              width: 16,
-              height: 16,
-              border: "2px solid rgba(255,255,255,0.3)",
-              borderTopColor: "#fff",
-              borderRadius: "50%",
-              animation: "spin 0.8s linear infinite",
-            }}
-          />
-          Loading...
-        </>
-      ) : (
-        children
-      )}
+      {isLoading ? "..." : children}
       <style jsx>{`
         @keyframes spin {
           to {

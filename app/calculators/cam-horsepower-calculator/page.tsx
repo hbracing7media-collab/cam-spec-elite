@@ -231,7 +231,7 @@ export default function CamHorsepowerCalculatorPage() {
                 description="Calculate true DCR based on intake valve closing timing - critical for cam selection."
               />
               <FeatureCard
-                icon="🌀"
+                icon="🔥"
                 title="Boost Support"
                 description="Supports turbo and supercharged setups with intercooler efficiency calculations."
               />
@@ -390,41 +390,36 @@ export default function CamHorsepowerCalculatorPage() {
                 gap: 12,
               }}
             >
-              <Link
-                href="/calculators/camshaft-suggestor-basic"
+              <LaunchCalculatorButton
+                calculatorPath="/calculators/camshaft-suggestor-basic"
                 className="pill"
-                style={{ textAlign: "center", padding: "12px 16px" }}
               >
                 Cam Suggestor
-              </Link>
-              <Link
-                href="/calculators/drag-simulator"
+              </LaunchCalculatorButton>
+              <LaunchCalculatorButton
+                calculatorPath="/calculators/drag-simulator"
                 className="pill"
-                style={{ textAlign: "center", padding: "12px 16px" }}
               >
                 Drag Simulator
-              </Link>
-              <Link
-                href="/calculators/boost-estimator"
+              </LaunchCalculatorButton>
+              <LaunchCalculatorButton
+                calculatorPath="/calculators/boost-estimator"
                 className="pill"
-                style={{ textAlign: "center", padding: "12px 16px" }}
               >
                 Boost Estimator
-              </Link>
-              <Link
-                href="/calculators/turbo-sizing-calculator"
+              </LaunchCalculatorButton>
+              <LaunchCalculatorButton
+                calculatorPath="/calculators/turbo-sizing-calculator"
                 className="pill"
-                style={{ textAlign: "center", padding: "12px 16px" }}
               >
                 Turbo Sizing
-              </Link>
-              <Link
-                href="/calculators"
+              </LaunchCalculatorButton>
+              <LaunchCalculatorButton
+                calculatorPath="/calculators"
                 className="pill"
-                style={{ textAlign: "center", padding: "12px 16px" }}
               >
                 All Calculators →
-              </Link>
+              </LaunchCalculatorButton>
             </div>
           </section>
         </div>
@@ -500,3 +495,4 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
     </details>
   );
 }
+
