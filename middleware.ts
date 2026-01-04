@@ -1,11 +1,13 @@
 ﻿import { NextResponse, type NextRequest } from "next/server";
 
-// Public routes that don't require authentication
-const PUBLIC_ROUTES = [
-  "/cam-calculator",
-  "/auth",
-  "/api",
-  "/logout",
+// Only these specific routes require authentication
+const PROTECTED_ROUTES = [
+  "/profile",
+  "/admin",
+  "/forum/new",
+  "/cams/new",
+  "/cylinder-heads/submit",
+  "/dyno-wars/submit",
 ];
 
 export async function middleware(req: NextRequest) {
@@ -15,13 +17,14 @@ export async function middleware(req: NextRequest) {
 
   const pathname = req.nextUrl.pathname;
 
-  // Allow public routes
-  const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
-  if (isPublic) {
+  // Check if this specific route requires auth
+  const isProtected = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+  
+  if (!isProtected) {
     return res;
   }
 
-  // Check for sb-access-token cookie (your existing auth system)
+  // Check for sb-access-token cookie
   const accessToken = req.cookies.get("sb-access-token")?.value;
 
   if (!accessToken) {
