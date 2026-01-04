@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useAllShortBlocks, useShortBlocksLoaded } from '@/lib/hooks/useShortBlocks';
 import { CAM_MAKE_OPTIONS, CAM_ENGINE_FAMILIES } from '@/lib/engineOptions';
 
 interface EngineGeometry {
@@ -97,11 +96,6 @@ export default function CamSpecEliteCalculator() {
   const [searchFamily, setSearchFamily] = useState<string>('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedShortBlockId, setSelectedShortBlockId] = useState<string>('');
-  
-  // Use global short blocks context
-  const userShortBlocks = useAllShortBlocks();
-  const blocksLoaded = useShortBlocksLoaded();
 
   // --------- Unit Conversion Helpers ---------
   const IN_TO_MM = 25.4;
@@ -218,28 +212,29 @@ export default function CamSpecEliteCalculator() {
     const isRoller = tappetType === 'roller';
 
     const manifoldMultByStage: Record<number, number> = {
-      1: 0.92,   // reduced from 0.96
-      2: 0.97,   // reduced from 1.0
-      3: 1.00,   // reduced from 1.04
-      4: 1.03,   // reduced from 1.08
-      5: 1.06,   // reduced from 1.12
+      1: 0.94,   // dual plane - mild street
+      2: 0.97,   // single plane low-rise
+      3: 1.00,   // single plane
+      4: 1.02,   // tunnel ram / IR
+      5: 1.04,   // race manifold
     };
     const manifoldMult = manifoldMultByStage[stg] ?? 1.0;
-    const camMult = clamp(0.85 + (dur - 200) * 0.003, 0.78, 1.15);  // reduced cam effect
-    const tappetMult = isRoller ? 1.015 : 1.0;  // reduced roller bonus from 1.03
-    const dcrMult = clamp(1.0 + (dcr - 8.0) * 0.12, 0.75, 1.18);  // reduced CR effect
+    const camMult = clamp(0.88 + (dur - 210) * 0.0025, 0.84, 1.10);
+    const tappetMult = isRoller ? 1.012 : 1.0;
+    const dcrMult = clamp(1.0 + (dcr - 8.0) * 0.08, 0.88, 1.12);
 
-    // Lift effect: 0.35in baseline, each 0.1in adds ~2% power
-    const liftMult = clamp(1.0 + (lift - 0.5) * 0.15, 0.85, 1.18);
+    // Lift effect
+    const liftMult = clamp(1.0 + (lift - 0.5) * 0.10, 0.94, 1.10);
     
-    // LSA effect: 110° is optimal, narrower = more overlap/aggressive (up to +3%), wider = calmer (-2%)
+    // LSA effect: 110° is optimal, narrower = more overlap/aggressive, wider = calmer
     const lsaDev = Math.abs(lsa - 110);
-    const lsaMult = clamp(1.03 - (lsaDev * 0.015), 0.98, 1.03);
+    const lsaMult = clamp(1.02 - (lsaDev * 0.008), 0.98, 1.02);
 
     const cidPerCyl = cid / cyl;
-    const cidUse = clamp(Math.pow(cidPerCyl / 50.0, 0.35), 0.75, 1.12);  // reduced max from 1.18
+    const cidUse = clamp(Math.pow(cidPerCyl / 50.0, 0.28), 0.88, 1.08);
 
-    const k = 0.20;  // reduced from 0.252 for more realistic power
+    // k = 0.178 balanced for realistic street/strip power
+    const k = 0.178;
     const baseHP =
       cfm * cyl * k *
       manifoldMult * camMult * tappetMult * dcrMult * cidUse * liftMult * lsaMult;
@@ -315,17 +310,17 @@ export default function CamSpecEliteCalculator() {
 
   // --------- Factors ---------
   function fuelFactor(fuel: string) {
-    if (fuel === 'e85') return 1.07;
-    if (fuel === 'race_gas') return 1.04;
-    if (fuel === 'pump93') return 1.02;
+    if (fuel === 'e85') return 1.04;
+    if (fuel === 'race_gas') return 1.02;
+    if (fuel === 'pump93') return 1.0;
     return 1.0;
   }
 
   function intakeFactor(intake: string) {
-    if (intake === 'dual_plane') return 0.96;
+    if (intake === 'dual_plane') return 0.97;
     if (intake === 'single_plane') return 1.0;
-    if (intake === 'tunnel_ram') return 1.05;
-    if (intake === 'boosted') return 1.02;
+    if (intake === 'tunnel_ram') return 1.03;
+    if (intake === 'boosted') return 1.0;
     return 1.0;
   }
 
@@ -403,8 +398,8 @@ export default function CamSpecEliteCalculator() {
     
     if (String(tune.fuel).toLowerCase().includes('e85')) {
       // For E85, replace fuelMult with direct boost curve (don't double-apply)
-      // Linear ramp from 1.10 at 0psi to 1.26 at 30psi (10% to 26% gain)
-      e85BoostMult = 1.10 + clamp(psi / 30.0, 0, 1) * 0.16;
+      // Linear ramp from 1.05 at 0psi to 1.15 at 30psi (5% to 15% gain)
+      e85BoostMult = 1.05 + clamp(psi / 30.0, 0, 1) * 0.10;
       actualFuelMult = 1.0;  // Don't apply fuelMult for E85, use e85BoostMult instead
     }
 
@@ -484,59 +479,6 @@ export default function CamSpecEliteCalculator() {
     const crData = calculateDynamicAndStaticCR();
     setDynCrDisplay(crData.crDynamic > 0 ? crData.crDynamic.toFixed(2) : '-');
   }, [engine, cam]);
-
-  // --------- Load Short Block into Calculator ---------
-  function handleLoadShortBlock(blockId: string) {
-    if (!blockId) return;
-    const block = userShortBlocks.find((b) => b.id === blockId);
-    if (!block) return;
-
-    // Update engine settings from short block
-    const updates: any = { ...engine };
-    
-    if (block.displacement) {
-      // Parse displacement (e.g., "302 ci" -> 302)
-      const cidMatch = block.displacement.match(/\d+/);
-      if (cidMatch) {
-        const cid = parseFloat(cidMatch[0]);
-        // Calculate bore/stroke from CID and rod length
-        // For simplicity, keep existing bore/stroke if we can't parse
-        // or use standard values if displacement is provided
-        updates.cyl = 8; // default
-      }
-    }
-
-    if (block.bore && !isNaN(parseFloat(block.bore))) {
-      updates.bore = parseFloat(block.bore);
-    }
-
-    if (block.stroke && !isNaN(parseFloat(block.stroke))) {
-      updates.stroke = parseFloat(block.stroke);
-    }
-
-    if (block.deck_height && !isNaN(parseFloat(block.deck_height))) {
-      updates.deck = parseFloat(block.deck_height);
-    }
-
-    if (block.piston_dome_dish && !isNaN(parseFloat(block.piston_dome_dish))) {
-      updates.pistonCc = parseFloat(block.piston_dome_dish);
-    }
-
-    if (block.head_gasket_bore && !isNaN(parseFloat(block.head_gasket_bore))) {
-      updates.gasketBore = parseFloat(block.head_gasket_bore);
-    }
-
-    if (block.head_gasket_compressed_thickness && !isNaN(parseFloat(block.head_gasket_compressed_thickness))) {
-      updates.gasketThk = parseFloat(block.head_gasket_compressed_thickness);
-    }
-
-    if (block.rod_length && !isNaN(parseFloat(block.rod_length))) {
-      updates.rod = parseFloat(block.rod_length);
-    }
-
-    setEngine(updates);
-    setSelectedShortBlockId(blockId);
-  }
 
   // --------- Search Generic Cams ---------
   async function handleSearchCams() {
@@ -687,35 +629,6 @@ export default function CamSpecEliteCalculator() {
         </div>
 
         {/* STEP 1: ENGINE GEOMETRY */}
-        {/* Load Saved Short Block */}
-        {userShortBlocks.length > 0 && (
-          <div style={{ borderRadius: '12px', padding: '10px 12px', background: 'rgba(124,255,203,0.08)', border: '1px solid rgba(124,255,203,0.25)', marginBottom: '10px' }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#7CFFCB' }}>Load Short Block</h3>
-            <select
-              value={selectedShortBlockId}
-              onChange={(e) => handleLoadShortBlock(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid rgba(124,255,203,0.3)',
-                background: 'rgba(6,11,30,0.6)',
-                color: '#d7fff0',
-                fontSize: '13px',
-                fontFamily: 'monospace',
-                cursor: 'pointer',
-              }}
-            >
-              <option value="">-- Select a short block --</option>
-              {userShortBlocks.map((block) => (
-                <option key={block.id} value={block.id}>
-                  {block.block_name}
-                  {block.displacement ? ` (${block.displacement})` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
         <div style={{ borderRadius: '12px', padding: '10px 12px', background: 'rgba(6,11,30,0.78)', border: '1px solid rgba(0,212,255,0.22)', marginBottom: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flex: 1 }}>
