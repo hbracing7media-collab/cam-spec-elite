@@ -47,6 +47,7 @@ export default function PartsStorePage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const [filters, setFilters] = useState({
+    category: "",
     brand: "",
     engine_make: "",
     cam_type: "",
@@ -121,6 +122,7 @@ export default function PartsStorePage() {
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const filteredProducts = products.filter((p) => {
+    if (filters.category && p.category !== filters.category) return false;
     if (filters.brand && p.brand !== filters.brand) return false;
     if (filters.engine_make && p.engine_make !== filters.engine_make) return false;
     if (filters.cam_type && p.cam_type !== filters.cam_type) return false;
@@ -129,15 +131,25 @@ export default function PartsStorePage() {
       return (
         p.name.toLowerCase().includes(search) ||
         p.brand.toLowerCase().includes(search) ||
-        p.part_number.toLowerCase().includes(search)
+        p.part_number.toLowerCase().includes(search) ||
+        (p.description && p.description.toLowerCase().includes(search))
       );
     }
     return true;
   });
 
+  const uniqueCategories = [...new Set(products.map((p) => p.category))].sort();
   const uniqueBrands = [...new Set(products.map((p) => p.brand))].sort();
   const uniqueMakes = [...new Set(products.map((p) => p.engine_make).filter(Boolean))].sort();
   const uniqueTypes = [...new Set(products.map((p) => p.cam_type).filter(Boolean))].sort();
+  
+  const categoryLabels: Record<string, string> = {
+    camshaft: 'Camshafts',
+    cylinder_head: 'Cylinder Heads',
+    lifters: 'Lifters',
+    pushrods: 'Pushrods',
+    timing: 'Timing Sets',
+  };
 
   return (
     <main
@@ -163,10 +175,10 @@ export default function PartsStorePage() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              Performance Camshafts
+              Performance Parts
             </h1>
             <p style={{ opacity: 0.7, marginTop: 5 }}>
-              Shop cams from top brands. In-stock & dropship available.
+              Shop camshafts, cylinder heads & more from top brands. In-stock & dropship available.
             </p>
           </div>
 
@@ -202,9 +214,25 @@ export default function PartsStorePage() {
             borderRadius: 10,
           }}
         >
+          <select
+            value={filters.category}
+            onChange={(e) => setFilters((f) => ({ ...f, category: e.target.value }))}
+            style={{
+              padding: "10px 14px",
+              background: "rgba(30,30,50,0.8)",
+              border: "1px solid rgba(0,255,255,0.2)",
+              borderRadius: 6,
+              color: "#fff",
+            }}
+          >
+            <option value="">All Categories</option>
+            {uniqueCategories.map((c) => (
+              <option key={c} value={c}>{categoryLabels[c] || c}</option>
+            ))}
+          </select>
           <input
             type="text"
-            placeholder="Search cams..."
+            placeholder="Search parts..."
             value={filters.search}
             onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
             style={{
@@ -271,9 +299,9 @@ export default function PartsStorePage() {
           <div style={{ textAlign: "center", padding: 60, opacity: 0.7 }}>Loading products...</div>
         ) : filteredProducts.length === 0 ? (
           <div style={{ textAlign: "center", padding: 60 }}>
-            <p style={{ fontSize: 18, opacity: 0.7 }}>No camshafts found</p>
+            <p style={{ fontSize: 18, opacity: 0.7 }}>No products found</p>
             <p style={{ fontSize: 14, opacity: 0.5, marginTop: 10 }}>
-              Check back soon or contact us for special orders
+              Try adjusting your filters or check back soon for new inventory
             </p>
           </div>
         ) : (
@@ -356,8 +384,8 @@ export default function PartsStorePage() {
                   </div>
                   <h3 style={{ fontSize: 16, marginBottom: 8 }}>{product.name}</h3>
 
-                  {/* Cam Specs */}
-                  {product.duration_int_050 && (
+                  {/* Cam Specs - only show for camshafts */}
+                  {product.category === 'camshaft' && product.duration_int_050 && (
                     <div
                       style={{
                         display: "grid",
@@ -375,6 +403,25 @@ export default function PartsStorePage() {
                       <div>Lift: {product.lift_int}/{product.lift_exh}"</div>
                       <div>LSA: {product.lsa}°</div>
                       <div>{product.cam_type}</div>
+                    </div>
+                  )}
+
+                  {/* Cylinder Head - show description snippet */}
+                  {product.category === 'cylinder_head' && product.description && (
+                    <div
+                      style={{
+                        fontSize: 12,
+                        opacity: 0.8,
+                        marginBottom: 12,
+                        background: "rgba(0,255,255,0.05)",
+                        padding: 10,
+                        borderRadius: 6,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {product.description.length > 100 
+                        ? product.description.substring(0, 100) + '...' 
+                        : product.description}
                     </div>
                   )}
 
