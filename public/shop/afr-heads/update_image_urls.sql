@@ -1,0 +1,60 @@
+-- Update AFR cylinder head image URLs
+-- Run this AFTER running 018_seed_afr_cylinder_heads.sql
+
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-0911.png' WHERE part_number = '0911';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-0916.png' WHERE part_number = '0916';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1011.png' WHERE part_number = '1011';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1034.png' WHERE part_number = '1034';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1036.png' WHERE part_number = '1036';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1050.png' WHERE part_number = '1050';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1054.png' WHERE part_number = '1054';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1065.png' WHERE part_number = '1065';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1068.png' WHERE part_number = '1068';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1095-716.png' WHERE part_number = '1095-716';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1100.png' WHERE part_number = '1100';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1110.png' WHERE part_number = '1110';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1121.png' WHERE part_number = '1121';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1132-ti.png' WHERE part_number = '1132-TI';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1137-ti.png' WHERE part_number = '1137-TI';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1351.png' WHERE part_number = '1351';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1352.png' WHERE part_number = '1352';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1402.png' WHERE part_number = '1402';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1420.png' WHERE part_number = '1420';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1422.png' WHERE part_number = '1422';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1426-716.png' WHERE part_number = '1426-716';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1428-716.png' WHERE part_number = '1428-716';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1450.png' WHERE part_number = '1450';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1451.png' WHERE part_number = '1451';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1472.png' WHERE part_number = '1472';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1501.png' WHERE part_number = '1501';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1502.png' WHERE part_number = '1502';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1510.png' WHERE part_number = '1510';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1530.png' WHERE part_number = '1530';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1610.png' WHERE part_number = '1610';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1680.png' WHERE part_number = '1680';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1840.png' WHERE part_number = '1840';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-1845.png' WHERE part_number = '1845';
+
+-- Fallback images for parts without specific images
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-sbc-head.png' WHERE part_number = '1012';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-sbc-head.png' WHERE part_number = '1016';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-sbc-head.png' WHERE part_number = '908';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-ls-head.png' WHERE part_number = '1506';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-ls3-head.png' WHERE part_number = '1803';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-ls3-head.png' WHERE part_number = '1804';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-bbc-head.png' WHERE part_number = '2000';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-bbc-head.png' WHERE part_number = '2001';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-bbc-head.png' WHERE part_number = '2010-TI';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-bbc-head.png' WHERE part_number = '2015-TI';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-bbc-head.png' WHERE part_number = '2020-TI';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-bbc-head.png' WHERE part_number = '2100';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-bbc-head.png' WHERE part_number = '2101';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-bbc-head.png' WHERE part_number = '2110';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-mopar-head.png' WHERE part_number = '2401';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-mopar-head.png' WHERE part_number = '2402';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-hemi-head.png' WHERE part_number = '2509';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-hemi-head.png' WHERE part_number = '2510';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-hemi-head.png' WHERE part_number = '2505';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-hemi-head.png' WHERE part_number = '2506';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-hemi-head.png' WHERE part_number = '2513';
+UPDATE cse_parts_products SET image_url = '/shop/afr-heads/afr-hemi-head.png' WHERE part_number = '2514';
