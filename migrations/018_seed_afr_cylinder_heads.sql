@@ -146,13 +146,13 @@ INSERT INTO cse_parts_products (
  'AFR 20° SBF 185 Enforcer Street As Cast 64cc chambers - Assembled',
  'cylinder_head', 'Ford', 'Small Block Windsor',
  767.55, 'dropship', 'Air Flow Research', '1351',
- true, true, 'afr-1351-185cc-enforcer-sbf', NULL),
+ true, true, 'afr-1351-185cc-enforcer-sbf', '/shop/SBF-Heads-AFR.png'),
 
 ('AFR 185cc SBF Enforcer - Bare', 'Air Flow Research', '1352',
  'AFR 20° SBF 185 Enforcer Street As Cast 64cc chambers - NO PARTS',
  'cylinder_head', 'Ford', 'Small Block Windsor',
  498.75, 'dropship', 'Air Flow Research', '1352',
- true, false, 'afr-1352-185cc-enforcer-sbf-bare', NULL),
+ true, false, 'afr-1352-185cc-enforcer-sbf-bare', '/shop/SBF-Heads-AFR.png'),
 
 -- ============================================
 -- FORD SMALL BLOCK (20°) - 165cc STREET
@@ -161,13 +161,13 @@ INSERT INTO cse_parts_products (
  'AFR 20° SBF Cylinder Head 165cc, Street Heads, 58cc chambers, Stud Mount, Assembled',
  'cylinder_head', 'Ford', 'Small Block Windsor',
  2328.90, 'dropship', 'Air Flow Research', '1402',
- true, false, 'afr-1402-165cc-street-58cc', NULL),
+ true, false, 'afr-1402-165cc-street-58cc', '/shop/SBF-Heads-AFR.png'),
 
 ('AFR 165cc SBF Street 58cc Pedestal - Assembled', 'Air Flow Research', '1472',
  'AFR 20° SBF Cylinder Head 165cc, Street Heads, 58cc chambers, Pedestal Mount, Assembled',
  'cylinder_head', 'Ford', 'Small Block Windsor',
  2328.90, 'dropship', 'Air Flow Research', '1472',
- true, false, 'afr-1472-165cc-street-pedestal', NULL),
+ true, false, 'afr-1472-165cc-street-pedestal', '/shop/SBF-Heads-AFR.png'),
 
 -- ============================================
 -- FORD SMALL BLOCK (20°) - 185cc STREET
@@ -176,13 +176,13 @@ INSERT INTO cse_parts_products (
  'AFR 20° SBF Cylinder Head 185cc, Street Heads, 58cc chambers, Stud Mount, Assembled',
  'cylinder_head', 'Ford', 'Small Block Windsor',
  2328.90, 'dropship', 'Air Flow Research', '1422',
- true, true, 'afr-1422-185cc-street-58cc', NULL),
+ true, true, 'afr-1422-185cc-street-58cc', '/shop/SBF-Heads-AFR.png'),
 
 ('AFR 185cc SBF Street 72cc Stud - Assembled', 'Air Flow Research', '1420',
  'AFR 20° SBF Cylinder Head 185cc, Street Heads, 72cc chambers, Stud Mount, Assembled',
  'cylinder_head', 'Ford', 'Small Block Windsor',
  2328.90, 'dropship', 'Air Flow Research', '1420',
- true, false, 'afr-1420-185cc-street-72cc', NULL),
+ true, false, 'afr-1420-185cc-street-72cc', '/shop/SBF-Heads-AFR.png'),
 
 -- ============================================
 -- FORD SMALL BLOCK (20°) - 195cc COMPETITION
@@ -191,13 +191,13 @@ INSERT INTO cse_parts_products (
  'AFR 20° SBF Cylinder Head 195cc Competition Package, 58cc chambers, Stud Mount, Assembled',
  'cylinder_head', 'Ford', 'Small Block Windsor',
  2947.35, 'dropship', 'Air Flow Research', '1426-716',
- true, false, 'afr-1426-195cc-comp-58cc', NULL),
+ true, false, 'afr-1426-195cc-comp-58cc', '/shop/SBF-Heads-AFR.png'),
 
 ('AFR 195cc SBF Competition 72cc - Assembled', 'Air Flow Research', '1428-716',
  'AFR 20° SBF Cylinder Head 195cc Competition Package, 72cc chambers, Stud Mount, Assembled',
  'cylinder_head', 'Ford', 'Small Block Windsor',
  2947.35, 'dropship', 'Air Flow Research', '1428-716',
- true, false, 'afr-1428-195cc-comp-72cc', NULL),
+ true, false, 'afr-1428-195cc-comp-72cc', '/shop/SBF-Heads-AFR.png'),
 
 -- ============================================
 -- FORD SMALL BLOCK (20°) - 205cc & 220cc COMPETITION
@@ -206,13 +206,13 @@ INSERT INTO cse_parts_products (
  'AFR 20° SBF Cylinder Head 205cc Competition Package, 58cc chambers, Stud Mount, Assembled',
  'cylinder_head', 'Ford', 'Small Block Windsor',
  3014.55, 'dropship', 'Air Flow Research', '1450',
- true, false, 'afr-1450-205cc-comp-58cc', NULL),
+ true, false, 'afr-1450-205cc-comp-58cc', '/shop/SBF-Heads-AFR.png'),
 
 ('AFR 220cc SBF Competition 58cc - Assembled', 'Air Flow Research', '1451',
  'AFR 20° SBF Cylinder Head 220cc Competition Package, 58cc chambers, Stud Mount, Assembled',
  'cylinder_head', 'Ford', 'Small Block Windsor',
  3143.70, 'dropship', 'Air Flow Research', '1451',
- true, false, 'afr-1451-220cc-comp-58cc', NULL),
+ true, false, 'afr-1451-220cc-comp-58cc', '/shop/SBF-Heads-AFR.png'),
 
 -- ============================================
 -- GM LS CATHEDRAL PORT (15°) - ENFORCER
