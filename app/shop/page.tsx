@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { calculateSalesTax, formatTaxRate, getAllStates } from "@/lib/salesTax";
 
 interface MerchItem {
   id: string;
@@ -237,7 +238,19 @@ export default function ShopPage() {
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const orderTotal = cartTotal + SHIPPING_COST;
+  
+  // Calculate sales tax based on shipping state
+  const taxInfo = useMemo(() => {
+    if (!checkoutForm.state) {
+      return { taxAmount: 0, taxRate: 0, stateAbbr: null };
+    }
+    return calculateSalesTax(cartTotal, checkoutForm.state, false, SHIPPING_COST);
+  }, [cartTotal, checkoutForm.state]);
+  
+  const orderTotal = cartTotal + SHIPPING_COST + taxInfo.taxAmount;
+  
+  // Get all US states for dropdown
+  const usStates = useMemo(() => getAllStates(), []);
 
   const handleCheckoutSubmit = async () => {
     // Validate form
@@ -278,6 +291,11 @@ export default function ShopPage() {
             quantity: item.quantity,
             price: item.price,
           })),
+          tax: {
+            amount: taxInfo.taxAmount,
+            rate: taxInfo.taxRate,
+            state: taxInfo.stateAbbr,
+          },
           notes: checkoutForm.notes,
         }),
       });
@@ -462,10 +480,16 @@ export default function ShopPage() {
                 ${SHIPPING_COST.toFixed(2)}
               </span>
             </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+              <span style={{ color: "#94a3b8", fontSize: 14 }}>Tax:</span>
+              <span style={{ color: "#e2e8f0", fontSize: 14 }}>
+                {taxInfo.stateAbbr ? `$${taxInfo.taxAmount.toFixed(2)}` : "Calculated at checkout"}
+              </span>
+            </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, paddingTop: 8, borderTop: "1px solid rgba(100, 100, 120, 0.2)" }}>
               <span style={{ color: "#e2e8f0", fontSize: 16, fontWeight: 600 }}>Total:</span>
               <span style={{ color: "#22c55e", fontSize: 20, fontWeight: 700 }}>
-                ${orderTotal.toFixed(2)}
+                ${orderTotal.toFixed(2)}{!taxInfo.stateAbbr && "+tax"}
               </span>
             </div>
             <button
@@ -616,6 +640,14 @@ export default function ShopPage() {
                         <span style={{ color: "#94a3b8", fontSize: 13 }}>Shipping</span>
                         <span style={{ color: "#e2e8f0", fontSize: 13 }}>${SHIPPING_COST.toFixed(2)}</span>
                       </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                        <span style={{ color: "#94a3b8", fontSize: 13 }}>
+                          Tax {taxInfo.stateAbbr && `(${taxInfo.stateAbbr} ${formatTaxRate(taxInfo.taxRate)})`}
+                        </span>
+                        <span style={{ color: "#e2e8f0", fontSize: 13 }}>
+                          {taxInfo.stateAbbr ? `$${taxInfo.taxAmount.toFixed(2)}` : "Select state"}
+                        </span>
+                      </div>
                       <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700 }}>
                         <span style={{ color: "#e2e8f0", fontSize: 14 }}>Total</span>
                         <span style={{ color: "#22c55e", fontSize: 16 }}>${orderTotal.toFixed(2)}</span>
@@ -671,13 +703,18 @@ export default function ShopPage() {
                         onChange={(e) => setCheckoutForm(prev => ({ ...prev, city: e.target.value }))}
                         style={inputStyle}
                       />
-                      <input
-                        type="text"
-                        placeholder="State *"
+                      <select
                         value={checkoutForm.state}
                         onChange={(e) => setCheckoutForm(prev => ({ ...prev, state: e.target.value }))}
-                        style={inputStyle}
-                      />
+                        style={{ ...inputStyle, cursor: "pointer" }}
+                      >
+                        <option value="">Select State *</option>
+                        {usStates.map((st) => (
+                          <option key={st.abbr} value={st.abbr}>
+                            {st.abbr} - {st.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <input
                       type="text"
@@ -996,6 +1033,40 @@ export default function ShopPage() {
               fontSize: 13,
             }}>
               Browse All →
+            </span>
+          </Link>
+
+          {/* Fuel Delivery */}
+          <Link
+            href="/shop/fuel-delivery"
+            style={{
+              display: "block",
+              padding: "24px",
+              background: "linear-gradient(135deg, rgba(255, 100, 50, 0.1), rgba(255, 60, 0, 0.05))",
+              borderRadius: 12,
+              border: "1px solid rgba(255, 100, 50, 0.3)",
+              textDecoration: "none",
+              textAlign: "center",
+              transition: "transform 0.2s, box-shadow 0.2s",
+            }}
+          >
+            <div style={{ fontSize: 40, marginBottom: 8 }}>⛽</div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ff6432", margin: "0 0 8px 0" }}>
+              Fuel Delivery
+            </h2>
+            <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
+              Injectors, pumps, rails, regulators & E85 parts
+            </p>
+            <span style={{
+              display: "inline-block",
+              padding: "8px 16px",
+              background: "rgba(255, 100, 50, 0.2)",
+              borderRadius: 6,
+              color: "#ff6432",
+              fontWeight: 600,
+              fontSize: 13,
+            }}>
+              Shop Fuel →
             </span>
           </Link>
         </div>

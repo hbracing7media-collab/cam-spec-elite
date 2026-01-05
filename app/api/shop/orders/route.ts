@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { calculateSalesTax } from "@/lib/salesTax";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,6 +14,12 @@ interface OrderItem {
   size?: string;
   quantity: number;
   price: number;
+}
+
+interface TaxInfo {
+  amount: number;
+  rate: number;
+  state: string | null;
 }
 
 interface OrderRequest {
@@ -29,6 +36,7 @@ interface OrderRequest {
     country?: string;
   };
   items: OrderItem[];
+  tax?: TaxInfo;
   notes?: string;
 }
 
@@ -68,7 +76,13 @@ export async function POST(req: NextRequest) {
     // Calculate totals
     const subtotal = body.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const shippingCost = 5.99; // Flat rate shipping
-    const total = subtotal + shippingCost;
+    
+    // Calculate or use provided tax (server recalculates for security)
+    const serverTaxInfo = calculateSalesTax(subtotal, body.shipping.state, false, shippingCost);
+    const taxAmount = serverTaxInfo.taxAmount;
+    const taxRate = serverTaxInfo.taxRate;
+    
+    const total = subtotal + shippingCost + taxAmount;
     
     // Generate order number
     const orderNumber = generateOrderNumber();
@@ -89,6 +103,8 @@ export async function POST(req: NextRequest) {
         items: body.items,
         subtotal,
         shipping_cost: shippingCost,
+        tax_amount: taxAmount,
+        tax_rate: taxRate,
         total,
         customer_notes: body.notes || null,
         status: "pending",
@@ -122,6 +138,8 @@ export async function POST(req: NextRequest) {
         total: total,
         subtotal: subtotal,
         shipping: shippingCost,
+        tax: taxAmount,
+        taxRate: taxRate,
       },
       paypalUrl,
       message: `Order ${orderNumber} created! Please complete payment via PayPal.`,
