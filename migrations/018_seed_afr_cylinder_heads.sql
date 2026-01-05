@@ -17,19 +17,19 @@ INSERT INTO cse_parts_products (
  'AFR 23° SBC 200cc Enforcer As Cast Straight Plug 69cc chamber - Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  789.60, 'dropship', 'Air Flow Research', '1011',
- true, true, 'afr-1011-200cc-enforcer-sbc', NULL),
+ true, true, 'afr-1011-200cc-enforcer-sbc', '/shop/SBC-heads-AFR.webp'),
 
 ('AFR 200cc Enforcer SBC Head - Bare', 'Air Flow Research', '1012',
  'AFR 23° SBC 200cc Enforcer As Cast Straight Plug 69cc chamber - Ready for Assembly',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  488.25, 'dropship', 'Air Flow Research', '1012',
- true, false, 'afr-1012-200cc-enforcer-sbc-bare', NULL),
+ true, false, 'afr-1012-200cc-enforcer-sbc-bare', '/shop/SBC-heads-AFR.webp'),
 
 ('AFR 200cc Enforcer SBC Angle Plug - Assembled', 'Air Flow Research', '1016',
  'AFR 23° SBC 200cc Enforcer As Cast Angle Plug 69cc chamber - Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  789.60, 'dropship', 'Air Flow Research', '1016',
- true, false, 'afr-1016-200cc-enforcer-angle', NULL),
+ true, false, 'afr-1016-200cc-enforcer-angle', '/shop/SBC-heads-AFR.webp'),
 
 -- ============================================
 -- CHEVY SMALL BLOCK (23°) - 180cc STREET
@@ -38,19 +38,19 @@ INSERT INTO cse_parts_products (
  'AFR 23° SBC Cylinder Head 180cc Street Heads, straight plug w/heat riser, 75cc, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  2328.90, 'dropship', 'Air Flow Research', '0911',
- true, false, 'afr-0911-180cc-street-75cc', NULL),
+ true, false, 'afr-0911-180cc-street-75cc', '/shop/SBC-heads-AFR.webp'),
 
 ('AFR 180cc SBC Street Head 65cc - Assembled', 'Air Flow Research', '0916',
  'AFR 23° SBC Cylinder Head 180cc Street Heads, straight plug w/heat riser, 65cc, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  2328.90, 'dropship', 'Air Flow Research', '0916',
- true, false, 'afr-0916-180cc-street-65cc', NULL),
+ true, false, 'afr-0916-180cc-street-65cc', '/shop/SBC-heads-AFR.webp'),
 
 ('AFR 180cc SBC LT1 Reverse Cool 65cc - Assembled', 'Air Flow Research', '908',
  'AFR 23° SBC Cylinder Head 180cc LT1 Reverse Cool Heads, 65cc chambers, L98 angle plug, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  2499.00, 'dropship', 'Air Flow Research', '908',
- true, false, 'afr-908-180cc-lt1-65cc', NULL),
+ true, false, 'afr-908-180cc-lt1-65cc', '/shop/SBC-heads-AFR.webp'),
 
 -- ============================================
 -- CHEVY SMALL BLOCK (23°) - 195cc STREET
@@ -59,19 +59,19 @@ INSERT INTO cse_parts_products (
  'AFR 23° SBC Cylinder Head 195cc Street Heads, straight plug w/heat riser, 65cc, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  2328.90, 'dropship', 'Air Flow Research', '1034',
- true, true, 'afr-1034-195cc-street-65cc', NULL),
+ true, true, 'afr-1034-195cc-street-65cc', '/shop/SBC-heads-AFR.webp'),
 
 ('AFR 195cc SBC Street Head 75cc - Assembled', 'Air Flow Research', '1036',
  'AFR 23° SBC Cylinder Head 195cc Street Heads, straight plug w/heat riser, 75cc, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  2328.90, 'dropship', 'Air Flow Research', '1036',
- true, false, 'afr-1036-195cc-street-75cc', NULL),
+ true, false, 'afr-1036-195cc-street-75cc', '/shop/SBC-heads-AFR.webp'),
 
 ('AFR 195cc SBC Competition 65cc - Assembled', 'Air Flow Research', '1095-716',
  'AFR 23° SBC Cylinder Head 195cc Competition Package Heads w/heat riser, L98 angle plug, 65cc chambers, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  3166.80, 'dropship', 'Air Flow Research', '1095-716',
- true, false, 'afr-1095-195cc-comp-65cc', NULL),
+ true, false, 'afr-1095-195cc-comp-65cc', '/shop/SBC-heads-AFR.webp'),
 
 -- ============================================
 -- CHEVY SMALL BLOCK (23°) - 210cc RACE READY
@@ -80,19 +80,19 @@ INSERT INTO cse_parts_products (
  'AFR 23° SBC Cylinder Head 210cc Race Ready Heads, standard exhaust, 75cc chambers, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  2592.45, 'dropship', 'Air Flow Research', '1050',
- true, false, 'afr-1050-210cc-race-75cc', NULL),
+ true, false, 'afr-1050-210cc-race-75cc', '/shop/SBC-heads-AFR.webp'),
 
 ('AFR 210cc SBC Race Ready 65cc - Assembled', 'Air Flow Research', '1054',
  'AFR 23° SBC Cylinder Head 210cc Race Ready Heads, standard exhaust, 65cc chambers, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  2592.45, 'dropship', 'Air Flow Research', '1054',
- true, false, 'afr-1054-210cc-race-65cc', NULL),
+ true, false, 'afr-1054-210cc-race-65cc', '/shop/SBC-heads-AFR.webp'),
 
 ('AFR 210cc SBC Competition 75cc - Assembled', 'Air Flow Research', '1100',
  'AFR 23° SBC Cylinder Head 210cc Competition Package Heads, standard exhaust, 75cc chambers, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  3193.05, 'dropship', 'Air Flow Research', '1100',
- true, false, 'afr-1100-210cc-comp-75cc', NULL),
+ true, false, 'afr-1100-210cc-comp-75cc', '/shop/SBC-heads-AFR.webp'),
 
 -- ============================================
 -- CHEVY SMALL BLOCK (23°) - 220cc
@@ -101,13 +101,13 @@ INSERT INTO cse_parts_products (
  'AFR 23° SBC Cylinder Head 220cc Race Ready Heads, standard exhaust, 65cc chambers, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  2592.45, 'dropship', 'Air Flow Research', '1065',
- true, false, 'afr-1065-220cc-race-65cc', NULL),
+ true, false, 'afr-1065-220cc-race-65cc', '/shop/SBC-heads-AFR.webp'),
 
 ('AFR 220cc SBC Competition 65cc - Assembled', 'Air Flow Research', '1110',
  'AFR 23° SBC Cylinder Head 220cc Competition Package Heads, standard exhaust, 65cc chambers, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  3279.15, 'dropship', 'Air Flow Research', '1110',
- true, false, 'afr-1110-220cc-comp-65cc', NULL),
+ true, false, 'afr-1110-220cc-comp-65cc', '/shop/SBC-heads-AFR.webp'),
 
 -- ============================================
 -- CHEVY SMALL BLOCK (23°) - 227cc
@@ -116,13 +116,13 @@ INSERT INTO cse_parts_products (
  'AFR 23° SBC Cylinder Head 227cc Race Ready Heads, standard exhaust, 65cc chambers, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  2592.45, 'dropship', 'Air Flow Research', '1068',
- true, false, 'afr-1068-227cc-race-65cc', NULL),
+ true, false, 'afr-1068-227cc-race-65cc', '/shop/SBC-heads-AFR.webp'),
 
 ('AFR 227cc SBC Competition 65cc - Assembled', 'Air Flow Research', '1121',
  'AFR 23° SBC Cylinder Head 227cc Competition Package Heads, standard exhaust, 65cc chambers, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  3279.15, 'dropship', 'Air Flow Research', '1121',
- true, false, 'afr-1121-227cc-comp-65cc', NULL),
+ true, false, 'afr-1121-227cc-comp-65cc', '/shop/SBC-heads-AFR.webp'),
 
 -- ============================================
 -- CHEVY SMALL BLOCK (23°) - 235cc & 245cc
@@ -131,13 +131,13 @@ INSERT INTO cse_parts_products (
  'AFR 23° SBC Cylinder Head 235cc Competition Package Heads, standard exhaust, 70cc chambers, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  3820.95, 'dropship', 'Air Flow Research', '1132-TI',
- true, false, 'afr-1132-235cc-comp-70cc', NULL),
+ true, false, 'afr-1132-235cc-comp-70cc', '/shop/SBC-heads-AFR.webp'),
 
 ('AFR 245cc SBC Competition 70cc - Assembled', 'Air Flow Research', '1137-TI',
  'AFR 23° SBC Cylinder Head 245cc Competition Package Heads, standard exhaust, 70cc chambers, Assembled',
  'cylinder_head', 'Chevy', 'Small Block Chevy',
  4035.15, 'dropship', 'Air Flow Research', '1137-TI',
- true, false, 'afr-1137-245cc-comp-70cc', NULL),
+ true, false, 'afr-1137-245cc-comp-70cc', '/shop/SBC-heads-AFR.webp'),
 
 -- ============================================
 -- FORD SMALL BLOCK (20°) - ENFORCER
