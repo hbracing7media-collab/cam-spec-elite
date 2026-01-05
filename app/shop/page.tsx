@@ -889,39 +889,116 @@ export default function ShopPage() {
         </div>
 
         {/* Parts Store Banner */}
-        <Link
-          href="/shop/parts"
+        <div
           style={{
-            display: "block",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: 20,
             marginBottom: 32,
-            padding: "24px 32px",
-            background: "linear-gradient(135deg, rgba(0, 255, 0, 0.1), rgba(0, 255, 255, 0.1))",
-            borderRadius: 12,
-            border: "1px solid rgba(0, 255, 0, 0.3)",
-            textDecoration: "none",
-            textAlign: "center",
           }}
         >
-          <div style={{ fontSize: 32, marginBottom: 8 }}>🔧</div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: "#0f0", margin: "0 0 8px 0" }}>
-            Performance Parts Store
-          </h2>
-          <p style={{ color: "#94a3b8", fontSize: 14, margin: 0 }}>
-            Shop camshafts, lifters, and more. In-stock & dropship available.
-          </p>
-          <span style={{
-            display: "inline-block",
-            marginTop: 12,
-            padding: "8px 20px",
-            background: "rgba(0, 255, 0, 0.2)",
-            borderRadius: 6,
-            color: "#0f0",
-            fontWeight: 600,
-            fontSize: 14,
-          }}>
-            Browse Parts →
-          </span>
-        </Link>
+          {/* Camshafts */}
+          <Link
+            href="/shop/camshafts"
+            style={{
+              display: "block",
+              padding: "24px",
+              background: "linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 200, 200, 0.05))",
+              borderRadius: 12,
+              border: "1px solid rgba(0, 255, 255, 0.3)",
+              textDecoration: "none",
+              textAlign: "center",
+              transition: "transform 0.2s, box-shadow 0.2s",
+            }}
+          >
+            <div style={{ fontSize: 40, marginBottom: 8 }}>🎯</div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0ff", margin: "0 0 8px 0" }}>
+              Camshafts
+            </h2>
+            <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
+              Anderson Ford Motorsport, Comp Cams & more
+            </p>
+            <span style={{
+              display: "inline-block",
+              padding: "8px 16px",
+              background: "rgba(0, 255, 255, 0.2)",
+              borderRadius: 6,
+              color: "#0ff",
+              fontWeight: 600,
+              fontSize: 13,
+            }}>
+              Shop Cams →
+            </span>
+          </Link>
+
+          {/* Cylinder Heads */}
+          <Link
+            href="/shop/cylinder-heads"
+            style={{
+              display: "block",
+              padding: "24px",
+              background: "linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(200, 0, 200, 0.05))",
+              borderRadius: 12,
+              border: "1px solid rgba(255, 0, 255, 0.3)",
+              textDecoration: "none",
+              textAlign: "center",
+              transition: "transform 0.2s, box-shadow 0.2s",
+            }}
+          >
+            <div style={{ fontSize: 40, marginBottom: 8 }}>🔩</div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#f0f", margin: "0 0 8px 0" }}>
+              Cylinder Heads
+            </h2>
+            <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
+              AFR, Trick Flow - SBC, SBF, LS, BBC, Hemi
+            </p>
+            <span style={{
+              display: "inline-block",
+              padding: "8px 16px",
+              background: "rgba(255, 0, 255, 0.2)",
+              borderRadius: 6,
+              color: "#f0f",
+              fontWeight: 600,
+              fontSize: 13,
+            }}>
+              Shop Heads →
+            </span>
+          </Link>
+
+          {/* All Parts */}
+          <Link
+            href="/shop/parts"
+            style={{
+              display: "block",
+              padding: "24px",
+              background: "linear-gradient(135deg, rgba(0, 255, 0, 0.1), rgba(0, 200, 0, 0.05))",
+              borderRadius: 12,
+              border: "1px solid rgba(0, 255, 0, 0.3)",
+              textDecoration: "none",
+              textAlign: "center",
+              transition: "transform 0.2s, box-shadow 0.2s",
+            }}
+          >
+            <div style={{ fontSize: 40, marginBottom: 8 }}>🔧</div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0f0", margin: "0 0 8px 0" }}>
+              All Performance Parts
+            </h2>
+            <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
+              Browse entire catalog - dropship available
+            </p>
+            <span style={{
+              display: "inline-block",
+              padding: "8px 16px",
+              background: "rgba(0, 255, 0, 0.2)",
+              borderRadius: 6,
+              color: "#0f0",
+              fontWeight: 600,
+              fontSize: 13,
+            }}>
+              Browse All →
+            </span>
+          </Link>
+        </div>
 
         {/* Donation Section */}
         <div style={{
