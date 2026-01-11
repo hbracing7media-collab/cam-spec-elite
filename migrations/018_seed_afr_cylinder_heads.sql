@@ -254,13 +254,25 @@ INSERT INTO cse_parts_products (
  'AFR 15° LS Cathedral Port Cylinder Head 230cc fully CNC ported, 62cc chambers, Big Bore, Assembled',
  'cylinder_head', 'Chevy', 'LS',
  3332.70, 'dropship', 'Air Flow Research', '1610',
- true, true, 'afr-1610-230cc-cnc-ls', NULL),
+ true, true, 'afr-1610-230cc-cnc-ls', '/shop/LS1-mongoose.png'),
+
+('AFR 230cc LS Mongoose CNC 65cc - Assembled', 'Air Flow Research', '1630',
+ 'AFR 15° LS Cathedral Port Mongoose Cylinder Head 230cc fully CNC ported, 65cc chambers, Big Bore, Assembled',
+ 'cylinder_head', 'Chevy', 'LS',
+ 3450.00, 'dropship', 'Air Flow Research', '1630',
+ true, true, 'afr-1630-230cc-mongoose-ls', '/shop/LS1-mongoose.png'),
 
 ('AFR 245cc LS CNC 65cc - Assembled', 'Air Flow Research', '1680',
  'AFR 15° LS Cathedral Port Cylinder Head 245cc fully CNC ported, 65cc chambers, Large Bore, Assembled',
  'cylinder_head', 'Chevy', 'LS',
  3460.80, 'dropship', 'Air Flow Research', '1680',
  true, false, 'afr-1680-245cc-cnc-ls', NULL),
+
+('AFR 245cc LS Mongoose CNC 65cc - Assembled', 'Air Flow Research', '1690',
+ 'AFR 15° LS Cathedral Port Mongoose Cylinder Head 245cc fully CNC ported, 65cc chambers, Large Bore, Assembled',
+ 'cylinder_head', 'Chevy', 'LS',
+ 3550.00, 'dropship', 'Air Flow Research', '1690',
+ true, true, 'afr-1690-245cc-mongoose-ls', '/shop/LS1-mongoose.png'),
 
 -- ============================================
 -- GM LS3 RECTANGLE PORT (12°)

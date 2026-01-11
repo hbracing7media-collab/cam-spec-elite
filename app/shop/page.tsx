@@ -982,7 +982,14 @@ export default function ShopPage() {
               transition: "transform 0.2s, box-shadow 0.2s",
             }}
           >
-            <div style={{ fontSize: 40, marginBottom: 8 }}>🔩</div>
+            <div style={{ width: 80, height: 80, margin: "0 auto 8px", position: "relative" }}>
+              <Image
+                src="/shop/SBC-heads-AFR.webp"
+                alt="AFR Cylinder Heads"
+                fill
+                style={{ objectFit: "contain" }}
+              />
+            </div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#f0f", margin: "0 0 8px 0" }}>
               Cylinder Heads
             </h2>
@@ -1067,6 +1074,40 @@ export default function ShopPage() {
               fontSize: 13,
             }}>
               Shop Fuel →
+            </span>
+          </Link>
+
+          {/* Engine Management */}
+          <Link
+            href="/shop/engine-management"
+            style={{
+              display: "block",
+              padding: "24px",
+              background: "linear-gradient(135deg, rgba(150, 50, 255, 0.1), rgba(100, 0, 255, 0.05))",
+              borderRadius: 12,
+              border: "1px solid rgba(150, 50, 255, 0.3)",
+              textDecoration: "none",
+              textAlign: "center",
+              transition: "transform 0.2s, box-shadow 0.2s",
+            }}
+          >
+            <div style={{ fontSize: 40, marginBottom: 8 }}>🖥️</div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#9632ff", margin: "0 0 8px 0" }}>
+              Engine Management
+            </h2>
+            <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
+              ECUs, wideband controllers, sensors & tuning
+            </p>
+            <span style={{
+              display: "inline-block",
+              padding: "8px 16px",
+              background: "rgba(150, 50, 255, 0.2)",
+              borderRadius: 6,
+              color: "#9632ff",
+              fontWeight: 600,
+              fontSize: 13,
+            }}>
+              Shop EMS →
             </span>
           </Link>
         </div>

@@ -25,9 +25,19 @@ export async function GET(request: NextRequest) {
     query = query.eq("category", category);
   }
 
-  const { data, error } = await query
-    .order("is_featured", { ascending: false })
-    .order("created_at", { ascending: false });
+  // Order by price then name for cylinder heads, otherwise featured then created_at
+  let result;
+  if (category === "cylinder_head") {
+    result = await query
+      .order("price", { ascending: true })
+      .order("name", { ascending: true });
+  } else {
+    result = await query
+      .order("is_featured", { ascending: false })
+      .order("created_at", { ascending: false });
+  }
+
+  const { data, error } = result;
 
   if (error) {
     console.error("Failed to fetch products:", error);
