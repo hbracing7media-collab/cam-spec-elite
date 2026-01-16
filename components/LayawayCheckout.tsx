@@ -379,8 +379,8 @@ export default function LayawayCheckout({
       if (data.ok && data.checkout) {
         // Launch Affirm checkout modal
         // Note: Requires Affirm SDK to be loaded on page
-        if (typeof window !== "undefined" && (window as { affirm?: { checkout: (config: unknown) => void } }).affirm) {
-          (window as { affirm: { checkout: (config: unknown) => void } }).affirm.checkout(data.checkout.checkout_data);
+        if (typeof window !== "undefined" && (window as unknown as { affirm?: { checkout: (config: unknown) => void } }).affirm) {
+          (window as unknown as { affirm: { checkout: (config: unknown) => void } }).affirm.checkout(data.checkout.checkout_data);
         } else {
           setError("Affirm is not available. Please try our layaway option instead.");
         }
