@@ -57,7 +57,7 @@ export default function PartsStorePage() {
   useEffect(() => {
     fetchProducts();
     // Load cart from localStorage
-    const savedCart = localStorage.getItem("parts-cart");
+    const savedCart = localStorage.getItem("hbr-cart");
     if (savedCart) {
       try {
         const parsed = JSON.parse(savedCart);
@@ -73,7 +73,7 @@ export default function PartsStorePage() {
   // Save cart to localStorage when it changes (only if not empty)
   useEffect(() => {
     if (cart.length > 0) {
-      localStorage.setItem("parts-cart", JSON.stringify(cart));
+      localStorage.setItem("hbr-cart", JSON.stringify(cart));
     }
   }, [cart]);
 

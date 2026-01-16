@@ -217,12 +217,8 @@ export default function CheckoutPage() {
 
   // Load cart from localStorage and fetch current user on mount
   useEffect(() => {
-    // Try parts-cart first (used by camshafts, cylinder-heads)
-    let savedCart = localStorage.getItem("parts-cart");
-    // Fall back to shopCart (used by merch shop)
-    if (!savedCart) {
-      savedCart = localStorage.getItem("shopCart");
-    }
+    // Load cart from unified hbr-cart
+    const savedCart = localStorage.getItem("hbr-cart");
     if (savedCart) {
       try {
         setCart(JSON.parse(savedCart));
@@ -362,8 +358,7 @@ export default function CheckoutPage() {
       // Success! Show the created plan
       setCreatedPlanNumber(data.plan.plan_number);
       setOrderComplete(true);
-      localStorage.removeItem("shopCart");
-      localStorage.removeItem("parts-cart");
+      localStorage.removeItem("hbr-cart");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create layaway plan");
     }
@@ -371,8 +366,7 @@ export default function CheckoutPage() {
 
   const handlePaymentSuccess = () => {
     setOrderComplete(true);
-    localStorage.removeItem("shopCart");
-    localStorage.removeItem("parts-cart");
+    localStorage.removeItem("hbr-cart");
   };
 
   const handlePaymentError = (errorMsg: string) => {

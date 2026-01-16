@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { calculateSalesTax, formatTaxRate, getAllStates } from "@/lib/salesTax";
@@ -189,6 +189,26 @@ export default function ShopPage() {
     total: number;
     paypalUrl: string;
   } | null>(null);
+
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem("hbr-cart");
+    if (savedCart) {
+      try {
+        const parsed = JSON.parse(savedCart);
+        if (Array.isArray(parsed)) {
+          setCart(parsed);
+        }
+      } catch (e) {
+        console.error("Failed to parse cart:", e);
+      }
+    }
+  }, []);
+
+  // Save cart to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem("hbr-cart", JSON.stringify(cart));
+  }, [cart]);
 
   const filteredItems = selectedCategory === "all" 
     ? merchItems 
