@@ -17,6 +17,7 @@ interface LayawaySettings {
   max_plan_duration_days: number;
   late_fee_amount: number;
   grace_period_days: number;
+  cancellation_fee_percent: number;
   affirm_enabled: boolean;
   sezzle_enabled: boolean;
   afterpay_enabled: boolean;
