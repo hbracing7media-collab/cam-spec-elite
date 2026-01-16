@@ -382,62 +382,80 @@ export default function CheckoutPage() {
 
   // Render PayPal buttons when ready and PayPal is selected
   useEffect(() => {
-    if (
-      paypalReady && 
-      showPayment && 
-      paymentMethod === "paypal" && 
-      paypalButtonRef.current && 
-      !paypalRenderedRef.current &&
-      (window as unknown as { paypal?: { Buttons: (config: { createOrder: () => Promise<string>; onApprove: (data: { orderID: string }) => Promise<void>; onError: (err: Error) => void; style: { layout: string; color: string; shape: string; label: string } }) => { render: (el: HTMLElement) => void } } }).paypal
-    ) {
-      paypalRenderedRef.current = true;
-      const paypal = (window as unknown as { paypal: { Buttons: (config: { createOrder: () => Promise<string>; onApprove: (data: { orderID: string }) => Promise<void>; onError: (err: Error) => void; style: { layout: string; color: string; shape: string; label: string } }) => { render: (el: HTMLElement) => void } } }).paypal;
+    console.log("PayPal useEffect:", { paypalReady, showPayment, paymentMethod, hasRef: !!paypalButtonRef.current, rendered: paypalRenderedRef.current });
+    
+    // Small delay to ensure the DOM element is mounted
+    const timer = setTimeout(() => {
+      const paypalWindow = window as unknown as { paypal?: { Buttons: (config: Record<string, unknown>) => { render: (el: HTMLElement) => void } } };
       
-      paypal.Buttons({
-        createOrder: async () => {
-          const response = await fetch("/api/shop/checkout/create-paypal-order", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              amount: grandTotal,
-              items: cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })),
-              shipping: {
-                name: checkoutForm.name,
-                address: checkoutForm.address,
-                city: checkoutForm.city,
-                state: checkoutForm.state,
-                zip: checkoutForm.zip,
-              },
-            }),
-          });
-          const data = await response.json();
-          if (!data.ok) throw new Error(data.message);
-          return data.orderID;
-        },
-        onApprove: async (data: { orderID: string }) => {
-          const response = await fetch("/api/shop/checkout/capture-paypal-order", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderID: data.orderID }),
-          });
-          const result = await response.json();
-          if (result.ok) {
-            handlePaymentSuccess();
-          } else {
-            setError(result.message || "PayPal payment failed");
-          }
-        },
-        onError: (err: Error) => {
-          setError(err.message || "PayPal error occurred");
-        },
-        style: {
-          layout: "vertical",
-          color: "blue",
-          shape: "rect",
-          label: "paypal",
-        },
-      }).render(paypalButtonRef.current);
-    }
+      console.log("PayPal check:", { 
+        paypalReady, 
+        showPayment, 
+        paymentMethod, 
+        hasRef: !!paypalButtonRef.current, 
+        rendered: paypalRenderedRef.current,
+        hasPaypalSDK: !!paypalWindow.paypal 
+      });
+      
+      if (
+        paypalReady && 
+        showPayment && 
+        paymentMethod === "paypal" && 
+        paypalButtonRef.current && 
+        !paypalRenderedRef.current &&
+        paypalWindow.paypal
+      ) {
+        console.log("Rendering PayPal buttons...");
+        paypalRenderedRef.current = true;
+        
+        paypalWindow.paypal.Buttons({
+          createOrder: async () => {
+            const response = await fetch("/api/shop/checkout/create-paypal-order", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                amount: grandTotal,
+                items: cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })),
+                shipping: {
+                  name: checkoutForm.name,
+                  address: checkoutForm.address,
+                  city: checkoutForm.city,
+                  state: checkoutForm.state,
+                  zip: checkoutForm.zip,
+                },
+              }),
+            });
+            const data = await response.json();
+            if (!data.ok) throw new Error(data.message);
+            return data.orderID;
+          },
+          onApprove: async (data: { orderID: string }) => {
+            const response = await fetch("/api/shop/checkout/capture-paypal-order", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ orderID: data.orderID }),
+            });
+            const result = await response.json();
+            if (result.ok) {
+              handlePaymentSuccess();
+            } else {
+              setError(result.message || "PayPal payment failed");
+            }
+          },
+          onError: (err: Error) => {
+            setError(err.message || "PayPal error occurred");
+          },
+          style: {
+            layout: "vertical",
+            color: "blue",
+            shape: "rect",
+            label: "paypal",
+          },
+        }).render(paypalButtonRef.current);
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paypalReady, showPayment, paymentMethod, grandTotal]);
 
@@ -532,14 +550,27 @@ export default function CheckoutPage() {
     );
   }
 
+  // Check if PayPal is properly configured
+  const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
+  const isPaypalConfigured = paypalClientId.length > 20;
+
   return (
     <main style={{ minHeight: "100vh", padding: 40, background: "#0a0a1a", color: "#e2e8f0" }}>
-      {/* PayPal SDK Script */}
-      <Script
-        src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'}&currency=USD`}
-        onLoad={() => setPaypalReady(true)}
-        strategy="lazyOnload"
-      />
+      {/* PayPal SDK Script - load early so it's ready when needed */}
+      {isPaypalConfigured && (
+        <Script
+          src={`https://www.paypal.com/sdk/js?client-id=${paypalClientId}&currency=USD&intent=capture&components=buttons`}
+          onLoad={() => {
+            console.log("PayPal SDK loaded successfully");
+            setPaypalReady(true);
+          }}
+          onError={(e) => {
+            console.error("Failed to load PayPal SDK:", e);
+            setError("PayPal is temporarily unavailable. Please use card payment.");
+          }}
+          strategy="afterInteractive"
+        />
+      )}
       
       <div style={{ maxWidth: 1000, margin: "0 auto" }}>
         <Link href="/shop" style={{ color: "#0ff", textDecoration: "none", marginBottom: 20, display: "inline-block" }}>
@@ -695,7 +726,8 @@ export default function CheckoutPage() {
                       background: paymentMethod === "paypal" ? "rgba(0, 112, 186, 0.15)" : "rgba(30, 30, 50, 0.3)",
                       border: paymentMethod === "paypal" ? "2px solid #0070ba" : "1px solid rgba(100, 100, 120, 0.3)",
                       borderRadius: 12,
-                      cursor: "pointer",
+                      cursor: isPaypalConfigured ? "pointer" : "not-allowed",
+                      opacity: isPaypalConfigured ? 1 : 0.5,
                       transition: "all 0.2s ease"
                     }}
                   >
@@ -703,7 +735,8 @@ export default function CheckoutPage() {
                       type="radio"
                       name="paymentMethod"
                       checked={paymentMethod === "paypal"}
-                      onChange={() => setPaymentMethod("paypal")}
+                      onChange={() => isPaypalConfigured && setPaymentMethod("paypal")}
+                      disabled={!isPaypalConfigured}
                       style={{ marginRight: 12, accentColor: "#0070ba" }}
                     />
                     <div style={{ flex: 1 }}>
@@ -711,7 +744,12 @@ export default function CheckoutPage() {
                         <span style={{ color: "#003087", fontWeight: 700 }}>Pay</span>
                         <span style={{ color: "#0070ba", fontWeight: 700 }}>Pal</span>
                       </div>
-                      <div style={{ fontSize: 13, opacity: 0.7 }}>Pay with your PayPal account or card</div>
+                      <div style={{ fontSize: 13, opacity: 0.7 }}>
+                        {isPaypalConfigured 
+                          ? "Pay with your PayPal account or card"
+                          : "PayPal is currently unavailable"
+                        }
+                      </div>
                     </div>
                     <div style={{ fontWeight: 700, color: "#0070ba" }}>${grandTotal.toFixed(2)}</div>
                   </label>
@@ -901,19 +939,42 @@ export default function CheckoutPage() {
                   </Elements>
                 ) : paymentMethod === "paypal" ? (
                   <div>
-                    <div 
-                      ref={paypalButtonRef} 
-                      style={{ minHeight: 150 }}
-                    >
-                      {!paypalReady && (
-                        <div style={{ textAlign: "center", padding: 20, opacity: 0.6 }}>
-                          Loading PayPal...
+                    {isPaypalConfigured ? (
+                      <>
+                        <div 
+                          ref={paypalButtonRef} 
+                          style={{ minHeight: 150 }}
+                        >
+                          {!paypalReady ? (
+                            <div style={{ textAlign: "center", padding: 20, opacity: 0.6 }}>
+                              Loading PayPal...
+                            </div>
+                          ) : !paypalRenderedRef.current ? (
+                            <div style={{ textAlign: "center", padding: 20, opacity: 0.6 }}>
+                              Initializing PayPal buttons...
+                            </div>
+                          ) : null}
                         </div>
-                      )}
-                    </div>
-                    <p style={{ marginTop: 16, fontSize: 13, opacity: 0.6, textAlign: "center" }}>
-                      You&apos;ll be redirected to PayPal to complete your payment securely.
-                    </p>
+                        <p style={{ marginTop: 16, fontSize: 13, opacity: 0.6, textAlign: "center" }}>
+                          You&apos;ll be redirected to PayPal to complete your payment securely.
+                        </p>
+                        <p style={{ marginTop: 8, fontSize: 11, opacity: 0.4, textAlign: "center" }}>
+                          SDK Ready: {paypalReady ? "Yes" : "No"} | Client ID: {process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.substring(0, 10)}...
+                        </p>
+                      </>
+                    ) : (
+                      <div style={{ 
+                        textAlign: "center", 
+                        padding: 30, 
+                        background: "rgba(239, 68, 68, 0.1)",
+                        border: "1px solid rgba(239, 68, 68, 0.3)",
+                        borderRadius: 8
+                      }}>
+                        <div style={{ fontSize: 24, marginBottom: 12 }}>⚠️</div>
+                        <p style={{ color: "#fca5a5", marginBottom: 8 }}>PayPal is not configured</p>
+                        <p style={{ fontSize: 13, opacity: 0.7 }}>Please select Credit/Debit Card instead</p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <Elements stripe={stripePromise}>
