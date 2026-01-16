@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CamSpecEliteCalculator from "../../components/CamSpecEliteCalculator";
 import CamSpecEliteSelectiveCalculator from "../../components/CamSpecEliteSelectiveCalculator";
+import CamSpecEliteGenerativeCalculator from "../../components/CamSpecEliteGenerativeCalculator";
 import DragSim660Calculator from "../../components/DragSim660Calculator";
 import RollRace60130Simulator from "../../components/RollRace60130Simulator";
 import BoostEstimatorCalculator from "../../components/BoostEstimatorCalculator";
@@ -81,7 +82,7 @@ export default async function CalculatorSlugPage({ params }: PageProps) {
         {slug === "cam-spec-elite" ? (
           <CamSpecEliteCalculator />
         ) : slug === "cam-spec-elite-generative" ? (
-          <CamSpecEliteCalculator />
+          <CamSpecEliteGenerativeCalculator />
         ) : SELECTIVE_SLUGS.includes(slug) ? (
           <CamSpecEliteSelectiveCalculator />
         ) : slug === "drag-simulator" ? (
@@ -96,6 +97,8 @@ export default async function CalculatorSlugPage({ params }: PageProps) {
           <ConverterSlipCalculator />
         ) : slug === "cam-suggestor-global" ? (
           <ConverterSlipCalculator mode="global" desiredSuggestions={3} />
+        ) : slug === "intercooler-calc" ? (
+          <CamSpecEliteGenerativeCalculator />
         ) : slug === "gear-ratio" ? (
           <GearRatioCalculator />
         ) : slug === "roll-race-60-130" ? (

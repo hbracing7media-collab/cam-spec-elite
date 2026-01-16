@@ -2,6 +2,7 @@ import "./globals.css";
 import "../styles/miami-neon.css";
 import Link from "next/link";
 import { ShortBlocksProvider } from "@/lib/context/ShortBlocksContext";
+import AIChatBot from "@/components/AIChatBot";
 
 export const metadata = {
   title: "Cam Spec Elite",
@@ -33,6 +34,13 @@ export default function RootLayout({
 
           {/* Page content */}
           <main className="app-content">{children}</main>
+
+          {/* Global AI Chatbot */}
+          <AIChatBot 
+            defaultCollapsed={true}
+            title="Cam Spec Elite AI"
+            placeholder="Ask about cams, HP, engine combos..."
+          />
         </ShortBlocksProvider>
       </body>
     </html>

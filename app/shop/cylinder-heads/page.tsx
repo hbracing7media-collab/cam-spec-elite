@@ -47,16 +47,27 @@ export default function CylinderHeadsPage() {
     search: "",
   });
 
+  // Load cart from localStorage on mount
   useEffect(() => {
     fetchProducts();
     const savedCart = localStorage.getItem("parts-cart");
     if (savedCart) {
-      setCart(JSON.parse(savedCart));
+      try {
+        const parsed = JSON.parse(savedCart);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCart(parsed);
+        }
+      } catch (e) {
+        console.error("Failed to parse cart:", e);
+      }
     }
   }, []);
 
+  // Save cart to localStorage when it changes (only if not empty or explicitly cleared)
   useEffect(() => {
-    localStorage.setItem("parts-cart", JSON.stringify(cart));
+    if (cart.length > 0) {
+      localStorage.setItem("parts-cart", JSON.stringify(cart));
+    }
   }, [cart]);
 
   const fetchProducts = async () => {

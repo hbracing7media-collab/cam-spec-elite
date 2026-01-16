@@ -1506,16 +1506,50 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
             ].map(field => (
               <div key={field.key}>
                 <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>{field.label}</label>
+                {field.key === 'pistonCc' ? (
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <input
+                      type="text"
+                      inputMode="text"
+                      pattern="-?[0-9]*\.?[0-9]*"
+                      value={engine.pistonCc}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        // Allow typing minus, empty, or valid numbers
+                        if (val === '' || val === '-' || val === '.' || val === '-.') {
+                          setEngine({ ...engine, pistonCc: val as unknown as number });
+                        } else {
+                          const num = parseFloat(val);
+                          if (!isNaN(num)) {
+                            setEngine({ ...engine, pistonCc: num });
+                          }
+                        }
+                      }}
+                      style={{ flex: 1, padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = typeof engine.pistonCc === 'number' ? engine.pistonCc : parseFloat(String(engine.pistonCc)) || 0;
+                        setEngine({ ...engine, pistonCc: -current });
+                      }}
+                      style={{ padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(255,43,214,0.15)', color: '#f9fafb', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}
+                      title="Toggle +/- (Dome/Dish)"
+                    >
+                      ±
+                    </button>
+                  </div>
+                ) : (
                 <input
-                  type={field.key === 'pistonCc' ? 'text' : 'number'}
-                  inputMode={field.key === 'pistonCc' ? 'decimal' : undefined}
+                  type="number"
                   value={engine[field.key as keyof typeof engine]}
-                  onChange={(e) => setEngine({ ...engine, [field.key]: field.key === 'pistonCc' ? (isNaN(parseFloat(e.target.value)) ? e.target.value : parseFloat(e.target.value)) : parseFloat(e.target.value) || 0 })}
-                  step={field.key === 'pistonCc' ? undefined : field.step}
-                  min={field.key === 'pistonCc' ? undefined : field.min}
-                  max={field.key === 'pistonCc' ? undefined : field.max}
+                  onChange={(e) => setEngine({ ...engine, [field.key]: parseFloat(e.target.value) || 0 })}
+                  step={field.step}
+                  min={field.min}
+                  max={field.max}
                   style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
                 />
+                )}
               </div>
             ))}
           </div>

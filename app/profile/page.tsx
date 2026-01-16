@@ -6,6 +6,7 @@ import Link from "next/link";
 import { CAM_MAKE_OPTIONS, CAM_ENGINE_FAMILIES } from "@/lib/engineOptions";
 import { UserAwardsProfile } from "@/components/UserAwardsProfile";
 import { UserDynoSubmissions } from "@/components/UserDynoSubmissions";
+import ProfileLayawayConsole from "@/components/ProfileLayawayConsole";
 import PersonalCamCalculator from "@/app/components/PersonalCamCalculator";
 import MyCalculator from "@/app/components/MyCalculator";
 
@@ -2943,6 +2944,38 @@ export default function ProfilePage() {
             }}
           >
             <UserAwardsProfile userId={user.id} isOwnProfile={true} />
+          </div>
+        )}
+
+        {/* Layaway Plans Section */}
+        {user?.email && (
+          <div
+            style={{
+              gridColumn: "1 / -1",
+              borderRadius: 18,
+              padding: 36,
+              border: "1px solid rgba(240, 0, 255, 0.35)",
+              background: "rgba(2,6,23,0.85)",
+              boxShadow: "0 18px 50px rgba(0,0,0,0.6)",
+              color: "#e2e8f0",
+              fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+            }}
+          >
+            <h2
+              style={{
+                margin: "0 0 20px 0",
+                fontSize: 18,
+                fontWeight: 700,
+                background: "linear-gradient(90deg, #f0f, #0ff)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              📦 My Layaway Plans
+            </h2>
+            <ProfileLayawayConsole userEmail={user.email} userId={user.id} />
           </div>
         )}
       </div>
