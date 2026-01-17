@@ -44,10 +44,10 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
           background: "linear-gradient(135deg, rgba(255, 59, 212, 0.15), rgba(0, 245, 255, 0.15))",
           border: "1px solid rgba(255, 59, 212, 0.3)",
           borderRadius: 12,
-          padding: "16px 20px",
+          padding: "20px 24px",
           marginBottom: 20,
           cursor: "pointer",
-          minHeight: 80,
+          minHeight: 100,
         }}
       >
         {/* Dismiss button */}
