@@ -207,11 +207,16 @@ export function formatTaxRate(rate: number): string {
   return `${(rate * 100).toFixed(2)}%`;
 }
 
+// Non-continental US states/territories (excluded from shipping)
+const NON_CONTINENTAL_US = ["AK", "HI", "PR", "GU", "VI"];
+
 /**
- * Get list of all US states with their tax info (for dropdowns)
+ * Get list of continental US states only (for dropdowns)
+ * Excludes Alaska, Hawaii, Puerto Rico, Guam, and US Virgin Islands
  */
 export function getAllStates(): Array<{ abbr: string; name: string; rate: number }> {
   return Object.entries(US_STATE_TAX_RATES)
+    .filter(([abbr]) => !NON_CONTINENTAL_US.includes(abbr))
     .map(([abbr, info]) => ({
       abbr,
       name: info.name,
