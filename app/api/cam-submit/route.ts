@@ -326,11 +326,11 @@ export async function POST(req: Request) {
         partNumber: part_number,
         engineMake: engine_make,
         engineFamily: engine_family,
-        durationInt: duration_int_050 ? parseFloat(duration_int_050) : undefined,
-        durationExh: duration_exh_050 ? parseFloat(duration_exh_050) : undefined,
-        liftInt: lift_int ? parseFloat(lift_int) : undefined,
-        liftExh: lift_exh ? parseFloat(lift_exh) : undefined,
-        lsa: lsa ? parseFloat(lsa) : undefined,
+        durationInt: duration_int_050 ? Number(duration_int_050) : undefined,
+        durationExh: duration_exh_050 ? Number(duration_exh_050) : undefined,
+        liftInt: lift_int ? Number(lift_int) : undefined,
+        liftExh: lift_exh ? Number(lift_exh) : undefined,
+        lsa: lsa ? Number(lsa) : undefined,
       });
     } catch (emailError) {
       console.error("Email notification failed:", emailError);
