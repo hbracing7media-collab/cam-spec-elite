@@ -13,7 +13,7 @@ interface MerchItem {
   image: string;
   imageBack?: string;  // Optional back image for apparel
   isRealImage?: boolean;  // Flag for actual images vs emojis
-  category: "apparel" | "stickers" | "accessories";
+  category: "apparel" | "stickers" | "accessories" | "services";
   sizes?: string[];  // Available sizes for apparel
 }
 
@@ -766,7 +766,7 @@ export default function ShopPage() {
 
           {/* Category Filter */}
           <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
-            {["all", "apparel", "stickers", "accessories"].map((cat) => (
+            {["all", "apparel", "stickers", "accessories", "services"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
