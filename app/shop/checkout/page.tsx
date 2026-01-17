@@ -376,20 +376,9 @@ export default function CheckoutPage() {
 
   // Render PayPal buttons when ready and PayPal is selected
   useEffect(() => {
-    console.log("PayPal useEffect:", { paypalReady, showPayment, paymentMethod, hasRef: !!paypalButtonRef.current, rendered: paypalRenderedRef.current });
-    
     // Small delay to ensure the DOM element is mounted
     const timer = setTimeout(() => {
       const paypalWindow = window as unknown as { paypal?: { Buttons: (config: Record<string, unknown>) => { render: (el: HTMLElement) => void } } };
-      
-      console.log("PayPal check:", { 
-        paypalReady, 
-        showPayment, 
-        paymentMethod, 
-        hasRef: !!paypalButtonRef.current, 
-        rendered: paypalRenderedRef.current,
-        hasPaypalSDK: !!paypalWindow.paypal 
-      });
       
       if (
         paypalReady && 
@@ -399,7 +388,6 @@ export default function CheckoutPage() {
         !paypalRenderedRef.current &&
         paypalWindow.paypal
       ) {
-        console.log("Rendering PayPal buttons...");
         paypalRenderedRef.current = true;
         
         paypalWindow.paypal.Buttons({
@@ -555,7 +543,6 @@ export default function CheckoutPage() {
         <Script
           src={`https://www.paypal.com/sdk/js?client-id=${paypalClientId}&currency=USD&intent=capture&components=buttons`}
           onLoad={() => {
-            console.log("PayPal SDK loaded successfully");
             setPaypalReady(true);
           }}
           onError={(e) => {
@@ -951,9 +938,6 @@ export default function CheckoutPage() {
                         </div>
                         <p style={{ marginTop: 16, fontSize: 13, opacity: 0.6, textAlign: "center" }}>
                           You&apos;ll be redirected to PayPal to complete your payment securely.
-                        </p>
-                        <p style={{ marginTop: 8, fontSize: 11, opacity: 0.4, textAlign: "center" }}>
-                          SDK Ready: {paypalReady ? "Yes" : "No"} | Client ID: {process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.substring(0, 10)}...
                         </p>
                       </>
                     ) : (

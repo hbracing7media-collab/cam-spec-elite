@@ -7,14 +7,6 @@ const PAYPAL_API = process.env.PAYPAL_MODE === "live"
 async function getPayPalAccessToken(): Promise<string> {
   const clientId = process.env.PAYPAL_CLIENT_ID;
   const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-  const mode = process.env.PAYPAL_MODE || "sandbox";
-
-  console.log("PayPal Auth Attempt:", {
-    mode,
-    apiUrl: PAYPAL_API,
-    clientIdPrefix: clientId?.substring(0, 10) + "...",
-    hasSecret: !!clientSecret,
-  });
 
   if (!clientId || !clientSecret) {
     throw new Error("PayPal credentials not configured");
@@ -34,16 +26,10 @@ async function getPayPalAccessToken(): Promise<string> {
   const data = await response.json();
   
   if (!response.ok) {
-    console.error("PayPal Auth Failed:", {
-      status: response.status,
-      error: data.error,
-      error_description: data.error_description,
-      mode,
-    });
-    throw new Error(data.error_description || `PayPal auth failed (${mode} mode): ${data.error}`);
+    console.error("PayPal auth failed:", data.error_description || data.error);
+    throw new Error(data.error_description || "PayPal authentication failed");
   }
 
-  console.log("PayPal Auth Success:", { mode, tokenType: data.token_type });
   return data.access_token;
 }
 
