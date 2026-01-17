@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { notifyDynoSubmission } from "@/lib/email";
 
 export async function POST(req: Request) {
   const supabaseUrl = process.env.SUPABASE_URL;
@@ -219,6 +220,22 @@ export async function POST(req: Request) {
     }
 
     console.log("[DYNO-SUBMIT] Success! Inserted:", insertData);
+
+    // Send email notification
+    try {
+      await notifyDynoSubmission({
+        submissionId: insertData?.[0]?.id || 'unknown',
+        engineName: engine_name,
+        engineMake: engine_make || 'Unknown',
+        engineFamily: engine_family || 'Unknown',
+        horsepower,
+        torque: torque || undefined,
+        userId: user_id,
+      });
+    } catch (emailError) {
+      console.error("[DYNO-SUBMIT] Email notification failed:", emailError);
+      // Don't fail submission if email fails
+    }
 
     return Response.json({
       ok: true,

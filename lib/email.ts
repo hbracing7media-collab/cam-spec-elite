@@ -329,3 +329,201 @@ export async function notifyNewLayawayPlan(data: NewLayawayNotificationData): Pr
     replyTo: data.customerEmail,
   });
 }
+
+// ============================================
+// Submission Notifications (Cams, Heads, Dynos)
+// ============================================
+
+interface CamSubmissionNotificationData {
+  submissionId: string;
+  brand: string;
+  camName: string;
+  partNumber: string;
+  engineMake: string;
+  engineFamily: string;
+  durationInt?: number;
+  durationExh?: number;
+  liftInt?: number;
+  liftExh?: number;
+  lsa?: number;
+  userEmail?: string;
+}
+
+export async function notifyCamSubmission(data: CamSubmissionNotificationData): Promise<boolean> {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a2e; color: #e2e8f0; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #00f5ff, #0088ff); padding: 20px; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; color: #0a0a1e; font-size: 24px;">🎯 New Camshaft Submission!</h1>
+      </div>
+      
+      <div style="padding: 20px; background: #0a0a1e; border: 1px solid #333; border-radius: 0 0 8px 8px;">
+        <h2 style="color: #00f5ff; margin-top: 0;">${data.brand} ${data.camName}</h2>
+        
+        <div style="margin-bottom: 20px;">
+          <p style="margin: 4px 0;"><strong>Part Number:</strong> ${data.partNumber}</p>
+          <p style="margin: 4px 0;"><strong>Engine:</strong> ${data.engineMake} ${data.engineFamily}</p>
+        </div>
+        
+        <div style="background: #1e1e3f; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="color: #94a3b8; margin: 0 0 10px 0;">Specs</h3>
+          <table style="width: 100%; font-size: 14px;">
+            <tr>
+              <td style="color: #94a3b8; padding: 4px 0;">Duration @ .050 (Int/Exh):</td>
+              <td style="text-align: right;">${data.durationInt || 'N/A'}° / ${data.durationExh || 'N/A'}°</td>
+            </tr>
+            <tr>
+              <td style="color: #94a3b8; padding: 4px 0;">Lift (Int/Exh):</td>
+              <td style="text-align: right;">${data.liftInt || 'N/A'}" / ${data.liftExh || 'N/A'}"</td>
+            </tr>
+            <tr>
+              <td style="color: #94a3b8; padding: 4px 0;">LSA:</td>
+              <td style="text-align: right;">${data.lsa || 'N/A'}°</td>
+            </tr>
+          </table>
+        </div>
+        
+        <p style="font-size: 14px; color: #fbbf24;">
+          ⚠️ Requires admin approval before going live.
+        </p>
+        
+        <p style="margin-top: 20px; font-size: 14px; color: #64748b;">
+          Review in the <a href="https://hbracing7.com/admin-cam-review" style="color: #00f5ff;">Admin Dashboard</a>
+        </p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: COMPANY_EMAIL,
+    subject: `🎯 New Cam Submission: ${data.brand} ${data.camName}`,
+    html,
+    replyTo: data.userEmail,
+  });
+}
+
+interface HeadSubmissionNotificationData {
+  submissionId: string;
+  brand: string;
+  partNumber: string;
+  partName?: string;
+  engineMake: string;
+  engineFamily: string;
+  intakeRunnerCC?: number;
+  chamberCC?: number;
+  intakeValveSize?: number;
+  exhaustValveSize?: number;
+  userEmail?: string;
+}
+
+export async function notifyHeadSubmission(data: HeadSubmissionNotificationData): Promise<boolean> {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a2e; color: #e2e8f0; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #ff3bd4, #9932ff); padding: 20px; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; color: #0a0a1e; font-size: 24px;">🔧 New Cylinder Head Submission!</h1>
+      </div>
+      
+      <div style="padding: 20px; background: #0a0a1e; border: 1px solid #333; border-radius: 0 0 8px 8px;">
+        <h2 style="color: #ff3bd4; margin-top: 0;">${data.brand} ${data.partNumber}</h2>
+        ${data.partName ? `<p style="margin: 0 0 15px 0; color: #94a3b8;">${data.partName}</p>` : ''}
+        
+        <div style="margin-bottom: 20px;">
+          <p style="margin: 4px 0;"><strong>Engine:</strong> ${data.engineMake} ${data.engineFamily}</p>
+        </div>
+        
+        <div style="background: #1e1e3f; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="color: #94a3b8; margin: 0 0 10px 0;">Specs</h3>
+          <table style="width: 100%; font-size: 14px;">
+            <tr>
+              <td style="color: #94a3b8; padding: 4px 0;">Intake Runner:</td>
+              <td style="text-align: right;">${data.intakeRunnerCC || 'N/A'} cc</td>
+            </tr>
+            <tr>
+              <td style="color: #94a3b8; padding: 4px 0;">Chamber:</td>
+              <td style="text-align: right;">${data.chamberCC || 'N/A'} cc</td>
+            </tr>
+            <tr>
+              <td style="color: #94a3b8; padding: 4px 0;">Valves (Int/Exh):</td>
+              <td style="text-align: right;">${data.intakeValveSize || 'N/A'}" / ${data.exhaustValveSize || 'N/A'}"</td>
+            </tr>
+          </table>
+        </div>
+        
+        <p style="font-size: 14px; color: #fbbf24;">
+          ⚠️ Requires admin approval before going live.
+        </p>
+        
+        <p style="margin-top: 20px; font-size: 14px; color: #64748b;">
+          Review in the <a href="https://hbracing7.com/admin-cylinder-head-review" style="color: #00f5ff;">Admin Dashboard</a>
+        </p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: COMPANY_EMAIL,
+    subject: `🔧 New Head Submission: ${data.brand} ${data.partNumber}`,
+    html,
+    replyTo: data.userEmail,
+  });
+}
+
+interface DynoSubmissionNotificationData {
+  submissionId: string;
+  engineName: string;
+  engineMake: string;
+  engineFamily: string;
+  horsepower: number;
+  torque?: number;
+  userEmail?: string;
+  userId?: string;
+}
+
+export async function notifyDynoSubmission(data: DynoSubmissionNotificationData): Promise<boolean> {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a2e; color: #e2e8f0; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #22c55e, #10b981); padding: 20px; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; color: #0a0a1e; font-size: 24px;">📊 New Dyno Submission!</h1>
+      </div>
+      
+      <div style="padding: 20px; background: #0a0a1e; border: 1px solid #333; border-radius: 0 0 8px 8px;">
+        <h2 style="color: #22c55e; margin-top: 0;">${data.engineName}</h2>
+        
+        <div style="margin-bottom: 20px;">
+          <p style="margin: 4px 0;"><strong>Engine:</strong> ${data.engineMake} ${data.engineFamily}</p>
+          ${data.userId ? `<p style="margin: 4px 0;"><strong>User ID:</strong> ${data.userId}</p>` : ''}
+        </div>
+        
+        <div style="background: #1e1e3f; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="color: #94a3b8; margin: 0 0 10px 0;">Power Numbers</h3>
+          <div style="display: flex; justify-content: space-around; text-align: center;">
+            <div>
+              <div style="font-size: 32px; font-weight: bold; color: #22c55e;">${data.horsepower}</div>
+              <div style="font-size: 12px; color: #94a3b8;">HP</div>
+            </div>
+            ${data.torque ? `
+            <div>
+              <div style="font-size: 32px; font-weight: bold; color: #fbbf24;">${data.torque}</div>
+              <div style="font-size: 12px; color: #94a3b8;">TQ</div>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+        
+        <p style="font-size: 14px; color: #fbbf24;">
+          ⚠️ Requires admin approval before going live.
+        </p>
+        
+        <p style="margin-top: 20px; font-size: 14px; color: #64748b;">
+          Review in the <a href="https://hbracing7.com/admin" style="color: #00f5ff;">Admin Dashboard</a>
+        </p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: COMPANY_EMAIL,
+    subject: `📊 New Dyno Submission: ${data.engineName} - ${data.horsepower} HP`,
+    html,
+    replyTo: data.userEmail,
+  });
+}

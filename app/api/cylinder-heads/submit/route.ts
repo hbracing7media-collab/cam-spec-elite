@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
+import { notifyHeadSubmission } from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -144,6 +145,25 @@ export async function POST(req: NextRequest) {
         console.error("Error awarding badge:", awardError);
         // Don't fail the submission if award fails
       }
+    }
+
+    // Send email notification
+    try {
+      await notifyHeadSubmission({
+        submissionId: head.id,
+        brand,
+        partNumber: part_number,
+        partName: part_name,
+        engineMake: engine_make,
+        engineFamily: engine_family,
+        intakeRunnerCC: intake_runner_cc ? parseFloat(intake_runner_cc) : undefined,
+        chamberCC: chamber_cc ? parseFloat(chamber_cc) : undefined,
+        intakeValveSize: intake_valve_size ? parseFloat(intake_valve_size) : undefined,
+        exhaustValveSize: exhaust_valve_size ? parseFloat(exhaust_valve_size) : undefined,
+      });
+    } catch (emailError) {
+      console.error("Email notification failed:", emailError);
+      // Don't fail submission if email fails
     }
 
     return NextResponse.json({

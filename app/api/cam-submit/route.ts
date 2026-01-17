@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
+import { notifyCamSubmission } from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -314,6 +315,26 @@ export async function POST(req: Request) {
         console.error("Error awarding badge:", awardError);
         // Don't fail the submission if award fails
       }
+    }
+
+    // Send email notification
+    try {
+      await notifyCamSubmission({
+        submissionId: data.id,
+        brand,
+        camName: cam_name,
+        partNumber: part_number,
+        engineMake: engine_make,
+        engineFamily: engine_family,
+        durationInt: duration_int_050 ? parseFloat(duration_int_050) : undefined,
+        durationExh: duration_exh_050 ? parseFloat(duration_exh_050) : undefined,
+        liftInt: lift_int ? parseFloat(lift_int) : undefined,
+        liftExh: lift_exh ? parseFloat(lift_exh) : undefined,
+        lsa: lsa ? parseFloat(lsa) : undefined,
+      });
+    } catch (emailError) {
+      console.error("Email notification failed:", emailError);
+      // Don't fail submission if email fails
     }
 
     return NextResponse.json({ ok: true, submission: data }, { status: 200 });
