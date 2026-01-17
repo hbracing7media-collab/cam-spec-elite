@@ -13,7 +13,7 @@ interface MerchItem {
   image: string;
   imageBack?: string;  // Optional back image for apparel
   isRealImage?: boolean;  // Flag for actual images vs emojis
-  category: "apparel" | "stickers" | "accessories" | "services";
+  category: "apparel" | "stickers" | "accessories";
   sizes?: string[];  // Available sizes for apparel
 }
 
@@ -705,6 +705,40 @@ export default function ShopPage() {
               Shop EMS →
             </span>
           </Link>
+
+          {/* Machine Shop Services */}
+          <Link
+            href="/shop/services"
+            style={{
+              display: "block",
+              padding: "24px",
+              background: "linear-gradient(135deg, rgba(255, 200, 0, 0.15), rgba(255, 150, 0, 0.08))",
+              borderRadius: 12,
+              border: "1px solid rgba(255, 200, 0, 0.4)",
+              textDecoration: "none",
+              textAlign: "center",
+              transition: "transform 0.2s, box-shadow 0.2s",
+            }}
+          >
+            <div style={{ fontSize: 40, marginBottom: 8 }}>🏭</div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ffc800", margin: "0 0 8px 0" }}>
+              Machine Shop Services
+            </h2>
+            <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
+              Engine building, porting, balancing & more
+            </p>
+            <span style={{
+              display: "inline-block",
+              padding: "8px 16px",
+              background: "rgba(255, 200, 0, 0.2)",
+              borderRadius: 6,
+              color: "#ffc800",
+              fontWeight: 600,
+              fontSize: 13,
+            }}>
+              View Services →
+            </span>
+          </Link>
         </div>
 
         {/* Donation Section */}
@@ -766,7 +800,7 @@ export default function ShopPage() {
 
           {/* Category Filter */}
           <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
-            {["all", "apparel", "stickers", "accessories", "services"].map((cat) => (
+            {["all", "apparel", "stickers", "accessories"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
