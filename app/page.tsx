@@ -41,7 +41,7 @@ export default function Home() {
           background: "rgba(0,0,0,0.75)",
           borderRadius: 16,
           padding: "32px 28px",
-          maxWidth: 520,
+          maxWidth: 720,
           width: "100%",
           boxShadow: "0 0 40px rgba(0,255,255,0.25)",
           border: "1px solid rgba(0,255,255,0.35)",
