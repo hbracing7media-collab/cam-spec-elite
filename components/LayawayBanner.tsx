@@ -129,6 +129,7 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
               bottom: 0,
               display: "flex",
               alignItems: "center",
+              justifyContent: "center",
               animation: "slideLayawayImage 4s ease-in-out forwards",
               pointerEvents: "none",
               zIndex: 10,
@@ -186,16 +187,16 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
         <style jsx>{`
           @keyframes slideLayawayImage {
             0% {
-              transform: translateX(-100%);
+              transform: translateX(-150%);
             }
-            15% {
+            20% {
               transform: translateX(0%);
             }
-            85% {
+            80% {
               transform: translateX(0%);
             }
             100% {
-              transform: translateX(110%);
+              transform: translateX(150%);
             }
           }
         `}</style>
