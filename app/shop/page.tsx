@@ -63,14 +63,6 @@ const merchItems: MerchItem[] = [
     sizes: ["S", "M", "L", "XL", "2XL", "3XL"],
   },
   {
-    id: "tee-classic",
-    name: "HB Racing 7 Classic Tee",
-    description: "Premium cotton tee with HB Racing 7 logo. Dark Miami Neon style.",
-    price: 29.99,
-    image: "👕",
-    category: "apparel",
-  },
-  {
     id: "hoodie-neon",
     name: "Miami Vibe Hoodie",
     description: "Cozy hoodie with HB Racing 7 Miami neon style design.",
@@ -115,30 +107,6 @@ const merchItems: MerchItem[] = [
     image: "/shop/hat-baseball.png",
     isRealImage: true,
     category: "apparel",
-  },
-  {
-    id: "sticker-pack",
-    name: "Sticker Pack (5pc)",
-    description: "Vinyl die-cut stickers. Weather resistant, perfect for toolboxes.",
-    price: 9.99,
-    image: "🏷️",
-    category: "stickers",
-  },
-  {
-    id: "decal-windshield",
-    name: "Windshield Banner",
-    description: '36" vinyl windshield banner. Available in multiple colors.',
-    price: 19.99,
-    image: "🚗",
-    category: "stickers",
-  },
-  {
-    id: "keychain",
-    name: "Piston Keychain",
-    description: "Metal piston keychain with HB Racing 7 engraving.",
-    price: 14.99,
-    image: "🔑",
-    category: "accessories",
   },
 ];
 
