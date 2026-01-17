@@ -147,6 +147,21 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
                 height: "100%",
               }}
             >
+              <div>
+                <div style={{ 
+                  fontSize: 20, 
+                  fontWeight: 800, 
+                  background: "linear-gradient(90deg, #ff3bd4, #00f5ff)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  letterSpacing: 1,
+                }}>
+                  🛒 LAYAWAY NOW AVAILABLE!
+                </div>
+                <div style={{ fontSize: 13, color: "#94a3b8" }}>
+                  0% Interest • Pay it off, then we ship!
+                </div>
+              </div>
               <Image
                 src={imageSrc}
                 alt="Layaway Available"
@@ -163,21 +178,6 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
                   (e.target as HTMLImageElement).style.display = "none";
                 }}
               />
-              <div>
-                <div style={{ 
-                  fontSize: 20, 
-                  fontWeight: 800, 
-                  background: "linear-gradient(90deg, #ff3bd4, #00f5ff)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  letterSpacing: 1,
-                }}>
-                  🛒 LAYAWAY NOW AVAILABLE!
-                </div>
-                <div style={{ fontSize: 13, color: "#94a3b8" }}>
-                  0% Interest • Pay it off, then we ship!
-                </div>
-              </div>
             </div>
           </div>
         )}
