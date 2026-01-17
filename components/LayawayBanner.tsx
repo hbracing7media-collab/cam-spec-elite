@@ -8,7 +8,7 @@ interface LayawayBannerProps {
   imageSrc?: string;
 }
 
-export default function LayawayBanner({ imageSrc = "/layaway-graphic.png" }: LayawayBannerProps) {
+export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }: LayawayBannerProps) {
   const [animationComplete, setAnimationComplete] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
