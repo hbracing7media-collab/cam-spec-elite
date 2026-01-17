@@ -1,11 +1,20 @@
 /**
  * Email notification service for HB Racing
  * Uses Resend API for reliable email delivery
+ * 
+ * Notifications are sent TO: hbracing77@yahoo.com
+ * 
+ * Setup:
+ * 1. Create account at https://resend.com (free: 3,000 emails/month)
+ * 2. Get API key from https://resend.com/api-keys
+ * 3. Add RESEND_API_KEY to Vercel environment variables
  */
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const COMPANY_EMAIL = "hbracing77@yahoo.com";
-const FROM_EMAIL = process.env.EMAIL_FROM || "HB Racing <notifications@hbracing7.com>";
+
+// Uses verified hbracing7.com domain
+const FROM_EMAIL = "HB Racing Orders <orders@hbracing7.com>";
 
 interface EmailPayload {
   to: string;
