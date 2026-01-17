@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { notifyLayawayPayment } from "@/lib/email";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -121,6 +122,25 @@ export async function POST(
       })
       .eq("id", planId);
     
+    // Send notification email to company
+    try {
+      await notifyLayawayPayment({
+        planNumber: plan.plan_number,
+        customerName: plan.customer_name,
+        customerEmail: plan.customer_email,
+        paymentAmount: totalCharged,
+        paymentNumber: payment.payment_number,
+        totalPayments: plan.num_payments,
+        remainingBalance: newRemainingBalance,
+        totalPlanValue: plan.total_amount,
+        isDownPayment: payment.payment_number === 0,
+        isFinalPayment: isCompleted,
+      });
+    } catch (emailErr) {
+      console.error("Failed to send payment notification email:", emailErr);
+      // Don't fail the payment if email fails
+    }
+
     return NextResponse.json({
       ok: true,
       message: isCompleted 

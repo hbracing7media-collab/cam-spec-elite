@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { calculateSalesTax } from "@/lib/salesTax";
+import { notifyNewLayawayPlan } from "@/lib/email";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -324,6 +325,28 @@ export async function POST(req: NextRequest) {
       // Rollback plan
       await supabase.from("layaway_plans").delete().eq("id", plan.id);
       throw paymentsError;
+    }
+    
+    // Send notification email to company
+    try {
+      await notifyNewLayawayPlan({
+        planNumber,
+        customerName: body.customer.name,
+        customerEmail: body.customer.email,
+        items: body.items.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        totalValue: totalAmount,
+        downPayment: schedule.downPayment,
+        numPayments: num_payments,
+        paymentAmount: schedule.installmentAmount,
+        frequency: payment_frequency,
+      });
+    } catch (emailErr) {
+      console.error("Failed to send layaway notification email:", emailErr);
+      // Don't fail the plan creation if email fails
     }
     
     // Return plan with payment schedule
