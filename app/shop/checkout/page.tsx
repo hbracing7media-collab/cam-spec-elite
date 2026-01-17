@@ -70,6 +70,7 @@ function PaymentForm({
   subtotal,
   shipping,
   tax,
+  taxRate,
 }: { 
   amount: number;
   onSuccess: () => void;
@@ -79,6 +80,7 @@ function PaymentForm({
   subtotal: number;
   shipping: number;
   tax: number;
+  taxRate: number;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -158,7 +160,7 @@ function PaymentForm({
               subtotal,
               shipping,
               tax,
-              taxRate: taxInfo.taxRate,
+              taxRate,
               total: amount,
               shippingAddress: {
                 address: customerInfo.address,
@@ -958,6 +960,7 @@ export default function CheckoutPage() {
                       subtotal={cartTotal}
                       shipping={SHIPPING_COST}
                       tax={taxAmount}
+                      taxRate={taxInfo.taxRate}
                     />
                   </Elements>
                 ) : paymentMethod === "paypal" ? (
@@ -1007,6 +1010,7 @@ export default function CheckoutPage() {
                       subtotal={cartTotal}
                       shipping={SHIPPING_COST}
                       tax={taxAmount}
+                      taxRate={taxInfo.taxRate}
                     />
                   </Elements>
                 )}
