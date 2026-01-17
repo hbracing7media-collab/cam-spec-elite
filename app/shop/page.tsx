@@ -970,6 +970,94 @@ export default function ShopPage() {
             <a href="/forum" style={{ color: "#00f5ff", textDecoration: "none" }}>forum</a>!
           </p>
         </div>
+
+        {/* Layaway Info Section */}
+        <div style={{
+          background: "linear-gradient(135deg, rgba(255, 59, 212, 0.1), rgba(0, 245, 255, 0.1))",
+          border: "1px solid rgba(255, 59, 212, 0.25)",
+          borderRadius: 16,
+          padding: "32px",
+          marginTop: 20,
+          marginBottom: 40,
+        }}>
+          <h2 style={{
+            fontSize: 24,
+            fontWeight: 700,
+            textAlign: "center",
+            marginBottom: 20,
+            background: "linear-gradient(90deg, #ff3bd4, #00f5ff)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}>
+            💰 How Layaway Works
+          </h2>
+          
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: 24,
+            marginBottom: 24,
+          }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>🛒</div>
+              <h3 style={{ color: "#00f5ff", fontSize: 16, fontWeight: 600, marginBottom: 6 }}>1. Add to Cart</h3>
+              <p style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.5 }}>
+                Shop like normal and add items to your cart.
+              </p>
+            </div>
+            
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>📋</div>
+              <h3 style={{ color: "#00f5ff", fontSize: 16, fontWeight: 600, marginBottom: 6 }}>2. Choose Layaway</h3>
+              <p style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.5 }}>
+                At checkout, select Weekly, Bi-Weekly, or Monthly payments.
+              </p>
+            </div>
+            
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>💳</div>
+              <h3 style={{ color: "#00f5ff", fontSize: 16, fontWeight: 600, marginBottom: 6 }}>3. Make Payments</h3>
+              <p style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.5 }}>
+                Pay on your schedule from your profile. <span style={{ color: "#22c55e", fontWeight: 600 }}>0% Interest!</span>
+              </p>
+            </div>
+            
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>📦</div>
+              <h3 style={{ color: "#00f5ff", fontSize: 16, fontWeight: 600, marginBottom: 6 }}>4. We Ship!</h3>
+              <p style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.5 }}>
+                Once paid off, your order ships! No credit check required.
+              </p>
+            </div>
+          </div>
+          
+          <div style={{
+            textAlign: "center",
+            paddingTop: 16,
+            borderTop: "1px solid rgba(100, 100, 120, 0.2)",
+          }}>
+            <p style={{ color: "#e2e8f0", fontSize: 14, marginBottom: 12 }}>
+              Already have a layaway plan? Manage your payments from your profile.
+            </p>
+            <Link
+              href="/profile"
+              style={{
+                display: "inline-block",
+                padding: "12px 32px",
+                fontSize: 14,
+                fontWeight: 700,
+                background: "linear-gradient(135deg, rgba(255, 59, 212, 0.2), rgba(0, 245, 255, 0.2))",
+                color: "#00f5ff",
+                border: "1px solid rgba(0, 245, 255, 0.4)",
+                borderRadius: 8,
+                textDecoration: "none",
+                transition: "all 0.2s ease",
+              }}
+            >
+              Go to Profile →
+            </Link>
+          </div>
+        </div>
     </main>
   );
 }
