@@ -26,7 +26,6 @@ interface CartItem {
 }
 
 const SHIPPING_COST = 5.99;
-};
 
 const merchItems: MerchItem[] = [
   {
