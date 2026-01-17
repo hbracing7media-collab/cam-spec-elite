@@ -139,7 +139,7 @@ function PaymentForm({
       }
 
       if (paymentIntent?.status === "succeeded") {
-        // Send order notification email
+        // Send order notification email and save to database
         try {
           await fetch("/api/shop/checkout/notify-stripe-order", {
             method: "POST",
@@ -148,6 +148,7 @@ function PaymentForm({
               paymentIntentId: paymentIntent.id,
               customerName: customerInfo.name,
               customerEmail: customerInfo.email,
+              customerPhone: customerInfo.phone,
               items: cartItems.map(item => ({
                 name: item.name,
                 quantity: item.quantity,
@@ -157,6 +158,7 @@ function PaymentForm({
               subtotal,
               shipping,
               tax,
+              taxRate,
               total: amount,
               shippingAddress: {
                 address: customerInfo.address,

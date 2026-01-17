@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { notifyNewOrder } from "@/lib/email";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,10 +12,12 @@ export async function POST(request: NextRequest) {
       paymentIntentId,
       customerName,
       customerEmail,
+      customerPhone,
       items,
       subtotal,
       shipping,
       tax,
+      taxRate,
       total,
       shippingAddress 
     } = body;
@@ -25,6 +31,43 @@ export async function POST(request: NextRequest) {
 
     // Generate order number from payment intent
     const orderNumber = `HBR-${new Date().toISOString().slice(0,10).replace(/-/g, '')}-${paymentIntentId.slice(-8).toUpperCase()}`;
+
+    // Save order to database
+    if (supabaseUrl && supabaseServiceKey) {
+      const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+        auth: { persistSession: false },
+      });
+
+      const { error: dbError } = await supabase
+        .from("shop_orders")
+        .insert({
+          order_number: orderNumber,
+          customer_name: customerName || "Customer",
+          customer_email: customerEmail,
+          customer_phone: customerPhone || null,
+          shipping_address: shippingAddress?.address || "",
+          shipping_city: shippingAddress?.city || "",
+          shipping_state: shippingAddress?.state || "",
+          shipping_zip: shippingAddress?.zip || "",
+          shipping_country: "USA",
+          items: items || [],
+          subtotal: subtotal || 0,
+          shipping_cost: shipping || 5.99,
+          tax_amount: tax || 0,
+          tax_rate: taxRate || 0,
+          total: total || 0,
+          payment_method: "stripe",
+          payment_id: paymentIntentId,
+          status: "paid",
+        });
+
+      if (dbError) {
+        console.error("Error saving order to database:", dbError);
+        // Continue to send email even if DB fails
+      } else {
+        console.log("Order saved to database:", orderNumber);
+      }
+    }
 
     // Send notification email
     await notifyNewOrder({
@@ -48,12 +91,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       orderNumber,
-      message: "Order notification sent",
+      message: "Order saved and notification sent",
     });
   } catch (error) {
     console.error("Stripe notification error:", error);
     return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Failed to send notification" },
+      { ok: false, message: error instanceof Error ? error.message : "Failed to process order" },
       { status: 500 }
     );
   }
