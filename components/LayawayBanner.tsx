@@ -104,8 +104,8 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
               color: "#e2e8f0",
               lineHeight: 1.5,
             }}>
-              Get what you want today, pay over time! <span style={{ color: "#00f5ff" }}>Low down payments</span> • 
-              <span style={{ color: "#22c55e" }}> Flexible payment plans</span> • 
+              Pay over time, get your item when it&apos;s paid off! <span style={{ color: "#22c55e" }}>0% Interest</span> • 
+              <span style={{ color: "#00f5ff" }}> No credit check</span> • 
               <span style={{ color: "#fbbf24" }}> Weekly, Bi-Weekly, or Monthly</span>
             </div>
             <div style={{ 
@@ -171,7 +171,7 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
                   🛒 LAYAWAY NOW AVAILABLE!
                 </div>
                 <div style={{ fontSize: 13, color: "#94a3b8" }}>
-                  Pay over time with flexible plans
+                  0% Interest • Pay it off, then we ship!
                 </div>
               </div>
             </div>
