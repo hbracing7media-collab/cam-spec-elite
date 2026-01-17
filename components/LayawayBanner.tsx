@@ -131,6 +131,7 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
               alignItems: "center",
               animation: "slideLayawayImage 4s ease-in-out forwards",
               pointerEvents: "none",
+              zIndex: 10,
             }}
           >
             <div
@@ -139,20 +140,23 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
                 alignItems: "center",
                 gap: 16,
                 background: "linear-gradient(90deg, rgba(10, 10, 30, 0.95), rgba(10, 10, 30, 0.98), rgba(10, 10, 30, 0.95))",
-                padding: "12px 24px",
+                padding: "0 24px",
                 borderRadius: 8,
                 boxShadow: "0 0 30px rgba(255, 59, 212, 0.4), 0 0 60px rgba(0, 245, 255, 0.2)",
                 whiteSpace: "nowrap",
+                height: "100%",
               }}
             >
               <Image
                 src={imageSrc}
                 alt="Layaway Available"
-                width={60}
-                height={60}
+                width={100}
+                height={100}
                 style={{ 
                   objectFit: "contain",
                   filter: "drop-shadow(0 0 10px rgba(255, 59, 212, 0.5))",
+                  height: "90%",
+                  width: "auto",
                 }}
                 onError={(e) => {
                   // Hide if image doesn't exist
