@@ -90,7 +90,7 @@ export default function AuthPage() {
   };
 
   return (
-    <main style={{ padding: 20, maxWidth: 620, margin: "0 auto", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+    <main style={{ padding: 20, maxWidth: 900, margin: "0 auto", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
       <LayawayBanner />
       <div
         style={{
