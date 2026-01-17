@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { calculateSalesTax, formatTaxRate, getAllStates } from "@/lib/salesTax";
 
 interface MerchItem {
   id: string;
@@ -26,28 +25,7 @@ interface CartItem {
   image: string;
 }
 
-interface CheckoutForm {
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-  notes: string;
-}
-
 const SHIPPING_COST = 5.99;
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "12px 14px",
-  background: "rgba(30, 30, 50, 0.5)",
-  border: "1px solid rgba(100, 100, 120, 0.3)",
-  borderRadius: 8,
-  color: "#e2e8f0",
-  fontSize: 14,
-  outline: "none",
 };
 
 const merchItems: MerchItem[] = [
@@ -172,23 +150,6 @@ export default function ShopPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({});
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [checkoutForm, setCheckoutForm] = useState<CheckoutForm>({
-    name: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    zip: "",
-    notes: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [orderComplete, setOrderComplete] = useState<{
-    orderNumber: string;
-    total: number;
-    paypalUrl: string;
-  } | null>(null);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -258,103 +219,6 @@ export default function ShopPage() {
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  
-  // Calculate sales tax based on shipping state
-  const taxInfo = useMemo(() => {
-    if (!checkoutForm.state) {
-      return { taxAmount: 0, taxRate: 0, stateAbbr: null };
-    }
-    return calculateSalesTax(cartTotal, checkoutForm.state, false, SHIPPING_COST);
-  }, [cartTotal, checkoutForm.state]);
-  
-  const orderTotal = cartTotal + SHIPPING_COST + taxInfo.taxAmount;
-  
-  // Get all US states for dropdown
-  const usStates = useMemo(() => getAllStates(), []);
-
-  const handleCheckoutSubmit = async () => {
-    // Validate form
-    if (!checkoutForm.name || !checkoutForm.email || !checkoutForm.address || 
-        !checkoutForm.city || !checkoutForm.state || !checkoutForm.zip) {
-      alert("Please fill in all required fields");
-      return;
-    }
-    
-    // Validate email format
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(checkoutForm.email)) {
-      alert("Please enter a valid email address");
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    try {
-      const response = await fetch("/api/shop/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer: {
-            name: checkoutForm.name,
-            email: checkoutForm.email,
-            phone: checkoutForm.phone,
-          },
-          shipping: {
-            address: checkoutForm.address,
-            city: checkoutForm.city,
-            state: checkoutForm.state,
-            zip: checkoutForm.zip,
-          },
-          items: cart.map(item => ({
-            id: item.id,
-            name: item.name,
-            size: item.size,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-          tax: {
-            amount: taxInfo.taxAmount,
-            rate: taxInfo.taxRate,
-            state: taxInfo.stateAbbr,
-          },
-          notes: checkoutForm.notes,
-        }),
-      });
-      
-      const data = await response.json();
-      
-      if (data.ok) {
-        setOrderComplete({
-          orderNumber: data.order.orderNumber,
-          total: data.order.total,
-          paypalUrl: data.paypalUrl,
-        });
-        setCart([]);
-        setCartOpen(false);
-      } else {
-        alert(data.message || "Failed to create order");
-      }
-    } catch (err) {
-      console.error("Checkout error:", err);
-      alert("Failed to process order. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const resetCheckout = () => {
-    setCheckoutOpen(false);
-    setOrderComplete(null);
-    setCheckoutForm({
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-      city: "",
-      state: "",
-      zip: "",
-      notes: "",
-    });
-  };
 
   return (
     <main style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 20px" }}>
@@ -503,18 +367,20 @@ export default function ShopPage() {
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <span style={{ color: "#94a3b8", fontSize: 14 }}>Tax:</span>
               <span style={{ color: "#e2e8f0", fontSize: 14 }}>
-                {taxInfo.stateAbbr ? `$${taxInfo.taxAmount.toFixed(2)}` : "Calculated at checkout"}
+                Calculated at checkout
               </span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, paddingTop: 8, borderTop: "1px solid rgba(100, 100, 120, 0.2)" }}>
-              <span style={{ color: "#e2e8f0", fontSize: 16, fontWeight: 600 }}>Total:</span>
+              <span style={{ color: "#e2e8f0", fontSize: 16, fontWeight: 600 }}>Estimate:</span>
               <span style={{ color: "#22c55e", fontSize: 20, fontWeight: 700 }}>
-                ${orderTotal.toFixed(2)}{!taxInfo.stateAbbr && "+tax"}
+                ${(cartTotal + SHIPPING_COST).toFixed(2)}+tax
               </span>
             </div>
-            <button
-              onClick={() => { setCartOpen(false); setCheckoutOpen(true); }}
+            <Link
+              href="/shop/checkout"
+              onClick={() => setCartOpen(false)}
               style={{
+                display: "block",
                 width: "100%",
                 padding: "14px 24px",
                 background: "linear-gradient(135deg, #00f5ff, #ff3bd4)",
@@ -524,277 +390,15 @@ export default function ShopPage() {
                 fontSize: 16,
                 fontWeight: 700,
                 cursor: "pointer",
+                textAlign: "center",
+                textDecoration: "none",
               }}
             >
               Proceed to Checkout
-            </button>
+            </Link>
           </div>
         )}
       </div>
-
-      {/* Checkout Modal */}
-      {checkoutOpen && (
-        <div
-          onClick={() => !orderComplete && resetCheckout()}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.8)",
-            zIndex: 1002,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 20,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: "rgba(10, 10, 30, 0.98)",
-              border: "1px solid rgba(0, 245, 255, 0.3)",
-              borderRadius: 16,
-              maxWidth: 500,
-              width: "100%",
-              maxHeight: "90vh",
-              overflowY: "auto",
-            }}
-          >
-            {orderComplete ? (
-              /* Order Confirmation */
-              <div style={{ padding: 32, textAlign: "center" }}>
-                <div style={{ fontSize: 64, marginBottom: 16 }}>✅</div>
-                <h2 style={{ color: "#22c55e", fontSize: 24, fontWeight: 700, margin: "0 0 8px 0" }}>
-                  Order Placed!
-                </h2>
-                <p style={{ color: "#94a3b8", fontSize: 14, margin: "0 0 24px 0" }}>
-                  Order #{orderComplete.orderNumber}
-                </p>
-                
-                <div style={{
-                  background: "rgba(30, 30, 50, 0.5)",
-                  borderRadius: 8,
-                  padding: 20,
-                  marginBottom: 24,
-                }}>
-                  <p style={{ color: "#e2e8f0", fontSize: 16, margin: "0 0 8px 0" }}>
-                    Total: <strong style={{ color: "#22c55e" }}>${orderComplete.total.toFixed(2)}</strong>
-                  </p>
-                  <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>
-                    Please complete payment via PayPal to process your order.
-                  </p>
-                </div>
-                
-                <a
-                  href={orderComplete.paypalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "inline-block",
-                    width: "100%",
-                    padding: "14px 24px",
-                    background: "#0070ba",
-                    color: "white",
-                    border: "none",
-                    borderRadius: 8,
-                    fontSize: 16,
-                    fontWeight: 700,
-                    textDecoration: "none",
-                    marginBottom: 12,
-                  }}
-                >
-                  Pay with PayPal - ${orderComplete.total.toFixed(2)}
-                </a>
-                
-                <p style={{ color: "#64748b", fontSize: 12, margin: "0 0 20px 0" }}>
-                  Include order #{orderComplete.orderNumber} in PayPal notes
-                </p>
-                
-                <button
-                  onClick={resetCheckout}
-                  style={{
-                    padding: "10px 24px",
-                    background: "rgba(100, 100, 120, 0.3)",
-                    color: "#94a3b8",
-                    border: "none",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                  }}
-                >
-                  Close
-                </button>
-              </div>
-            ) : (
-              /* Checkout Form */
-              <>
-                <div style={{ padding: "20px 24px", borderBottom: "1px solid rgba(100, 100, 120, 0.3)" }}>
-                  <h2 style={{ color: "#e2e8f0", fontSize: 20, fontWeight: 700, margin: 0 }}>
-                    Checkout
-                  </h2>
-                </div>
-                
-                <div style={{ padding: 24 }}>
-                  {/* Order Summary */}
-                  <div style={{ marginBottom: 24 }}>
-                    <h3 style={{ color: "#94a3b8", fontSize: 12, fontWeight: 600, marginBottom: 12, textTransform: "uppercase" }}>
-                      Order Summary
-                    </h3>
-                    {cart.map(item => (
-                      <div key={item.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                        <span style={{ color: "#e2e8f0", fontSize: 13 }}>
-                          {item.name} {item.size && `(${item.size})`} x{item.quantity}
-                        </span>
-                        <span style={{ color: "#e2e8f0", fontSize: 13 }}>
-                          ${(item.price * item.quantity).toFixed(2)}
-                        </span>
-                      </div>
-                    ))}
-                    <div style={{ borderTop: "1px solid rgba(100, 100, 120, 0.2)", marginTop: 12, paddingTop: 12 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                        <span style={{ color: "#94a3b8", fontSize: 13 }}>Subtotal</span>
-                        <span style={{ color: "#e2e8f0", fontSize: 13 }}>${cartTotal.toFixed(2)}</span>
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                        <span style={{ color: "#94a3b8", fontSize: 13 }}>Shipping</span>
-                        <span style={{ color: "#e2e8f0", fontSize: 13 }}>${SHIPPING_COST.toFixed(2)}</span>
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                        <span style={{ color: "#94a3b8", fontSize: 13 }}>
-                          Tax {taxInfo.stateAbbr && `(${taxInfo.stateAbbr} ${formatTaxRate(taxInfo.taxRate)})`}
-                        </span>
-                        <span style={{ color: "#e2e8f0", fontSize: 13 }}>
-                          {taxInfo.stateAbbr ? `$${taxInfo.taxAmount.toFixed(2)}` : "Select state"}
-                        </span>
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700 }}>
-                        <span style={{ color: "#e2e8f0", fontSize: 14 }}>Total</span>
-                        <span style={{ color: "#22c55e", fontSize: 16 }}>${orderTotal.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Contact Info */}
-                  <h3 style={{ color: "#94a3b8", fontSize: 12, fontWeight: 600, marginBottom: 12, textTransform: "uppercase" }}>
-                    Contact Information
-                  </h3>
-                  <div style={{ display: "grid", gap: 12, marginBottom: 24 }}>
-                    <input
-                      type="text"
-                      placeholder="Full Name *"
-                      value={checkoutForm.name}
-                      onChange={(e) => setCheckoutForm(prev => ({ ...prev, name: e.target.value }))}
-                      style={inputStyle}
-                    />
-                    <input
-                      type="email"
-                      placeholder="Email *"
-                      value={checkoutForm.email}
-                      onChange={(e) => setCheckoutForm(prev => ({ ...prev, email: e.target.value }))}
-                      style={inputStyle}
-                    />
-                    <input
-                      type="tel"
-                      placeholder="Phone (optional)"
-                      value={checkoutForm.phone}
-                      onChange={(e) => setCheckoutForm(prev => ({ ...prev, phone: e.target.value }))}
-                      style={inputStyle}
-                    />
-                  </div>
-                  
-                  {/* Shipping Address */}
-                  <h3 style={{ color: "#94a3b8", fontSize: 12, fontWeight: 600, marginBottom: 12, textTransform: "uppercase" }}>
-                    Shipping Address
-                  </h3>
-                  <div style={{ display: "grid", gap: 12, marginBottom: 24 }}>
-                    <input
-                      type="text"
-                      placeholder="Street Address *"
-                      value={checkoutForm.address}
-                      onChange={(e) => setCheckoutForm(prev => ({ ...prev, address: e.target.value }))}
-                      style={inputStyle}
-                    />
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                      <input
-                        type="text"
-                        placeholder="City *"
-                        value={checkoutForm.city}
-                        onChange={(e) => setCheckoutForm(prev => ({ ...prev, city: e.target.value }))}
-                        style={inputStyle}
-                      />
-                      <select
-                        value={checkoutForm.state}
-                        onChange={(e) => setCheckoutForm(prev => ({ ...prev, state: e.target.value }))}
-                        style={{ ...inputStyle, cursor: "pointer" }}
-                      >
-                        <option value="">Select State *</option>
-                        {usStates.map((st) => (
-                          <option key={st.abbr} value={st.abbr}>
-                            {st.abbr} - {st.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="ZIP Code *"
-                      value={checkoutForm.zip}
-                      onChange={(e) => setCheckoutForm(prev => ({ ...prev, zip: e.target.value }))}
-                      style={inputStyle}
-                    />
-                  </div>
-                  
-                  {/* Notes */}
-                  <textarea
-                    placeholder="Order notes (optional)"
-                    value={checkoutForm.notes}
-                    onChange={(e) => setCheckoutForm(prev => ({ ...prev, notes: e.target.value }))}
-                    rows={3}
-                    style={{ ...inputStyle, resize: "vertical" }}
-                  />
-                </div>
-                
-                <div style={{ padding: "16px 24px", borderTop: "1px solid rgba(100, 100, 120, 0.3)", display: "flex", gap: 12 }}>
-                  <button
-                    onClick={resetCheckout}
-                    style={{
-                      flex: 1,
-                      padding: "12px 20px",
-                      background: "rgba(100, 100, 120, 0.3)",
-                      color: "#94a3b8",
-                      border: "none",
-                      borderRadius: 8,
-                      fontSize: 14,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleCheckoutSubmit}
-                    disabled={isSubmitting}
-                    style={{
-                      flex: 2,
-                      padding: "12px 20px",
-                      background: isSubmitting ? "rgba(100, 100, 120, 0.3)" : "linear-gradient(135deg, #00f5ff, #ff3bd4)",
-                      color: isSubmitting ? "#94a3b8" : "#0a0a1e",
-                      border: "none",
-                      borderRadius: 8,
-                      fontSize: 14,
-                      fontWeight: 700,
-                      cursor: isSubmitting ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    {isSubmitting ? "Processing..." : `Place Order - $${orderTotal.toFixed(2)}`}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Floating Cart Button */}
       <button
