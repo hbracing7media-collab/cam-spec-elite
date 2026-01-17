@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import LayawayBanner from "@/components/LayawayBanner";
 
 const CALCULATORS: { slug: string; name: string; desc: string }[] = [
   { slug: "cam-spec-elite", name: "Cam Spec Elite Basic HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
@@ -26,6 +29,7 @@ export default function CalculatorsHubPage() {
   return (
     <div className="card">
       <div className="card-inner">
+        <LayawayBanner />
         <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
           <h1 className="h1" style={{ margin: 0 }}>Calculators</h1>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>

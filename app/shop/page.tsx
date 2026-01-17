@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import LayawayBanner from "@/components/LayawayBanner";
 
 interface MerchItem {
   id: string;
@@ -521,6 +522,9 @@ export default function ShopPage() {
       >
         ← Back to Home
       </Link>
+
+      {/* Layaway Banner */}
+      <LayawayBanner />
 
       {/* Hero Section */}
       <div style={{

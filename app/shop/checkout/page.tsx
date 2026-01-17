@@ -66,13 +66,19 @@ function PaymentForm({
   onSuccess, 
   onError,
   customerInfo,
-  cartItems
+  cartItems,
+  subtotal,
+  shipping,
+  tax,
 }: { 
   amount: number;
   onSuccess: () => void;
   onError: (error: string) => void;
   customerInfo: CheckoutForm;
   cartItems: CartItem[];
+  subtotal: number;
+  shipping: number;
+  tax: number;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -133,6 +139,37 @@ function PaymentForm({
       }
 
       if (paymentIntent?.status === "succeeded") {
+        // Send order notification email
+        try {
+          await fetch("/api/shop/checkout/notify-stripe-order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              paymentIntentId: paymentIntent.id,
+              customerName: customerInfo.name,
+              customerEmail: customerInfo.email,
+              items: cartItems.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price,
+                size: item.size,
+              })),
+              subtotal,
+              shipping,
+              tax,
+              total: amount,
+              shippingAddress: {
+                address: customerInfo.address,
+                city: customerInfo.city,
+                state: customerInfo.state,
+                zip: customerInfo.zip,
+              },
+            }),
+          });
+        } catch (emailErr) {
+          console.error("Failed to send order notification:", emailErr);
+          // Don't fail the order if email fails
+        }
         onSuccess();
       }
     } catch (err) {
@@ -916,6 +953,9 @@ export default function CheckoutPage() {
                       onError={handlePaymentError}
                       customerInfo={checkoutForm}
                       cartItems={cart}
+                      subtotal={cartTotal}
+                      shipping={SHIPPING_COST}
+                      tax={taxAmount}
                     />
                   </Elements>
                 ) : paymentMethod === "paypal" ? (
@@ -962,6 +1002,9 @@ export default function CheckoutPage() {
                       onError={handlePaymentError}
                       customerInfo={checkoutForm}
                       cartItems={cart}
+                      subtotal={cartTotal}
+                      shipping={SHIPPING_COST}
+                      tax={taxAmount}
                     />
                   </Elements>
                 )}

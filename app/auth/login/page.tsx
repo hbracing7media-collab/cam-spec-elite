@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import LayawayBanner from "@/components/LayawayBanner";
 
 interface Message {
   type: "ok" | "err";
@@ -89,7 +90,8 @@ export default function AuthPage() {
   };
 
   return (
-    <main style={{ padding: 20, maxWidth: 400, margin: "0 auto", minHeight: "100vh", display: "flex", alignItems: "center" }}>
+    <main style={{ padding: 20, maxWidth: 400, margin: "0 auto", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+      <LayawayBanner />
       <div
         style={{
           borderRadius: 18,

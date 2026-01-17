@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import LayawayBanner from "@/components/LayawayBanner";
 
 export default function Home() {
   const router = useRouter();
@@ -67,6 +68,8 @@ export default function Home() {
         >
           Performance calculators • forum • build data
         </p>
+
+        <LayawayBanner />
 
         <div
           style={{

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import LayawayBanner from "@/components/LayawayBanner";
 
 type Thread = {
   id: string;
@@ -40,6 +41,7 @@ export default function ForumPage() {
   return (
     <div className="card">
       <div className="card-inner">
+        <LayawayBanner />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
           <h1 className="h1" style={{ marginBottom: 0 }}>Forum</h1>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
