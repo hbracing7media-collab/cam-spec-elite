@@ -158,7 +158,7 @@ function PaymentForm({
               subtotal,
               shipping,
               tax,
-              taxRate,
+              taxRate: taxInfo.taxRate,
               total: amount,
               shippingAddress: {
                 address: customerInfo.address,
