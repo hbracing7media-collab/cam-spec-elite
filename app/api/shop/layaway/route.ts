@@ -10,6 +10,16 @@ const supabase = createClient(
 );
 
 // ============================================
+// TIERED MAX DURATION BASED ON ORDER AMOUNT
+// ============================================
+function getMaxDaysForAmount(totalAmount: number): number {
+  if (totalAmount >= 10000) return 365;
+  if (totalAmount >= 7500) return 210;
+  if (totalAmount >= 5000) return 120;
+  return 90; // Up to $2,500
+}
+
+// ============================================
 // TYPES
 // ============================================
 interface LayawayItem {
@@ -238,15 +248,15 @@ export async function POST(req: NextRequest) {
       startDate
     );
     
-    // Check max plan duration
-    const maxDays = settings.max_plan_duration_days || 90;
+    // Check max plan duration (tiered by order amount)
+    const maxDays = getMaxDaysForAmount(totalAmount);
     const planDurationDays = Math.ceil(
       (schedule.finalDueDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
     );
     
     if (planDurationDays > maxDays) {
       return NextResponse.json(
-        { ok: false, message: `Plan duration cannot exceed ${maxDays} days. Try fewer installments or a higher frequency.` },
+        { ok: false, message: `For orders of $${totalAmount.toFixed(2)}, plan duration cannot exceed ${maxDays} days. Try fewer installments or a higher frequency.` },
         { status: 400 }
       );
     }

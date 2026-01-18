@@ -3,6 +3,16 @@
 import { useState, useEffect, useMemo } from "react";
 
 // ============================================
+// TIERED MAX DURATION BASED ON ORDER AMOUNT
+// ============================================
+function getMaxDaysForAmount(totalAmount: number): number {
+  if (totalAmount >= 10000) return 365;
+  if (totalAmount >= 7500) return 210;
+  if (totalAmount >= 5000) return 120;
+  return 90; // Up to $2,500
+}
+
+// ============================================
 // TYPES
 // ============================================
 interface LayawaySettings {
@@ -303,7 +313,7 @@ export default function LayawayCheckout({
     return schedule;
   }, [totalAmount, downPaymentPercent, numPayments, paymentFrequency]);
   
-  // Check if plan duration exceeds max
+  // Check if plan duration exceeds max (tiered by order amount)
   const planDuration = useMemo(() => {
     if (paymentSchedule.length < 2) return 0;
     const start = paymentSchedule[0].due_date;
@@ -311,7 +321,8 @@ export default function LayawayCheckout({
     return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
   }, [paymentSchedule]);
   
-  const exceedsMaxDuration = settings ? planDuration > settings.max_plan_duration_days : false;
+  const maxDaysAllowed = getMaxDaysForAmount(totalAmount);
+  const exceedsMaxDuration = planDuration > maxDaysAllowed;
   
   // Handle internal layaway submission
   const handleSubmitLayaway = async () => {
@@ -574,7 +585,7 @@ export default function LayawayCheckout({
         
         {exceedsMaxDuration && (
           <div style={styles.error}>
-            ⚠️ Plan duration ({planDuration} days) exceeds maximum of {settings.max_plan_duration_days} days.
+            ⚠️ Plan duration ({planDuration} days) exceeds maximum of {maxDaysAllowed} days for orders of ${totalAmount.toFixed(2)}.
             Try fewer payments or a higher frequency.
           </div>
         )}
