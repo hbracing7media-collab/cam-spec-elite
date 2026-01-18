@@ -213,7 +213,7 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    if (subtotal > (settings.max_order_amount || 5000)) {
+    if (subtotal > (settings.max_order_amount || 15000)) {
       return NextResponse.json(
         { ok: false, message: `Maximum order for layaway is $${settings.max_order_amount}` },
         { status: 400 }

@@ -24,7 +24,7 @@ export async function GET() {
         settings: {
           is_enabled: false,
           min_order_amount: 100,
-          max_order_amount: 5000,
+          max_order_amount: 15000,
           min_down_payment_percent: 10,
           default_down_payment_percent: 25,
           available_frequencies: ["weekly", "biweekly", "monthly"],

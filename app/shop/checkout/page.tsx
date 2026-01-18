@@ -322,7 +322,7 @@ export default function CheckoutPage() {
   const layawayAvailable = useMemo(() => {
     if (!layawaySettings?.is_enabled) return false;
     if (cartTotal < (layawaySettings.min_order_amount || 100)) return false;
-    if (cartTotal > (layawaySettings.max_order_amount || 5000)) return false;
+    if (cartTotal > (layawaySettings.max_order_amount || 15000)) return false;
     return true;
   }, [layawaySettings, cartTotal]);
 
