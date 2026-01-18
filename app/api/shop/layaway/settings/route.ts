@@ -22,7 +22,7 @@ export async function GET() {
       return NextResponse.json({
         ok: true,
         settings: {
-          is_enabled: false,
+          is_enabled: true,
           min_order_amount: 100,
           max_order_amount: 15000,
           min_down_payment_percent: 10,
