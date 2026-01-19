@@ -527,3 +527,193 @@ export async function notifyDynoSubmission(data: DynoSubmissionNotificationData)
     replyTo: data.userEmail,
   });
 }
+
+// ============================================
+// Contact Form Notifications
+// ============================================
+
+interface ContactFormData {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+export async function notifyContactForm(data: ContactFormData): Promise<boolean> {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a2e; color: #e2e8f0; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #ff3bd4, #8b5cf6); padding: 20px; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; color: #fff; font-size: 24px;">📬 New Contact Form Message</h1>
+      </div>
+      
+      <div style="padding: 20px; background: #0a0a1e; border: 1px solid #333; border-radius: 0 0 8px 8px;">
+        <div style="background: #1e1e3f; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <p style="margin: 0 0 8px 0;"><strong style="color: #00f5ff;">From:</strong> ${data.name}</p>
+          <p style="margin: 0 0 8px 0;"><strong style="color: #00f5ff;">Email:</strong> <a href="mailto:${data.email}" style="color: #ff3bd4;">${data.email}</a></p>
+          <p style="margin: 0;"><strong style="color: #00f5ff;">Subject:</strong> ${data.subject}</p>
+        </div>
+        
+        <div style="background: #1e1e3f; padding: 15px; border-radius: 8px;">
+          <p style="margin: 0 0 8px 0; color: #94a3b8; font-size: 12px; text-transform: uppercase;">Message:</p>
+          <p style="margin: 0; color: #e2e8f0; line-height: 1.6; white-space: pre-wrap;">${data.message}</p>
+        </div>
+        
+        <p style="margin-top: 20px; font-size: 14px; color: #64748b;">
+          Reply directly to this email to respond to ${data.name}
+        </p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: COMPANY_EMAIL,
+    subject: `📬 [Contact] ${data.subject} - from ${data.name}`,
+    html,
+    replyTo: data.email,
+  });
+}
+
+// ============================================
+// Consulting Booking Notifications
+// ============================================
+
+interface ConsultingBookingData {
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  serviceName: string;
+  servicePrice: number;
+  engineMake: string;
+  engineFamily: string;
+  description: string;
+  paymentMethod: "stripe" | "paypal";
+  paymentId?: string;
+}
+
+export async function notifyConsultingBooking(data: ConsultingBookingData): Promise<boolean> {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a2e; color: #e2e8f0; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #00ff88, #00c9ff); padding: 20px; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; color: #0a0a1e; font-size: 24px;">⚡ New Consulting Booking!</h1>
+      </div>
+      
+      <div style="padding: 20px; background: #0a0a1e; border: 1px solid #333; border-radius: 0 0 8px 8px;">
+        <div style="background: linear-gradient(135deg, #22c55e22, #16a34a22); border: 1px solid #22c55e44; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+          <div style="font-size: 14px; color: #94a3b8; margin-bottom: 4px;">PAID</div>
+          <div style="font-size: 32px; font-weight: bold; color: #22c55e;">$${data.servicePrice.toFixed(2)}</div>
+          <div style="font-size: 14px; color: #00ff88; margin-top: 4px;">${data.serviceName}</div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h3 style="color: #00f5ff; margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 8px;">Customer Information</h3>
+          <p style="margin: 4px 0;"><strong style="color: #94a3b8;">Name:</strong> ${data.customerName}</p>
+          <p style="margin: 4px 0;"><strong style="color: #94a3b8;">Email:</strong> <a href="mailto:${data.customerEmail}" style="color: #00f5ff;">${data.customerEmail}</a></p>
+          ${data.customerPhone ? `<p style="margin: 4px 0;"><strong style="color: #94a3b8;">Phone:</strong> <a href="tel:${data.customerPhone}" style="color: #00f5ff;">${data.customerPhone}</a></p>` : ''}
+          <p style="margin: 4px 0;"><strong style="color: #94a3b8;">Payment:</strong> ${data.paymentMethod === 'paypal' ? 'PayPal' : 'Credit Card'}</p>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h3 style="color: #00f5ff; margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 8px;">Engine Details</h3>
+          <div style="background: #1e1e3f; padding: 12px; border-radius: 8px;">
+            <p style="margin: 4px 0;"><strong style="color: #94a3b8;">Make:</strong> <span style="color: #e2e8f0;">${data.engineMake}</span></p>
+            <p style="margin: 4px 0;"><strong style="color: #94a3b8;">Engine Family:</strong> <span style="color: #e2e8f0;">${data.engineFamily}</span></p>
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h3 style="color: #00f5ff; margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 8px;">Project Description</h3>
+          <div style="background: #1e1e3f; padding: 15px; border-radius: 8px;">
+            <p style="margin: 0; color: #e2e8f0; line-height: 1.6; white-space: pre-wrap;">${data.description}</p>
+          </div>
+        </div>
+        
+        <div style="background: #fbbf2422; border: 1px solid #fbbf24; padding: 15px; border-radius: 8px; margin-top: 20px;">
+          <p style="margin: 0; color: #fbbf24; font-weight: bold;">
+            ⏰ ACTION REQUIRED: Contact the customer within 48 hours to schedule their consultation.
+          </p>
+        </div>
+        
+        <p style="margin-top: 20px; font-size: 14px; color: #64748b;">
+          Reply directly to this email to contact ${data.customerName}
+        </p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: COMPANY_EMAIL,
+    subject: `⚡ New Consulting Booking: ${data.serviceName} - $${data.servicePrice.toFixed(2)}`,
+    html,
+    replyTo: data.customerEmail,
+  });
+}
+
+export async function sendConsultingReceipt(data: ConsultingBookingData): Promise<boolean> {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a2e; color: #e2e8f0; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #00ff88, #00c9ff); padding: 20px; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; color: #0a0a1e; font-size: 24px;">✅ Booking Confirmed!</h1>
+        <p style="margin: 8px 0 0 0; color: #0a0a1e; font-size: 14px;">HB Racing Performance Build Advisory</p>
+      </div>
+      
+      <div style="padding: 20px; background: #0a0a1e; border: 1px solid #333; border-radius: 0 0 8px 8px;">
+        <p style="font-size: 16px; margin-bottom: 20px;">Hi ${data.customerName},</p>
+        
+        <p style="font-size: 15px; line-height: 1.6; margin-bottom: 20px;">
+          Thank you for booking a consulting session with HB Racing! Your payment has been received and your session is confirmed.
+        </p>
+        
+        <div style="background: linear-gradient(135deg, #22c55e22, #16a34a22); border: 1px solid #22c55e44; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="color: #22c55e; margin: 0 0 15px 0;">Your Booking Details</h3>
+          <table style="width: 100%; color: #e2e8f0;">
+            <tr>
+              <td style="padding: 6px 0; color: #94a3b8;">Service:</td>
+              <td style="padding: 6px 0; text-align: right; font-weight: bold;">${data.serviceName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #94a3b8;">Engine:</td>
+              <td style="padding: 6px 0; text-align: right;">${data.engineMake} - ${data.engineFamily}</td>
+            </tr>
+            <tr style="border-top: 1px solid #333;">
+              <td style="padding: 12px 0 6px 0; color: #94a3b8;">Amount Paid:</td>
+              <td style="padding: 12px 0 6px 0; text-align: right; font-size: 20px; font-weight: bold; color: #22c55e;">$${data.servicePrice.toFixed(2)}</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div style="background: #00f5ff22; border: 1px solid #00f5ff44; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="color: #00f5ff; margin: 0 0 10px 0;">📞 What Happens Next?</h3>
+          <p style="margin: 0; color: #e2e8f0; line-height: 1.6;">
+            <strong>Expect a call or email within the next 48 hours</strong> to schedule your consultation session. We'll work with your schedule to find a convenient time.
+          </p>
+          <p style="margin: 12px 0 0 0; color: #94a3b8; font-size: 14px;">
+            Consultations can be done via phone, Zoom, or Discord — your choice!
+          </p>
+        </div>
+        
+        <div style="background: #1e1e3f; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <p style="margin: 0 0 8px 0; color: #94a3b8; font-size: 13px;">Your Project Notes:</p>
+          <p style="margin: 0; color: #e2e8f0; font-style: italic; line-height: 1.5;">"${data.description}"</p>
+        </div>
+        
+        <p style="font-size: 14px; color: #94a3b8; line-height: 1.6;">
+          If you have any questions before your session, feel free to reply to this email.
+        </p>
+        
+        <div style="border-top: 1px solid #333; margin-top: 20px; padding-top: 20px; text-align: center;">
+          <p style="margin: 0; color: #64748b; font-size: 13px;">
+            HB Racing | Performance Build Advisory<br>
+            <a href="https://hbracing7.com" style="color: #00f5ff;">hbracing7.com</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: data.customerEmail,
+    subject: `✅ Booking Confirmed: ${data.serviceName} - HB Racing`,
+    html,
+    replyTo: COMPANY_EMAIL,
+  });
+}

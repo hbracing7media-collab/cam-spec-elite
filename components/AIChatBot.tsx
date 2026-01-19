@@ -295,8 +295,8 @@ export default function AIChatBot({
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
     position: "fixed",
-    bottom: 20,
-    left: 20,
+    bottom: 100,
+    right: 20,
     width: 380,
     maxWidth: "calc(100vw - 40px)",
     borderRadius: 16,

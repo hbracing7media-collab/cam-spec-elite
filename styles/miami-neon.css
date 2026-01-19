@@ -41,11 +41,12 @@ body {
   position: fixed;
   inset: 0;
   background-image: url("/miami-bg.jpg");
-  background-size: 70%;
-  background-position: center 40%;
+  background-size: 50%;
+  background-position: center bottom;
   background-repeat: no-repeat;
   z-index: 0;
   pointer-events: none;
+  opacity: 0.25;
 }
 
 /* Everything real must be above background */

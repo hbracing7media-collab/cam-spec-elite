@@ -3,6 +3,7 @@ import "../styles/miami-neon.css";
 import Link from "next/link";
 import { ShortBlocksProvider } from "@/lib/context/ShortBlocksContext";
 import AIChatBot from "@/components/AIChatBot";
+import ContactButton from "@/components/ContactButton";
 
 export const metadata = {
   title: "Cam Spec Elite",
@@ -41,6 +42,9 @@ export default function RootLayout({
             title="Cam Spec Elite AI"
             placeholder="Ask about cams, HP, engine combos..."
           />
+
+          {/* Global Contact Button */}
+          <ContactButton />
         </ShortBlocksProvider>
       </body>
     </html>

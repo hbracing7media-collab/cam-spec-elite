@@ -8,12 +8,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
-// Initialize Supabase admin client
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } }
-);
+// Initialize Supabase admin client lazily to avoid build-time errors
+function getSupabase() {
+  return createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  );
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -75,7 +77,7 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
   }
 
   // Update the layaway payment record
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("layaway_payments")
     .update({
       status: "paid",
@@ -108,7 +110,7 @@ async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
   }
 
   // Update the layaway payment record
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("layaway_payments")
     .update({
       autopay_failed: true,
@@ -140,7 +142,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
 
   // If there's a payment ID, mark it paid
   if (layaway_payment_id) {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from("layaway_payments")
       .update({
         status: "paid",

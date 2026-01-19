@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { calculateSalesTax } from "@/lib/salesTax";
+import { stripe } from "@/lib/stripe";
 import { notifyNewLayawayPlan } from "@/lib/email";
 
 const supabase = createClient(
@@ -202,8 +202,98 @@ export async function POST(req: NextRequest) {
     // Calculate totals
     const subtotal = body.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shippingCost = 5.99;
-    const taxInfo = calculateSalesTax(subtotal, body.shipping.state, false, shippingCost);
-    const totalAmount = subtotal + shippingCost + taxInfo.taxAmount;
+    const subtotalPlusShippingCents = Math.round((subtotal + shippingCost) * 100);
+    
+    // Use Stripe Tax to calculate the tax amount
+    let taxAmountCents = 0;
+    let taxCalculationId: string | undefined;
+    
+    // First, find or create a Stripe customer for tax calculation
+    let stripeCustomerId: string | undefined;
+    
+    try {
+      const existingCustomers = await stripe.customers.list({
+        email: body.customer.email,
+        limit: 1,
+      });
+
+      if (existingCustomers.data.length > 0) {
+        // Update existing customer with current address
+        const customer = await stripe.customers.update(existingCustomers.data[0].id, {
+          name: body.customer.name,
+          address: {
+            line1: body.shipping.address,
+            city: body.shipping.city,
+            state: body.shipping.state,
+            postal_code: body.shipping.zip,
+            country: "US",
+          },
+          shipping: {
+            name: body.customer.name,
+            address: {
+              line1: body.shipping.address,
+              city: body.shipping.city,
+              state: body.shipping.state,
+              postal_code: body.shipping.zip,
+              country: "US",
+            },
+          },
+        });
+        stripeCustomerId = customer.id;
+      } else {
+        // Create new customer
+        const customer = await stripe.customers.create({
+          email: body.customer.email,
+          name: body.customer.name,
+          address: {
+            line1: body.shipping.address,
+            city: body.shipping.city,
+            state: body.shipping.state,
+            postal_code: body.shipping.zip,
+            country: "US",
+          },
+          shipping: {
+            name: body.customer.name,
+            address: {
+              line1: body.shipping.address,
+              city: body.shipping.city,
+              state: body.shipping.state,
+              postal_code: body.shipping.zip,
+              country: "US",
+            },
+          },
+        });
+        stripeCustomerId = customer.id;
+      }
+
+      // Calculate tax using Stripe Tax Calculations API
+      const taxCalculation = await stripe.tax.calculations.create({
+        currency: "usd",
+        customer: stripeCustomerId,
+        line_items: [
+          {
+            amount: subtotalPlusShippingCents,
+            reference: "layaway_order",
+            // Use services tax code for machine shop/consulting
+            tax_code: "txcd_20030000", // General - Services
+          },
+        ],
+        shipping_cost: {
+          amount: 0, // Shipping already included in line item
+        },
+      });
+      
+      taxAmountCents = taxCalculation.tax_amount_exclusive;
+      taxCalculationId = taxCalculation.id;
+      console.log(`Stripe Tax calculated: $${(taxAmountCents / 100).toFixed(2)} for ${body.shipping.state}`);
+    } catch (taxError) {
+      console.error("Stripe Tax calculation error:", taxError);
+      // If Stripe Tax fails, we'll proceed with 0 tax
+      // This could happen if you haven't registered for tax in the customer's state
+    }
+    
+    const taxAmount = taxAmountCents / 100;
+    const totalAmount = subtotal + shippingCost + taxAmount;
     
     // Validate against settings
     if (subtotal < (settings.min_order_amount || 100)) {
@@ -274,7 +364,9 @@ export async function POST(req: NextRequest) {
         customer_phone: body.customer.phone,
         items: body.items,
         subtotal,
-        tax_amount: taxInfo.taxAmount,
+        tax_amount: taxAmount,
+        tax_calculation_id: taxCalculationId || null,
+        stripe_customer_id: stripeCustomerId || null,
         shipping_cost: shippingCost,
         total_amount: totalAmount,
         down_payment_amount: schedule.downPayment,

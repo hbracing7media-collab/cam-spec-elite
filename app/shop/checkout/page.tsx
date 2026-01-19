@@ -62,29 +62,25 @@ const inputStyle: React.CSSProperties = {
 
 // Payment Form Component
 function PaymentForm({ 
-  amount, 
   onSuccess, 
   onError,
   customerInfo,
   cartItems,
   subtotal,
   shipping,
-  tax,
-  taxRate,
 }: { 
-  amount: number;
   onSuccess: () => void;
   onError: (error: string) => void;
   customerInfo: CheckoutForm;
   cartItems: CartItem[];
   subtotal: number;
   shipping: number;
-  tax: number;
-  taxRate: number;
 }) {
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
+  const [calculatedTax, setCalculatedTax] = useState<number | null>(null);
+  const [finalTotal, setFinalTotal] = useState<number | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,14 +89,23 @@ function PaymentForm({
     setProcessing(true);
 
     try {
-      // Create payment intent
+      // Create payment intent - send subtotal + shipping, Stripe will add tax
+      const amountBeforeTax = Math.round((subtotal + shipping) * 100); // Convert to cents
+      
       const response = await fetch("/api/shop/checkout/create-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: Math.round(amount * 100), // Convert to cents
+          amount: amountBeforeTax,
           customerEmail: customerInfo.email,
           customerName: customerInfo.name,
+          shippingAddress: {
+            line1: customerInfo.address,
+            city: customerInfo.city,
+            state: customerInfo.state,
+            postal_code: customerInfo.zip,
+            country: "US",
+          },
           metadata: {
             items: JSON.stringify(cartItems.map(i => ({ name: i.name, qty: i.quantity }))),
             shipping_address: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state} ${customerInfo.zip}`,
@@ -108,10 +113,18 @@ function PaymentForm({
         }),
       });
 
-      const { clientSecret, error: intentError } = await response.json();
+      const { clientSecret, error: intentError, totalAmount, taxAmount } = await response.json();
       
       if (intentError) {
         throw new Error(intentError);
+      }
+
+      // Store the Stripe-calculated values
+      if (taxAmount !== undefined) {
+        setCalculatedTax(taxAmount);
+      }
+      if (totalAmount !== undefined) {
+        setFinalTotal(totalAmount);
       }
 
       // Confirm payment
@@ -141,6 +154,10 @@ function PaymentForm({
       }
 
       if (paymentIntent?.status === "succeeded") {
+        // Get final amounts from payment intent
+        const paidTotal = paymentIntent.amount / 100;
+        const paidTax = taxAmount || 0;
+        
         // Send order notification email and save to database
         try {
           await fetch("/api/shop/checkout/notify-stripe-order", {
@@ -159,15 +176,16 @@ function PaymentForm({
               })),
               subtotal,
               shipping,
-              tax,
-              taxRate,
-              total: amount,
+              tax: paidTax,
+              taxRate: paidTax > 0 ? (paidTax / (subtotal + shipping)) * 100 : 0,
+              total: paidTotal,
               shippingAddress: {
                 address: customerInfo.address,
                 city: customerInfo.city,
                 state: customerInfo.state,
                 zip: customerInfo.zip,
               },
+              taxCalculatedByStripe: true,
             }),
           });
         } catch (emailErr) {
@@ -219,7 +237,7 @@ function PaymentForm({
           cursor: processing ? "not-allowed" : "pointer",
         }}
       >
-        {processing ? "Processing..." : `Pay $${amount.toFixed(2)}`}
+        {processing ? "Processing..." : `Pay $${(subtotal + shipping).toFixed(2)} + tax`}
       </button>
     </form>
   );
@@ -315,11 +333,20 @@ export default function CheckoutPage() {
     const downPayment = Math.round((grandTotal * layawayConfig.downPaymentPercent / 100) * 100) / 100;
     const remainingBalance = grandTotal - downPayment;
     const installmentAmount = Math.round((remainingBalance / layawayConfig.numPayments) * 100) / 100;
-    return { downPayment, remainingBalance, installmentAmount };
+    
+    // Calculate plan duration in days
+    const daysPerPayment = layawayConfig.frequency === "weekly" ? 7 
+      : layawayConfig.frequency === "biweekly" ? 14 
+      : 30; // monthly
+    const totalDays = layawayConfig.numPayments * daysPerPayment;
+    const totalWeeks = Math.ceil(totalDays / 7);
+    
+    return { downPayment, remainingBalance, installmentAmount, totalDays, totalWeeks, daysPerPayment };
   }, [grandTotal, layawayConfig]);
 
   // Check if layaway is available
   const layawayAvailable = useMemo(() => {
+    console.log("Layaway check:", { layawaySettings, cartTotal, is_enabled: layawaySettings?.is_enabled });
     if (!layawaySettings?.is_enabled) return false;
     if (cartTotal < (layawaySettings.min_order_amount || 100)) return false;
     if (cartTotal > (layawaySettings.max_order_amount || 15000)) return false;
@@ -893,6 +920,10 @@ export default function CheckoutPage() {
                         <div style={{ fontWeight: 600 }}>${layawayCalc.installmentAmount.toFixed(2)}</div>
                       </div>
                       <div>
+                        <div style={{ opacity: 0.6 }}>Duration</div>
+                        <div style={{ fontWeight: 600 }}>{layawayCalc.totalDays} days</div>
+                      </div>
+                      <div>
                         <div style={{ opacity: 0.6 }}>Total</div>
                         <div style={{ fontWeight: 600 }}>${grandTotal.toFixed(2)}</div>
                       </div>
@@ -952,15 +983,12 @@ export default function CheckoutPage() {
                 {paymentMethod === "card" ? (
                   <Elements stripe={stripePromise}>
                     <PaymentForm
-                      amount={grandTotal}
                       onSuccess={handlePaymentSuccess}
                       onError={handlePaymentError}
                       customerInfo={checkoutForm}
                       cartItems={cart}
                       subtotal={cartTotal}
                       shipping={SHIPPING_COST}
-                      tax={taxAmount}
-                      taxRate={taxInfo.taxRate}
                     />
                   </Elements>
                 ) : paymentMethod === "paypal" ? (
@@ -1002,15 +1030,12 @@ export default function CheckoutPage() {
                 ) : (
                   <Elements stripe={stripePromise}>
                     <PaymentForm
-                      amount={grandTotal}
                       onSuccess={handlePaymentSuccess}
                       onError={handlePaymentError}
                       customerInfo={checkoutForm}
                       cartItems={cart}
                       subtotal={cartTotal}
                       shipping={SHIPPING_COST}
-                      tax={taxAmount}
-                      taxRate={taxInfo.taxRate}
                     />
                   </Elements>
                 )}
@@ -1057,12 +1082,10 @@ export default function CheckoutPage() {
                   <span style={{ opacity: 0.7 }}>Shipping</span>
                   <span>${SHIPPING_COST.toFixed(2)}</span>
                 </div>
-                {taxAmount > 0 && (
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                    <span style={{ opacity: 0.7 }}>Tax ({checkoutForm.state})</span>
-                    <span>${taxAmount.toFixed(2)}</span>
-                  </div>
-                )}
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{ opacity: 0.7 }}>Tax</span>
+                  <span style={{ opacity: 0.7, fontSize: 13 }}>Calculated at payment</span>
+                </div>
                 <div style={{ 
                   display: "flex", 
                   justifyContent: "space-between", 
@@ -1072,9 +1095,12 @@ export default function CheckoutPage() {
                   paddingTop: 12,
                   borderTop: "1px solid rgba(100,100,120,0.3)"
                 }}>
-                  <span>Total</span>
-                  <span style={{ color: "#0ff" }}>${grandTotal.toFixed(2)}</span>
+                  <span>Subtotal + Shipping</span>
+                  <span style={{ color: "#0ff" }}>${(cartTotal + SHIPPING_COST).toFixed(2)}</span>
                 </div>
+                <p style={{ fontSize: 12, opacity: 0.6, marginTop: 8, textAlign: "center" }}>
+                  Final total including tax will be shown at payment
+                </p>
               </div>
             </div>
           </div>
