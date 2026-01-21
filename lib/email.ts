@@ -574,6 +574,241 @@ export async function notifyContactForm(data: ContactFormData): Promise<boolean>
 }
 
 // ============================================
+// Forum Reply Notifications
+// ============================================
+
+interface ForumReplyNotificationData {
+  recipientEmail: string;
+  recipientName: string;
+  replierName: string;
+  threadTitle: string;
+  threadId: string;
+  replyPreview: string;
+  isThreadOwner: boolean;  // true if recipient started the thread
+}
+
+// Use the same verified sender domain - can use forum@ or orders@
+const FORUM_FROM_EMAIL = "HB Racing Forum <forum@hbracing7.com>";
+
+export async function notifyForumReply(data: ForumReplyNotificationData): Promise<boolean> {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hbracing7.com";
+  const threadUrl = `${siteUrl}/forum/thread/${data.threadId}`;
+  const unsubscribeUrl = `${siteUrl}/profile?tab=notifications`;
+  
+  const notificationType = data.isThreadOwner 
+    ? "replied to your thread" 
+    : "replied to a thread you're following";
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a2e; color: #e2e8f0; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #7dd3fc, #00f5ff); padding: 20px; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; color: #0a0a1e; font-size: 24px;">💬 New Forum Reply</h1>
+      </div>
+      
+      <div style="padding: 20px; background: #0a0a1e; border: 1px solid #333; border-radius: 0 0 8px 8px;">
+        <p style="font-size: 16px; margin-bottom: 20px;">Hi ${data.recipientName},</p>
+        
+        <p style="font-size: 15px; line-height: 1.6; margin-bottom: 20px;">
+          <strong style="color: #00f5ff;">${data.replierName}</strong> ${notificationType}:
+        </p>
+        
+        <div style="background: #1e1e3f; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #00f5ff;">
+          <p style="margin: 0 0 10px 0; font-weight: bold; color: #7dd3fc;">📌 ${data.threadTitle}</p>
+          <p style="margin: 0; color: #94a3b8; font-style: italic; line-height: 1.5;">"${data.replyPreview}..."</p>
+        </div>
+        
+        <div style="text-align: center; margin: 25px 0;">
+          <a href="${threadUrl}" style="display: inline-block; background: linear-gradient(135deg, #00f5ff, #0088ff); color: #0a0a1e; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; font-size: 16px;">
+            View Thread →
+          </a>
+        </div>
+        
+        <div style="border-top: 1px solid #333; margin-top: 30px; padding-top: 20px; text-align: center;">
+          <p style="margin: 0; color: #64748b; font-size: 13px;">
+            HB Racing Forum | <a href="${siteUrl}" style="color: #00f5ff;">hbracing7.com</a>
+          </p>
+          <p style="margin: 10px 0 0 0; color: #4a5568; font-size: 12px;">
+            <a href="${unsubscribeUrl}" style="color: #64748b;">Manage email preferences</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Use forum-specific from email if available
+  const fromEmail = FORUM_FROM_EMAIL;
+  
+  if (!RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not configured - forum email not sent:", data.threadTitle);
+    return false;
+  }
+
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: data.recipientEmail,
+        subject: `💬 ${data.replierName} replied to "${data.threadTitle}"`,
+        html,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Forum notification email send failed:", error);
+      return false;
+    }
+
+    console.log(`Forum reply notification sent to ${data.recipientEmail} for thread ${data.threadId}`);
+    return true;
+  } catch (error) {
+    console.error("Forum notification email error:", error);
+    return false;
+  }
+}
+
+// Send notifications to all thread participants except the replier
+export async function notifyForumThreadParticipants(params: {
+  threadId: string;
+  threadTitle: string;
+  threadOwnerId: string;
+  replierId: string;
+  replierName: string;
+  replyBody: string;
+  supabase: any;  // Pass the supabase client from the API route
+}): Promise<{ sent: number; failed: number }> {
+  const { threadId, threadTitle, threadOwnerId, replierId, replierName, replyBody, supabase } = params;
+  
+  let sent = 0;
+  let failed = 0;
+  
+  // Get preview of reply (first 150 chars)
+  const replyPreview = replyBody.length > 150 
+    ? replyBody.substring(0, 150).trim() 
+    : replyBody.trim();
+
+  try {
+    // Get all unique participants in this thread (thread owner + all posters)
+    const { data: posts, error: postsError } = await supabase
+      .from("forum_posts")
+      .select("user_id")
+      .eq("thread_id", threadId);
+
+    if (postsError) {
+      console.error("Error fetching thread participants:", postsError);
+      return { sent, failed };
+    }
+
+    // Collect unique user IDs (include thread owner)
+    const participantIds = new Set<string>();
+    participantIds.add(threadOwnerId);
+    posts?.forEach((post: { user_id: string }) => participantIds.add(post.user_id));
+    
+    // Remove the replier from the list
+    participantIds.delete(replierId);
+
+    if (participantIds.size === 0) {
+      console.log("No participants to notify for thread:", threadId);
+      return { sent, failed };
+    }
+
+    // Get notification preferences and emails for participants
+    const userIds = Array.from(participantIds);
+    
+    // Get user emails from auth.users (requires service role)
+    const { data: users, error: usersError } = await supabase.auth.admin.listUsers();
+    
+    if (usersError) {
+      console.error("Error fetching users for email notifications:", usersError);
+      return { sent, failed };
+    }
+
+    // Get notification preferences
+    const { data: preferences, error: prefsError } = await supabase
+      .from("forum_notification_preferences")
+      .select("*")
+      .in("user_id", userIds);
+
+    // Get user profiles for display names
+    const { data: profiles, error: profilesError } = await supabase
+      .from("user_profiles")
+      .select("id, forum_handle")
+      .in("id", userIds);
+
+    // Build a map of user preferences (default to true if no preference set)
+    const prefsMap = new Map<string, { notify_on_thread_reply: boolean; notify_on_post_reply: boolean }>();
+    preferences?.forEach((pref: any) => {
+      prefsMap.set(pref.user_id, pref);
+    });
+
+    // Build a map of user profiles
+    const profilesMap = new Map<string, string>();
+    profiles?.forEach((profile: any) => {
+      profilesMap.set(profile.id, profile.forum_handle || "Member");
+    });
+
+    // Build a map of user emails
+    const emailsMap = new Map<string, string>();
+    users?.users?.forEach((user: any) => {
+      if (userIds.includes(user.id) && user.email) {
+        emailsMap.set(user.id, user.email);
+      }
+    });
+
+    // Send notifications
+    for (const userId of userIds) {
+      const email = emailsMap.get(userId);
+      if (!email) {
+        console.log(`No email found for user ${userId}, skipping notification`);
+        continue;
+      }
+
+      const prefs = prefsMap.get(userId);
+      const isThreadOwner = userId === threadOwnerId;
+      
+      // Check preferences (default to true if not set)
+      const shouldNotify = isThreadOwner 
+        ? (prefs?.notify_on_thread_reply !== false)
+        : (prefs?.notify_on_post_reply !== false);
+
+      if (!shouldNotify) {
+        console.log(`User ${userId} has disabled forum notifications, skipping`);
+        continue;
+      }
+
+      const recipientName = profilesMap.get(userId) || "Member";
+
+      const success = await notifyForumReply({
+        recipientEmail: email,
+        recipientName,
+        replierName,
+        threadTitle,
+        threadId,
+        replyPreview,
+        isThreadOwner,
+      });
+
+      if (success) {
+        sent++;
+      } else {
+        failed++;
+      }
+    }
+
+    console.log(`Forum notifications: ${sent} sent, ${failed} failed for thread ${threadId}`);
+  } catch (error) {
+    console.error("Error sending forum notifications:", error);
+  }
+
+  return { sent, failed };
+}
+
+// ============================================
 // Consulting Booking Notifications
 // ============================================
 

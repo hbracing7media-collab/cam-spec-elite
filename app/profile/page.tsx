@@ -52,6 +52,12 @@ export default function ProfilePage() {
   const [msg, setMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Notification preferences state
+  const [notifyThreadReply, setNotifyThreadReply] = useState(true);
+  const [notifyPostReply, setNotifyPostReply] = useState(true);
+  const [savingNotifications, setSavingNotifications] = useState(false);
+  const [notificationMsg, setNotificationMsg] = useState<string | null>(null);
+
   // Short Blocks state
   const [shortBlocks, setShortBlocks] = useState<ShortBlock[]>([]);
   const [showNewBlockForm, setShowNewBlockForm] = useState(false);
@@ -123,10 +129,49 @@ export default function ProfilePage() {
         await loadHeadBuilds();
         await loadEngineSubmissions();
         await loadGrudgeMatches(data.user.id);
+        await loadNotificationPreferences();
       }
     };
     checkAuth();
   }, [router]);
+
+  const loadNotificationPreferences = async () => {
+    try {
+      const res = await fetch("/api/profile/notifications");
+      if (res.ok) {
+        const data = await res.json();
+        setNotifyThreadReply(data.preferences?.notify_on_thread_reply ?? true);
+        setNotifyPostReply(data.preferences?.notify_on_post_reply ?? true);
+      }
+    } catch (err) {
+      console.error("Failed to load notification preferences:", err);
+    }
+  };
+
+  const handleSaveNotifications = async () => {
+    setSavingNotifications(true);
+    setNotificationMsg(null);
+    try {
+      const res = await fetch("/api/profile/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          notify_on_thread_reply: notifyThreadReply,
+          notify_on_post_reply: notifyPostReply,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNotificationMsg("Notification preferences saved!");
+      } else {
+        setNotificationMsg(data.message || "Failed to save preferences");
+      }
+    } catch (err: any) {
+      setNotificationMsg("Error saving preferences: " + err.message);
+    } finally {
+      setSavingNotifications(false);
+    }
+  };
 
   const loadGrudgeMatches = async (userId: string) => {
     try {
@@ -903,7 +948,112 @@ export default function ProfilePage() {
           )}
         </form>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {/* Forum Email Notifications */}
+        <div
+          style={{
+            marginTop: 24,
+            padding: 16,
+            borderRadius: 12,
+            background: "rgba(0,212,255,0.05)",
+            border: "1px solid rgba(0,212,255,0.2)",
+          }}
+        >
+          <h3
+            style={{
+              margin: "0 0 16px 0",
+              fontSize: 14,
+              fontWeight: 700,
+              color: "#7dd3fc",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+            }}
+          >
+            📧 Forum Notifications
+          </h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                cursor: "pointer",
+                fontSize: 13,
+                color: "#e2e8f0",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={notifyThreadReply}
+                onChange={(e) => setNotifyThreadReply(e.target.checked)}
+                style={{
+                  width: 18,
+                  height: 18,
+                  accentColor: "#7dd3fc",
+                  cursor: "pointer",
+                }}
+              />
+              Email me when someone replies to my threads
+            </label>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                cursor: "pointer",
+                fontSize: 13,
+                color: "#e2e8f0",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={notifyPostReply}
+                onChange={(e) => setNotifyPostReply(e.target.checked)}
+                style={{
+                  width: 18,
+                  height: 18,
+                  accentColor: "#7dd3fc",
+                  cursor: "pointer",
+                }}
+              />
+              Email me when someone posts in threads I've replied to
+            </label>
+          </div>
+          <button
+            type="button"
+            onClick={handleSaveNotifications}
+            disabled={savingNotifications}
+            style={{
+              width: "100%",
+              marginTop: 16,
+              padding: "10px 0",
+              borderRadius: 8,
+              border: "1px solid rgba(56,189,248,0.4)",
+              background: savingNotifications
+                ? "rgba(100,116,139,0.2)"
+                : "rgba(56,189,248,0.15)",
+              color: "#7dd3fc",
+              fontWeight: 600,
+              fontSize: 13,
+              cursor: savingNotifications ? "not-allowed" : "pointer",
+            }}
+          >
+            {savingNotifications ? "Saving..." : "Save Notification Preferences"}
+          </button>
+          {notificationMsg && (
+            <div
+              style={{
+                marginTop: 10,
+                color: notificationMsg.includes("saved") ? "#86efac" : "#fb7185",
+                fontSize: 12,
+                textAlign: "center",
+              }}
+            >
+              {notificationMsg}
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 24 }}>
           <Link href="/">
             <button
               style={{
