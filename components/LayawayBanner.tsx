@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -9,6 +10,7 @@ interface LayawayBannerProps {
 }
 
 export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }: LayawayBannerProps) {
+  const router = useRouter();
   const [animationComplete, setAnimationComplete] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
@@ -35,21 +37,27 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
 
   if (dismissed) return null;
 
+  const handleBannerClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on the "Learn more" link
+    if ((e.target as HTMLElement).closest('a')) return;
+    router.push('/shop');
+  };
+
   return (
-    <Link href="/shop" style={{ textDecoration: "none" }}>
-      <div
-        style={{
-          position: "relative",
-          overflow: "hidden",
-          background: "linear-gradient(135deg, rgba(255, 59, 212, 0.15), rgba(0, 245, 255, 0.15))",
-          border: "1px solid rgba(255, 59, 212, 0.3)",
-          borderRadius: 12,
-          padding: "20px 24px",
-          marginBottom: 20,
-          cursor: "pointer",
-          minHeight: 100,
-        }}
-      >
+    <div
+      onClick={handleBannerClick}
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        background: "linear-gradient(135deg, rgba(255, 59, 212, 0.15), rgba(0, 245, 255, 0.15))",
+        border: "1px solid rgba(255, 59, 212, 0.3)",
+        borderRadius: 12,
+        padding: "20px 24px",
+        marginBottom: 20,
+        cursor: "pointer",
+        minHeight: 100,
+      }}
+    >
         {/* Dismiss button */}
         <button
           onClick={(e) => {
@@ -111,9 +119,23 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
             <div style={{ 
               fontSize: 12, 
               color: "#94a3b8", 
-              marginTop: 6 
+              marginTop: 6,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 16,
             }}>
-              Click to visit the shop →
+              <span>Click to visit the shop →</span>
+              <Link
+                href="/shop/layaway/info"
+                style={{
+                  color: "#00f5ff",
+                  textDecoration: "underline",
+                  fontWeight: 600,
+                }}
+              >
+                Learn how layaway works
+              </Link>
             </div>
           </div>
         </div>
@@ -200,7 +222,6 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
             }
           }
         `}</style>
-      </div>
-    </Link>
+    </div>
   );
 }

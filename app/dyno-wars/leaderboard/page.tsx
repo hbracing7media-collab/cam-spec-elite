@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseInstance } from "@/lib/supabaseSingleton";
 
 interface DynoEntry {
   id: string;
@@ -24,10 +24,7 @@ export default function DynoLeaderboard() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        const supabase = getSupabaseInstance();
 
         const { data, error } = await supabase
           .from("dyno_leaderboard")

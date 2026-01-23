@@ -2,19 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { getSupabaseInstance } from "@/lib/supabaseSingleton";
 
-let supabaseInstance: SupabaseClient | null = null;
-
-function getSupabase(): SupabaseClient | null {
-  if (supabaseInstance) return supabaseInstance;
-  
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anon) return null;
-  
-  supabaseInstance = createClient(url, anon);
-  return supabaseInstance;
+function getSupabaseSafe(): SupabaseClient | null {
+  try {
+    return getSupabaseInstance();
+  } catch {
+    return null;
+  }
 }
 
 export default function NewThreadPage() {
@@ -48,7 +44,7 @@ export default function NewThreadPage() {
 
   async function createThread() {
     setMsg("");
-    const supabase = getSupabase();
+    const supabase = getSupabaseSafe();
 
     if (!supabase) {
       setMsg("Missing Supabase env vars (.env.local).");

@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 
+// Route segment config for App Router - extend timeout for video uploads
+export const maxDuration = 60; // 60 seconds timeout
+
 export async function POST(req: Request) {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -23,8 +26,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: "Not authenticated" }, { status: 401 });
   }
 
+  let formData: FormData;
   try {
-    const formData = await req.formData();
+    formData = await req.formData();
+  } catch (parseError: any) {
+    console.error("FormData parse error:", parseError);
+    return NextResponse.json({ 
+      ok: false, 
+      message: `Failed to parse upload: ${parseError.message}. File may be too large.` 
+    }, { status: 400 });
+  }
+
+  try {
     const file = formData.get("file") as File;
     const threadId = formData.get("thread_id") as string;
     const postId = formData.get("post_id") as string | null;
@@ -35,6 +48,30 @@ export async function POST(req: Request) {
 
     if (!threadId) {
       return NextResponse.json({ ok: false, message: "Missing thread_id" }, { status: 400 });
+    }
+
+    // Validate file type - only images and videos allowed
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+    
+    if (!isImage && !isVideo) {
+      return NextResponse.json({ 
+        ok: false, 
+        message: "Only image and video files are allowed" 
+      }, { status: 400 });
+    }
+
+    // File size limits: 10MB for images, 100MB for videos
+    const maxImageSize = 10 * 1024 * 1024;  // 10MB
+    const maxVideoSize = 100 * 1024 * 1024; // 100MB
+    const maxSize = isVideo ? maxVideoSize : maxImageSize;
+    
+    if (file.size > maxSize) {
+      const limitMB = maxSize / (1024 * 1024);
+      return NextResponse.json({ 
+        ok: false, 
+        message: `File too large. ${isVideo ? 'Videos' : 'Images'} must be under ${limitMB}MB` 
+      }, { status: 400 });
     }
 
     console.log("Uploading file:", file.name, "size:", file.size, "type:", file.type);

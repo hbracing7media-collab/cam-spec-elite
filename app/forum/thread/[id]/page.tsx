@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { SupabaseClient } from "@supabase/supabase-js";
+import { getSupabaseInstance } from "@/lib/supabaseSingleton";
 import UserHoverCard from "@/components/UserHoverCard";
 
 type Thread = {
@@ -28,6 +29,7 @@ type Attachment = {
   post_id: string | null;
   user_id: string;
   file_url: string;
+  file_type?: string;
   created_at: string;
 };
 
@@ -49,18 +51,19 @@ type GrudgeMatch = {
   winner_profile?: { forum_handle: string };
 };
 
-function makeSupabase(): SupabaseClient | null {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anon) return null;
-  return createClient(url, anon);
+function getSupabaseSafe(): SupabaseClient | null {
+  try {
+    return getSupabaseInstance();
+  } catch {
+    return null;
+  }
 }
 
 export default function ThreadPage() {
   const params = useParams<{ id: string }>();
   const threadId = params?.id;
 
-  const supabase = useMemo(() => makeSupabase(), []);
+  const supabase = useMemo(() => getSupabaseSafe(), []);
   const [userId, setUserId] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
@@ -150,11 +153,38 @@ export default function ThreadPage() {
   }, [threadId, supabase]);
 
   async function addReply() {
+    console.log("addReply called", { threadId, replyBody: replyBody.trim(), userId, replyImage: replyImage?.name });
     setStatus("");
     if (!threadId) return setStatus("Missing thread id.");
     if (!replyBody.trim()) return setStatus("Reply cannot be empty.");
     if (!userId) return setStatus("You must be logged in.");
 
+    // Validate file before submitting
+    if (replyImage) {
+      console.log("Validating file:", replyImage.name, replyImage.type, replyImage.size);
+      const isImage = replyImage.type.startsWith("image/");
+      const isVideo = replyImage.type.startsWith("video/");
+      
+      if (!isImage && !isVideo) {
+        console.log("File type rejected");
+        return setStatus("Only image and video files are allowed.");
+      }
+      
+      const maxImageSize = 10 * 1024 * 1024;  // 10MB
+      const maxVideoSize = 100 * 1024 * 1024; // 100MB
+      const maxSize = isVideo ? maxVideoSize : maxImageSize;
+      
+      if (replyImage.size > maxSize) {
+        const limitMB = maxSize / (1024 * 1024);
+        const fileSizeMB = (replyImage.size / (1024 * 1024)).toFixed(1);
+        const errorMsg = `File too large (${fileSizeMB}MB). ${isVideo ? 'Videos' : 'Images'} must be under ${limitMB}MB.`;
+        console.log("File size rejected:", errorMsg);
+        alert(errorMsg); // Show alert so user definitely sees it
+        return setStatus(errorMsg);
+      }
+    }
+
+    console.log("Validation passed, posting reply...");
     setBusyReply(true);
     try {
       // Use API endpoint to create reply with server auth
@@ -175,24 +205,63 @@ export default function ThreadPage() {
       const replyData = await res.json();
       const postId = replyData.post?.id;
 
-      // If there's an image, upload it with the post_id
+      // If there's a file, upload using signed URL (bypasses Vercel limits)
       if (replyImage && postId) {
         try {
-          const fd = new FormData();
-          fd.append("file", replyImage);
-          fd.append("thread_id", threadId);
-          fd.append("post_id", postId);
+          // Step 1: Get a signed upload URL from the server
+          const urlRes = await fetch("/api/forum/upload-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              thread_id: threadId,
+              post_id: postId,
+              file_name: replyImage.name,
+              file_type: replyImage.type
+            })
+          });
 
-          const uploadRes = await fetch("/api/forum/upload", { method: "POST", body: fd });
-          const uploadJson = await uploadRes.json();
+          const urlData = await urlRes.json();
           
-          if (!uploadRes.ok) {
-            console.error("Image upload failed:", uploadJson.message);
-            // Don't fail the reply if image upload fails
+          if (!urlRes.ok) {
+            console.error("Failed to get upload URL:", urlData.message);
+            setStatus(`Upload failed: ${urlData.message}`);
+          } else {
+            // Step 2: Upload file directly to Supabase using signed URL
+            const uploadRes = await fetch(urlData.signedUrl, {
+              method: "PUT",
+              headers: {
+                "Content-Type": replyImage.type,
+              },
+              body: replyImage
+            });
+
+            if (!uploadRes.ok) {
+              const errorText = await uploadRes.text();
+              console.error("Direct upload failed:", errorText);
+              setStatus(`Upload failed: ${uploadRes.status}`);
+            } else {
+              // Step 3: Create attachment record in database
+              const attachRes = await fetch("/api/forum/attachment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  thread_id: threadId,
+                  post_id: postId,
+                  file_url: urlData.publicUrl,
+                  file_name: replyImage.name,
+                  file_type: replyImage.type
+                })
+              });
+
+              if (!attachRes.ok) {
+                const attachJson = await attachRes.json();
+                console.error("Attachment record failed:", attachJson.message);
+              }
+            }
           }
         } catch (err) {
-          console.error("Image upload error:", err);
-          // Don't fail the reply if image upload fails
+          console.error("Upload error:", err);
+          // Don't fail the reply if upload fails
         }
       }
 
@@ -424,13 +493,23 @@ export default function ThreadPage() {
                                 </div>
                               </div>
                               {postAttachments.length > 0 && (
-                                <a key={postAttachments[0].id} href={postAttachments[0].file_url} target="_blank" rel="noreferrer" style={{ marginLeft: 16, flexShrink: 0 }}>
-                                  <img
-                                    src={postAttachments[0].file_url}
-                                    alt="attachment"
-                                    style={{ width: 180, height: 180, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(56,189,248,0.18)" }}
-                                  />
-                                </a>
+                                <div style={{ marginLeft: 16, flexShrink: 0 }}>
+                                  {postAttachments[0].file_type?.startsWith('video/') ? (
+                                    <video
+                                      src={postAttachments[0].file_url}
+                                      controls
+                                      style={{ maxWidth: 320, maxHeight: 240, borderRadius: 8, border: "1px solid rgba(56,189,248,0.18)" }}
+                                    />
+                                  ) : (
+                                    <a key={postAttachments[0].id} href={postAttachments[0].file_url} target="_blank" rel="noreferrer">
+                                      <img
+                                        src={postAttachments[0].file_url}
+                                        alt="attachment"
+                                        style={{ width: 180, height: 180, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(56,189,248,0.18)" }}
+                                      />
+                                    </a>
+                                  )}
+                                </div>
                               )}
                             </div>
                           </div>
@@ -450,13 +529,13 @@ export default function ThreadPage() {
                   placeholder="Write your reply…"
                 />
 
-                <label className="label" style={{ marginTop: 10 }}>Attach Image (Optional)</label>
+                <label className="label" style={{ marginTop: 10 }}>Attach Image or Video (Optional)</label>
                 <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
                   <label className="pill" style={{ cursor: "pointer" }}>
-                    Choose Image
+                    Choose File
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/*,video/*"
                       style={{ display: "none" }}
                       onChange={(e) => setReplyImage(e.target.files?.[0] ?? null)}
                     />

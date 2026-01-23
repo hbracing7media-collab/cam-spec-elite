@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseInstance } from "@/lib/supabaseSingleton";
 
 interface DynoSubmission {
   id: string;
@@ -29,9 +29,7 @@ export default function AdminDynoReviewPage() {
   const [selectedSubmission, setSelectedSubmission] = useState<DynoSubmission | null>(null);
   const [reviewMsg, setReviewMsg] = useState<string | null>(null);
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  const supabase = getSupabaseInstance();
 
   // Check auth on mount
   useEffect(() => {
