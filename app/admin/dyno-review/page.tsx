@@ -320,7 +320,7 @@ export default function AdminDynoReviewPage() {
                       </div>
                       {selectedSubmission.dyno_run_image ? (
                         <img
-                          src={`${supabaseUrl}/storage/v1/object/public/dyno_runs/${selectedSubmission.dyno_run_image}`}
+                          src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/dyno_runs/${selectedSubmission.dyno_run_image}`}
                           alt="Dyno Graph"
                           style={{ width: "100%", borderRadius: 6, maxHeight: 150, objectFit: "cover" }}
                         />
@@ -343,7 +343,7 @@ export default function AdminDynoReviewPage() {
                       </div>
                       {selectedSubmission.cam_card_image ? (
                         <img
-                          src={`${supabaseUrl}/storage/v1/object/public/dyno_cam_cards/${selectedSubmission.cam_card_image}`}
+                          src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/dyno_cam_cards/${selectedSubmission.cam_card_image}`}
                           alt="Cam Card"
                           style={{ width: "100%", borderRadius: 6, maxHeight: 150, objectFit: "cover" }}
                         />
@@ -366,7 +366,7 @@ export default function AdminDynoReviewPage() {
                       </div>
                       {selectedSubmission.car_photo_image ? (
                         <img
-                          src={`${supabaseUrl}/storage/v1/object/public/dyno_car_photos/${selectedSubmission.car_photo_image}`}
+                          src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/dyno_car_photos/${selectedSubmission.car_photo_image}`}
                           alt="Car Photo"
                           style={{ width: "100%", borderRadius: 6, maxHeight: 150, objectFit: "cover" }}
                         />
