@@ -124,9 +124,10 @@ export default function AdminDynoReviewPage() {
 
   const getImageUrl = (path: string | null) => {
     if (!path) return null;
-    return `${supabaseUrl}/storage/v1/object/public/dyno_runs/${path}` ||
-           `${supabaseUrl}/storage/v1/object/public/dyno_cam_cards/${path}` ||
-           `${supabaseUrl}/storage/v1/object/public/dyno_car_photos/${path}`;
+    const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    return `${baseUrl}/storage/v1/object/public/dyno_runs/${path}` ||
+           `${baseUrl}/storage/v1/object/public/dyno_cam_cards/${path}` ||
+           `${baseUrl}/storage/v1/object/public/dyno_car_photos/${path}`;
   };
 
   if (checking) {
