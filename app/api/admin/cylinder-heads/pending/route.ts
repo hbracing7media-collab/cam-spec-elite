@@ -20,35 +20,38 @@ export async function GET(req: NextRequest) {
       auth: { persistSession: false },
     });
 
-    // Fetch all pending heads with flow data
-    const { data, error } = await supabase
+    // Fetch all pending heads
+    const { data: heads, error: headsError } = await supabase
       .from("cylinder_heads")
-      .select(`
-        *,
-        flow_curve:cylinder_heads_flow_data(lift, intake_flow, exhaust_flow)
-      `)
+      .select("*")
       .eq("status", "pending")
       .order("created_at", { ascending: false });
 
-    if (error) {
+    if (headsError) {
       return NextResponse.json(
-        { ok: false, message: error.message },
+        { ok: false, message: headsError.message },
         { status: 500 }
       );
     }
 
-    // Normalize flow data format for frontend
-    const headsWithFlowData = (data || []).map((head: any) => {
-      const flow_data = Array.isArray(head.flow_curve)
-        ? head.flow_curve.map((point: any) => ({
-            lift: point?.lift,
-            intakeFlow: point?.intake_flow,
-            exhaustFlow: point?.exhaust_flow,
-          }))
-        : [];
-      const { flow_curve, ...rest } = head;
-      return { ...rest, flow_data };
-    });
+    // Fetch flow data for each head separately (bypasses RLS with service role)
+    const headsWithFlowData = await Promise.all(
+      (heads || []).map(async (head: any) => {
+        const { data: flowData } = await supabase
+          .from("cylinder_heads_flow_data")
+          .select("lift, intake_flow, exhaust_flow")
+          .eq("head_id", head.id)
+          .order("lift", { ascending: true });
+
+        const flow_data = (flowData || []).map((point: any) => ({
+          lift: point.lift,
+          intakeFlow: point.intake_flow,
+          exhaustFlow: point.exhaust_flow,
+        }));
+
+        return { ...head, flow_data };
+      })
+    );
 
     return NextResponse.json({
       ok: true,
