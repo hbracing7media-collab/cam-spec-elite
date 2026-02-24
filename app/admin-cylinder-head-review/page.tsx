@@ -34,10 +34,15 @@ export default function AdminCylinderHeadReview() {
   async function loadSubmissions() {
     try {
       const res = await fetch("/api/admin/cylinder-heads/pending");
-      if (!res.ok) throw new Error("Failed to load submissions");
       const data = await res.json();
-      setSubmissions(data.submissions || []);
+      console.log("API Response:", data);
+      if (!res.ok) throw new Error(data.message || "Failed to load submissions");
+      setSubmissions(data.heads || []);
+      if (data.heads?.length === 0) {
+        setMsg("No pending submissions found in cylinder_heads table");
+      }
     } catch (err) {
+      console.error("Load error:", err);
       setMsg(err instanceof Error ? err.message : "Load error");
     } finally {
       setLoading(false);

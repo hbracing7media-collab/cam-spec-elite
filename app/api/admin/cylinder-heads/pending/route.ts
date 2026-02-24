@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
     // Fetch all pending heads from submissions table
     const { data, error } = await supabase
-      .from("cylinder_heads_submissions")
+      .from("cylinder_heads")
       .select("*")
       .eq("status", "pending")
       .order("created_at", { ascending: false });
