@@ -1,0 +1,150 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "search": "Buscar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "yes": "Sí",
+    "no": "No",
+    "error": "Error",
+    "success": "Éxito",
+    "required": "Requerido",
+    "optional": "Opcional"
+  },
+  "nav": {
+    "home": "Inicio",
+    "cams": "Árboles de Levas",
+    "cylinderHeads": "Culatas",
+    "calculators": "Calculadoras",
+    "dynoWars": "Guerras de Dyno",
+    "forum": "Foro",
+    "shop": "Tienda",
+    "profile": "Perfil",
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "admin": "Administrador"
+  },
+  "home": {
+    "title": "Cam Spec Elite",
+    "subtitle": "La Base de Datos Definitiva de Árboles de Levas y Culatas",
+    "searchPlaceholder": "Buscar levas, culatas o calculadoras...",
+    "featuredCams": "Levas Destacadas",
+    "featuredHeads": "Culatas Destacadas",
+    "recentSubmissions": "Envíos Recientes"
+  },
+  "cams": {
+    "title": "Base de Datos de Árboles de Levas",
+    "submitNew": "Enviar Nueva Leva",
+    "search": "Buscar Levas",
+    "brand": "Marca",
+    "partNumber": "Número de Parte",
+    "engineMake": "Marca del Motor",
+    "engineFamily": "Familia del Motor",
+    "duration": "Duración",
+    "lift": "Alzada",
+    "lsa": "LSA",
+    "intakeCenterline": "Línea Central de Admisión",
+    "overlap": "Superposición",
+    "rpmRange": "Rango de RPM",
+    "specs": "Especificaciones",
+    "noResults": "No se encontraron levas que coincidan con sus criterios"
+  },
+  "heads": {
+    "title": "Base de Datos de Culatas",
+    "submitNew": "Enviar Nueva Culata",
+    "search": "Buscar Culatas",
+    "brand": "Marca",
+    "partNumber": "Número de Parte",
+    "partName": "Nombre de Parte",
+    "engineMake": "Marca del Motor",
+    "engineFamily": "Familia del Motor",
+    "intakeValveSize": "Tamaño de Válvula de Admisión",
+    "exhaustValveSize": "Tamaño de Válvula de Escape",
+    "maxLift": "Alzada Máxima",
+    "maxRpm": "RPM Máximas",
+    "intakeRunnerCC": "CC del Conducto de Admisión",
+    "chamberCC": "CC de la Cámara",
+    "flowData": "Datos de Flujo",
+    "liftIn": "Alzada (pulg)",
+    "intakeCFM": "Admisión (CFM)",
+    "exhaustCFM": "Escape (CFM)",
+    "notes": "Notas",
+    "noResults": "No se encontraron culatas que coincidan con sus criterios"
+  },
+  "submit": {
+    "title": "Enviar para Revisión",
+    "instructions": "Complete el formulario a continuación. Los envíos serán revisados antes de ser agregados a la base de datos.",
+    "submittedSuccess": "Enviado para aprobación ✅",
+    "submissionFailed": "Error en el envío",
+    "requiredField": "Este campo es requerido",
+    "atLeastOneFlowPoint": "Se requiere al menos un punto de datos de flujo",
+    "allFlowFieldsRequired": "Todos los campos de datos de flujo deben estar completos"
+  },
+  "admin": {
+    "title": "Panel de Administración",
+    "pendingSubmissions": "Envíos Pendientes",
+    "noPending": "No hay envíos pendientes",
+    "approveSuccess": "Aprobado exitosamente",
+    "rejectSuccess": "Rechazado exitosamente",
+    "camReview": "Revisión de Envíos de Levas",
+    "headReview": "Revisión de Envíos de Culatas"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "register": "Registrarse",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "forgotPassword": "¿Olvidó su Contraseña?",
+    "noAccount": "¿No tiene una cuenta?",
+    "hasAccount": "¿Ya tiene una cuenta?",
+    "signUp": "Registrarse",
+    "signIn": "Iniciar Sesión"
+  },
+  "profile": {
+    "title": "Mi Perfil",
+    "mySubmissions": "Mis Envíos",
+    "myAwards": "Mis Premios",
+    "settings": "Configuración",
+    "editProfile": "Editar Perfil"
+  },
+  "calculator": {
+    "title": "Calculadoras",
+    "camCalculator": "Calculadora de Levas",
+    "compressionRatio": "Relación de Compresión",
+    "displacement": "Cilindrada",
+    "calculate": "Calcular",
+    "results": "Resultados"
+  },
+  "forum": {
+    "title": "Foro",
+    "newThread": "Nuevo Tema",
+    "reply": "Responder",
+    "threads": "Temas",
+    "posts": "Publicaciones",
+    "lastPost": "Última Publicación",
+    "by": "por",
+    "noThreads": "Aún no hay temas"
+  },
+  "language": {
+    "select": "Seleccionar Idioma",
+    "current": "Idioma Actual"
+  },
+  "units": {
+    "inches": "pulg",
+    "millimeters": "mm",
+    "degrees": "°",
+    "cfm": "CFM",
+    "cc": "cc",
+    "rpm": "RPM"
+  }
+}

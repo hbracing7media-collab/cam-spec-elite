@@ -1,0 +1,150 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "submit": "Soumettre",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "search": "Rechercher",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "yes": "Oui",
+    "no": "Non",
+    "error": "Erreur",
+    "success": "Succès",
+    "required": "Requis",
+    "optional": "Facultatif"
+  },
+  "nav": {
+    "home": "Accueil",
+    "cams": "Arbres à Cames",
+    "cylinderHeads": "Culasses",
+    "calculators": "Calculateurs",
+    "dynoWars": "Dyno Wars",
+    "forum": "Forum",
+    "shop": "Boutique",
+    "profile": "Profil",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "admin": "Admin"
+  },
+  "home": {
+    "title": "Cam Spec Elite",
+    "subtitle": "La Base de Données Ultime des Arbres à Cames et Culasses",
+    "searchPlaceholder": "Rechercher des cames, culasses ou calculateurs...",
+    "featuredCams": "Cames en Vedette",
+    "featuredHeads": "Culasses en Vedette",
+    "recentSubmissions": "Soumissions Récentes"
+  },
+  "cams": {
+    "title": "Base de Données des Arbres à Cames",
+    "submitNew": "Soumettre une Nouvelle Came",
+    "search": "Rechercher des Cames",
+    "brand": "Marque",
+    "partNumber": "Numéro de Pièce",
+    "engineMake": "Marque du Moteur",
+    "engineFamily": "Famille du Moteur",
+    "duration": "Durée",
+    "lift": "Levée",
+    "lsa": "LSA",
+    "intakeCenterline": "Ligne Centrale d'Admission",
+    "overlap": "Chevauchement",
+    "rpmRange": "Plage de Régime",
+    "specs": "Spécifications",
+    "noResults": "Aucune came trouvée correspondant à vos critères"
+  },
+  "heads": {
+    "title": "Base de Données des Culasses",
+    "submitNew": "Soumettre une Nouvelle Culasse",
+    "search": "Rechercher des Culasses",
+    "brand": "Marque",
+    "partNumber": "Numéro de Pièce",
+    "partName": "Nom de la Pièce",
+    "engineMake": "Marque du Moteur",
+    "engineFamily": "Famille du Moteur",
+    "intakeValveSize": "Taille de Soupape d'Admission",
+    "exhaustValveSize": "Taille de Soupape d'Échappement",
+    "maxLift": "Levée Maximale",
+    "maxRpm": "Régime Maximum",
+    "intakeRunnerCC": "CC du Conduit d'Admission",
+    "chamberCC": "CC de la Chambre",
+    "flowData": "Données de Débit",
+    "liftIn": "Levée (po)",
+    "intakeCFM": "Admission (CFM)",
+    "exhaustCFM": "Échappement (CFM)",
+    "notes": "Notes",
+    "noResults": "Aucune culasse trouvée correspondant à vos critères"
+  },
+  "submit": {
+    "title": "Soumettre pour Examen",
+    "instructions": "Remplissez le formulaire ci-dessous. Les soumissions seront examinées avant d'être ajoutées à la base de données.",
+    "submittedSuccess": "Soumis pour approbation ✅",
+    "submissionFailed": "Échec de la soumission",
+    "requiredField": "Ce champ est requis",
+    "atLeastOneFlowPoint": "Au moins un point de données de débit est requis",
+    "allFlowFieldsRequired": "Tous les champs de données de débit doivent être remplis"
+  },
+  "admin": {
+    "title": "Panneau d'Administration",
+    "pendingSubmissions": "Soumissions en Attente",
+    "noPending": "Aucune soumission en attente",
+    "approveSuccess": "Approuvé avec succès",
+    "rejectSuccess": "Rejeté avec succès",
+    "camReview": "Examen des Soumissions de Cames",
+    "headReview": "Examen des Soumissions de Culasses"
+  },
+  "auth": {
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "register": "S'inscrire",
+    "email": "E-mail",
+    "password": "Mot de Passe",
+    "confirmPassword": "Confirmer le Mot de Passe",
+    "forgotPassword": "Mot de Passe Oublié?",
+    "noAccount": "Pas de compte?",
+    "hasAccount": "Déjà un compte?",
+    "signUp": "S'inscrire",
+    "signIn": "Se Connecter"
+  },
+  "profile": {
+    "title": "Mon Profil",
+    "mySubmissions": "Mes Soumissions",
+    "myAwards": "Mes Récompenses",
+    "settings": "Paramètres",
+    "editProfile": "Modifier le Profil"
+  },
+  "calculator": {
+    "title": "Calculateurs",
+    "camCalculator": "Calculateur de Came",
+    "compressionRatio": "Taux de Compression",
+    "displacement": "Cylindrée",
+    "calculate": "Calculer",
+    "results": "Résultats"
+  },
+  "forum": {
+    "title": "Forum",
+    "newThread": "Nouveau Sujet",
+    "reply": "Répondre",
+    "threads": "Sujets",
+    "posts": "Messages",
+    "lastPost": "Dernier Message",
+    "by": "par",
+    "noThreads": "Pas encore de sujets"
+  },
+  "language": {
+    "select": "Sélectionner la Langue",
+    "current": "Langue Actuelle"
+  },
+  "units": {
+    "inches": "po",
+    "millimeters": "mm",
+    "degrees": "°",
+    "cfm": "CFM",
+    "cc": "cc",
+    "rpm": "tr/min"
+  }
+}

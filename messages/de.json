@@ -1,0 +1,150 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "submit": "Einreichen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "approve": "Genehmigen",
+    "reject": "Ablehnen",
+    "search": "Suchen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "yes": "Ja",
+    "no": "Nein",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "required": "Erforderlich",
+    "optional": "Optional"
+  },
+  "nav": {
+    "home": "Startseite",
+    "cams": "Nockenwellen",
+    "cylinderHeads": "Zylinderköpfe",
+    "calculators": "Rechner",
+    "dynoWars": "Dyno Wars",
+    "forum": "Forum",
+    "shop": "Shop",
+    "profile": "Profil",
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "admin": "Admin"
+  },
+  "home": {
+    "title": "Cam Spec Elite",
+    "subtitle": "Die ultimative Nockenwellen- und Zylinderkopf-Datenbank",
+    "searchPlaceholder": "Nockenwellen, Köpfe oder Rechner suchen...",
+    "featuredCams": "Ausgewählte Nockenwellen",
+    "featuredHeads": "Ausgewählte Zylinderköpfe",
+    "recentSubmissions": "Neueste Einreichungen"
+  },
+  "cams": {
+    "title": "Nockenwellen-Datenbank",
+    "submitNew": "Neue Nockenwelle einreichen",
+    "search": "Nockenwellen suchen",
+    "brand": "Marke",
+    "partNumber": "Teilenummer",
+    "engineMake": "Motorhersteller",
+    "engineFamily": "Motorfamilie",
+    "duration": "Öffnungsdauer",
+    "lift": "Hub",
+    "lsa": "LSA",
+    "intakeCenterline": "Einlass-Mittellinie",
+    "overlap": "Überschneidung",
+    "rpmRange": "Drehzahlbereich",
+    "specs": "Spezifikationen",
+    "noResults": "Keine Nockenwellen gefunden, die Ihren Kriterien entsprechen"
+  },
+  "heads": {
+    "title": "Zylinderkopf-Datenbank",
+    "submitNew": "Neuen Zylinderkopf einreichen",
+    "search": "Zylinderköpfe suchen",
+    "brand": "Marke",
+    "partNumber": "Teilenummer",
+    "partName": "Teilename",
+    "engineMake": "Motorhersteller",
+    "engineFamily": "Motorfamilie",
+    "intakeValveSize": "Einlassventilgröße",
+    "exhaustValveSize": "Auslassventilgröße",
+    "maxLift": "Maximaler Hub",
+    "maxRpm": "Maximale Drehzahl",
+    "intakeRunnerCC": "Einlasskanal CC",
+    "chamberCC": "Brennraum CC",
+    "flowData": "Durchflussdaten",
+    "liftIn": "Hub (Zoll)",
+    "intakeCFM": "Einlass (CFM)",
+    "exhaustCFM": "Auslass (CFM)",
+    "notes": "Notizen",
+    "noResults": "Keine Zylinderköpfe gefunden, die Ihren Kriterien entsprechen"
+  },
+  "submit": {
+    "title": "Zur Überprüfung einreichen",
+    "instructions": "Füllen Sie das untenstehende Formular aus. Einreichungen werden überprüft, bevor sie zur Datenbank hinzugefügt werden.",
+    "submittedSuccess": "Zur Genehmigung eingereicht ✅",
+    "submissionFailed": "Einreichung fehlgeschlagen",
+    "requiredField": "Dieses Feld ist erforderlich",
+    "atLeastOneFlowPoint": "Mindestens ein Durchflussdatenpunkt ist erforderlich",
+    "allFlowFieldsRequired": "Alle Durchflussdatenfelder müssen ausgefüllt sein"
+  },
+  "admin": {
+    "title": "Admin-Bereich",
+    "pendingSubmissions": "Ausstehende Einreichungen",
+    "noPending": "Keine ausstehenden Einreichungen",
+    "approveSuccess": "Erfolgreich genehmigt",
+    "rejectSuccess": "Erfolgreich abgelehnt",
+    "camReview": "Nockenwellen-Einreichungen überprüfen",
+    "headReview": "Zylinderkopf-Einreichungen überprüfen"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "register": "Registrieren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "forgotPassword": "Passwort vergessen?",
+    "noAccount": "Kein Konto?",
+    "hasAccount": "Bereits ein Konto?",
+    "signUp": "Registrieren",
+    "signIn": "Anmelden"
+  },
+  "profile": {
+    "title": "Mein Profil",
+    "mySubmissions": "Meine Einreichungen",
+    "myAwards": "Meine Auszeichnungen",
+    "settings": "Einstellungen",
+    "editProfile": "Profil bearbeiten"
+  },
+  "calculator": {
+    "title": "Rechner",
+    "camCalculator": "Nockenwellen-Rechner",
+    "compressionRatio": "Verdichtungsverhältnis",
+    "displacement": "Hubraum",
+    "calculate": "Berechnen",
+    "results": "Ergebnisse"
+  },
+  "forum": {
+    "title": "Forum",
+    "newThread": "Neues Thema",
+    "reply": "Antworten",
+    "threads": "Themen",
+    "posts": "Beiträge",
+    "lastPost": "Letzter Beitrag",
+    "by": "von",
+    "noThreads": "Noch keine Themen"
+  },
+  "language": {
+    "select": "Sprache auswählen",
+    "current": "Aktuelle Sprache"
+  },
+  "units": {
+    "inches": "Zoll",
+    "millimeters": "mm",
+    "degrees": "°",
+    "cfm": "CFM",
+    "cc": "cc",
+    "rpm": "U/min"
+  }
+}

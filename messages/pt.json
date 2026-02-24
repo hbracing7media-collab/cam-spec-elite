@@ -1,0 +1,150 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "approve": "Aprovar",
+    "reject": "Rejeitar",
+    "search": "Buscar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "yes": "Sim",
+    "no": "Não",
+    "error": "Erro",
+    "success": "Sucesso",
+    "required": "Obrigatório",
+    "optional": "Opcional"
+  },
+  "nav": {
+    "home": "Início",
+    "cams": "Comandos de Válvulas",
+    "cylinderHeads": "Cabeçotes",
+    "calculators": "Calculadoras",
+    "dynoWars": "Dyno Wars",
+    "forum": "Fórum",
+    "shop": "Loja",
+    "profile": "Perfil",
+    "login": "Entrar",
+    "logout": "Sair",
+    "admin": "Admin"
+  },
+  "home": {
+    "title": "Cam Spec Elite",
+    "subtitle": "O Banco de Dados Definitivo de Comandos e Cabeçotes",
+    "searchPlaceholder": "Buscar comandos, cabeçotes ou calculadoras...",
+    "featuredCams": "Comandos em Destaque",
+    "featuredHeads": "Cabeçotes em Destaque",
+    "recentSubmissions": "Envios Recentes"
+  },
+  "cams": {
+    "title": "Banco de Dados de Comandos",
+    "submitNew": "Enviar Novo Comando",
+    "search": "Buscar Comandos",
+    "brand": "Marca",
+    "partNumber": "Número da Peça",
+    "engineMake": "Fabricante do Motor",
+    "engineFamily": "Família do Motor",
+    "duration": "Duração",
+    "lift": "Elevação",
+    "lsa": "LSA",
+    "intakeCenterline": "Linha Central de Admissão",
+    "overlap": "Sobreposição",
+    "rpmRange": "Faixa de RPM",
+    "specs": "Especificações",
+    "noResults": "Nenhum comando encontrado com seus critérios"
+  },
+  "heads": {
+    "title": "Banco de Dados de Cabeçotes",
+    "submitNew": "Enviar Novo Cabeçote",
+    "search": "Buscar Cabeçotes",
+    "brand": "Marca",
+    "partNumber": "Número da Peça",
+    "partName": "Nome da Peça",
+    "engineMake": "Fabricante do Motor",
+    "engineFamily": "Família do Motor",
+    "intakeValveSize": "Tamanho da Válvula de Admissão",
+    "exhaustValveSize": "Tamanho da Válvula de Escape",
+    "maxLift": "Elevação Máxima",
+    "maxRpm": "RPM Máximo",
+    "intakeRunnerCC": "CC do Duto de Admissão",
+    "chamberCC": "CC da Câmara",
+    "flowData": "Dados de Fluxo",
+    "liftIn": "Elevação (pol)",
+    "intakeCFM": "Admissão (CFM)",
+    "exhaustCFM": "Escape (CFM)",
+    "notes": "Notas",
+    "noResults": "Nenhum cabeçote encontrado com seus critérios"
+  },
+  "submit": {
+    "title": "Enviar para Revisão",
+    "instructions": "Preencha o formulário abaixo. Os envios serão revisados antes de serem adicionados ao banco de dados.",
+    "submittedSuccess": "Enviado para aprovação ✅",
+    "submissionFailed": "Falha no envio",
+    "requiredField": "Este campo é obrigatório",
+    "atLeastOneFlowPoint": "É necessário pelo menos um ponto de dados de fluxo",
+    "allFlowFieldsRequired": "Todos os campos de dados de fluxo devem ser preenchidos"
+  },
+  "admin": {
+    "title": "Painel de Administração",
+    "pendingSubmissions": "Envios Pendentes",
+    "noPending": "Nenhum envio pendente",
+    "approveSuccess": "Aprovado com sucesso",
+    "rejectSuccess": "Rejeitado com sucesso",
+    "camReview": "Revisão de Envios de Comandos",
+    "headReview": "Revisão de Envios de Cabeçotes"
+  },
+  "auth": {
+    "login": "Entrar",
+    "logout": "Sair",
+    "register": "Registrar",
+    "email": "E-mail",
+    "password": "Senha",
+    "confirmPassword": "Confirmar Senha",
+    "forgotPassword": "Esqueceu a Senha?",
+    "noAccount": "Não tem uma conta?",
+    "hasAccount": "Já tem uma conta?",
+    "signUp": "Registrar",
+    "signIn": "Entrar"
+  },
+  "profile": {
+    "title": "Meu Perfil",
+    "mySubmissions": "Meus Envios",
+    "myAwards": "Minhas Conquistas",
+    "settings": "Configurações",
+    "editProfile": "Editar Perfil"
+  },
+  "calculator": {
+    "title": "Calculadoras",
+    "camCalculator": "Calculadora de Comando",
+    "compressionRatio": "Taxa de Compressão",
+    "displacement": "Cilindrada",
+    "calculate": "Calcular",
+    "results": "Resultados"
+  },
+  "forum": {
+    "title": "Fórum",
+    "newThread": "Novo Tópico",
+    "reply": "Responder",
+    "threads": "Tópicos",
+    "posts": "Posts",
+    "lastPost": "Último Post",
+    "by": "por",
+    "noThreads": "Nenhum tópico ainda"
+  },
+  "language": {
+    "select": "Selecionar Idioma",
+    "current": "Idioma Atual"
+  },
+  "units": {
+    "inches": "pol",
+    "millimeters": "mm",
+    "degrees": "°",
+    "cfm": "CFM",
+    "cc": "cc",
+    "rpm": "RPM"
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "submit": "送信",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "approve": "承認",
+    "reject": "却下",
+    "search": "検索",
+    "back": "戻る",
+    "next": "次へ",
+    "previous": "前へ",
+    "yes": "はい",
+    "no": "いいえ",
+    "error": "エラー",
+    "success": "成功",
+    "required": "必須",
+    "optional": "任意"
+  },
+  "nav": {
+    "home": "ホーム",
+    "cams": "カムシャフト",
+    "cylinderHeads": "シリンダーヘッド",
+    "calculators": "計算機",
+    "dynoWars": "ダイノウォーズ",
+    "forum": "フォーラム",
+    "shop": "ショップ",
+    "profile": "プロフィール",
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "admin": "管理者"
+  },
+  "home": {
+    "title": "Cam Spec Elite",
+    "subtitle": "究極のカムシャフト＆シリンダーヘッドデータベース",
+    "searchPlaceholder": "カム、ヘッド、計算機を検索...",
+    "featuredCams": "注目のカム",
+    "featuredHeads": "注目のヘッド",
+    "recentSubmissions": "最近の投稿"
+  },
+  "cams": {
+    "title": "カムシャフトデータベース",
+    "submitNew": "新しいカムを投稿",
+    "search": "カムを検索",
+    "brand": "ブランド",
+    "partNumber": "部品番号",
+    "engineMake": "エンジンメーカー",
+    "engineFamily": "エンジンファミリー",
+    "duration": "作用角",
+    "lift": "リフト量",
+    "lsa": "LSA",
+    "intakeCenterline": "吸気中心線",
+    "overlap": "オーバーラップ",
+    "rpmRange": "回転数範囲",
+    "specs": "仕様",
+    "noResults": "条件に一致するカムが見つかりません"
+  },
+  "heads": {
+    "title": "シリンダーヘッドデータベース",
+    "submitNew": "新しいヘッドを投稿",
+    "search": "ヘッドを検索",
+    "brand": "ブランド",
+    "partNumber": "部品番号",
+    "partName": "部品名",
+    "engineMake": "エンジンメーカー",
+    "engineFamily": "エンジンファミリー",
+    "intakeValveSize": "吸気バルブサイズ",
+    "exhaustValveSize": "排気バルブサイズ",
+    "maxLift": "最大リフト",
+    "maxRpm": "最大回転数",
+    "intakeRunnerCC": "吸気ランナーCC",
+    "chamberCC": "燃焼室CC",
+    "flowData": "フローデータ",
+    "liftIn": "リフト (インチ)",
+    "intakeCFM": "吸気 (CFM)",
+    "exhaustCFM": "排気 (CFM)",
+    "notes": "備考",
+    "noResults": "条件に一致するシリンダーヘッドが見つかりません"
+  },
+  "submit": {
+    "title": "審査のために送信",
+    "instructions": "以下のフォームに入力してください。投稿はデータベースに追加される前に審査されます。",
+    "submittedSuccess": "承認のために送信されました ✅",
+    "submissionFailed": "送信に失敗しました",
+    "requiredField": "このフィールドは必須です",
+    "atLeastOneFlowPoint": "少なくとも1つのフローデータポイントが必要です",
+    "allFlowFieldsRequired": "すべてのフローデータフィールドを入力してください"
+  },
+  "admin": {
+    "title": "管理パネル",
+    "pendingSubmissions": "保留中の投稿",
+    "noPending": "保留中の投稿はありません",
+    "approveSuccess": "承認されました",
+    "rejectSuccess": "却下されました",
+    "camReview": "カム投稿の審査",
+    "headReview": "シリンダーヘッド投稿の審査"
+  },
+  "auth": {
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "register": "登録",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "confirmPassword": "パスワードの確認",
+    "forgotPassword": "パスワードをお忘れですか？",
+    "noAccount": "アカウントをお持ちでないですか？",
+    "hasAccount": "すでにアカウントをお持ちですか？",
+    "signUp": "登録",
+    "signIn": "ログイン"
+  },
+  "profile": {
+    "title": "マイプロフィール",
+    "mySubmissions": "マイ投稿",
+    "myAwards": "マイアワード",
+    "settings": "設定",
+    "editProfile": "プロフィール編集"
+  },
+  "calculator": {
+    "title": "計算機",
+    "camCalculator": "カム計算機",
+    "compressionRatio": "圧縮比",
+    "displacement": "排気量",
+    "calculate": "計算",
+    "results": "結果"
+  },
+  "forum": {
+    "title": "フォーラム",
+    "newThread": "新規スレッド",
+    "reply": "返信",
+    "threads": "スレッド",
+    "posts": "投稿",
+    "lastPost": "最新の投稿",
+    "by": "投稿者",
+    "noThreads": "まだスレッドがありません"
+  },
+  "language": {
+    "select": "言語を選択",
+    "current": "現在の言語"
+  },
+  "units": {
+    "inches": "インチ",
+    "millimeters": "mm",
+    "degrees": "°",
+    "cfm": "CFM",
+    "cc": "cc",
+    "rpm": "RPM"
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "approve": "Approve",
+    "reject": "Reject",
+    "search": "Search",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "yes": "Yes",
+    "no": "No",
+    "error": "Error",
+    "success": "Success",
+    "required": "Required",
+    "optional": "Optional"
+  },
+  "nav": {
+    "home": "Home",
+    "cams": "Cams",
+    "cylinderHeads": "Cylinder Heads",
+    "calculators": "Calculators",
+    "dynoWars": "Dyno Wars",
+    "forum": "Forum",
+    "shop": "Shop",
+    "profile": "Profile",
+    "login": "Login",
+    "logout": "Logout",
+    "admin": "Admin"
+  },
+  "home": {
+    "title": "Cam Spec Elite",
+    "subtitle": "The Ultimate Camshaft & Cylinder Head Database",
+    "searchPlaceholder": "Search cams, heads, or calculators...",
+    "featuredCams": "Featured Cams",
+    "featuredHeads": "Featured Heads",
+    "recentSubmissions": "Recent Submissions"
+  },
+  "cams": {
+    "title": "Camshaft Database",
+    "submitNew": "Submit New Cam",
+    "search": "Search Cams",
+    "brand": "Brand",
+    "partNumber": "Part Number",
+    "engineMake": "Engine Make",
+    "engineFamily": "Engine Family",
+    "duration": "Duration",
+    "lift": "Lift",
+    "lsa": "LSA",
+    "intakeCenterline": "Intake Centerline",
+    "overlap": "Overlap",
+    "rpmRange": "RPM Range",
+    "specs": "Specifications",
+    "noResults": "No cams found matching your criteria"
+  },
+  "heads": {
+    "title": "Cylinder Head Database",
+    "submitNew": "Submit New Head",
+    "search": "Search Heads",
+    "brand": "Brand",
+    "partNumber": "Part Number",
+    "partName": "Part Name",
+    "engineMake": "Engine Make",
+    "engineFamily": "Engine Family",
+    "intakeValveSize": "Intake Valve Size",
+    "exhaustValveSize": "Exhaust Valve Size",
+    "maxLift": "Max Lift",
+    "maxRpm": "Max RPM",
+    "intakeRunnerCC": "Intake Runner CC",
+    "chamberCC": "Chamber CC",
+    "flowData": "Flow Data",
+    "liftIn": "Lift (in)",
+    "intakeCFM": "Intake (CFM)",
+    "exhaustCFM": "Exhaust (CFM)",
+    "notes": "Notes",
+    "noResults": "No cylinder heads found matching your criteria"
+  },
+  "submit": {
+    "title": "Submit for Review",
+    "instructions": "Fill out the form below. Submissions will be reviewed before being added to the database.",
+    "submittedSuccess": "Submitted for approval ✅",
+    "submissionFailed": "Submission failed",
+    "requiredField": "This field is required",
+    "atLeastOneFlowPoint": "At least one flow data point is required",
+    "allFlowFieldsRequired": "All flow data fields must be filled"
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "pendingSubmissions": "Pending Submissions",
+    "noPending": "No pending submissions",
+    "approveSuccess": "Approved successfully",
+    "rejectSuccess": "Rejected successfully",
+    "camReview": "Cam Submissions Review",
+    "headReview": "Cylinder Head Submissions Review"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signUp": "Sign Up",
+    "signIn": "Sign In"
+  },
+  "profile": {
+    "title": "My Profile",
+    "mySubmissions": "My Submissions",
+    "myAwards": "My Awards",
+    "settings": "Settings",
+    "editProfile": "Edit Profile"
+  },
+  "calculator": {
+    "title": "Calculators",
+    "camCalculator": "Cam Calculator",
+    "compressionRatio": "Compression Ratio",
+    "displacement": "Displacement",
+    "calculate": "Calculate",
+    "results": "Results"
+  },
+  "forum": {
+    "title": "Forum",
+    "newThread": "New Thread",
+    "reply": "Reply",
+    "threads": "Threads",
+    "posts": "Posts",
+    "lastPost": "Last Post",
+    "by": "by",
+    "noThreads": "No threads yet"
+  },
+  "language": {
+    "select": "Select Language",
+    "current": "Current Language"
+  },
+  "units": {
+    "inches": "in",
+    "millimeters": "mm",
+    "degrees": "°",
+    "cfm": "CFM",
+    "cc": "cc",
+    "rpm": "RPM"
+  }
+}
