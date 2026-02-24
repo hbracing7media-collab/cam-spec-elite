@@ -20,10 +20,13 @@ export async function GET(req: NextRequest) {
       auth: { persistSession: false },
     });
 
-    // Fetch all pending heads from submissions table
+    // Fetch all pending heads with flow data
     const { data, error } = await supabase
       .from("cylinder_heads")
-      .select("*")
+      .select(`
+        *,
+        flow_curve:cylinder_heads_flow_data(lift, intake_flow, exhaust_flow)
+      `)
       .eq("status", "pending")
       .order("created_at", { ascending: false });
 
@@ -34,9 +37,22 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Normalize flow data format for frontend
+    const headsWithFlowData = (data || []).map((head: any) => {
+      const flow_data = Array.isArray(head.flow_curve)
+        ? head.flow_curve.map((point: any) => ({
+            lift: point?.lift,
+            intakeFlow: point?.intake_flow,
+            exhaustFlow: point?.exhaust_flow,
+          }))
+        : [];
+      const { flow_curve, ...rest } = head;
+      return { ...rest, flow_data };
+    });
+
     return NextResponse.json({
       ok: true,
-      heads: data || [],
+      heads: headsWithFlowData,
     });
   } catch (error: unknown) {
     console.error("Error fetching pending heads:", error);
