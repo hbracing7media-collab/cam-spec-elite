@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CAM_MAKE_OPTIONS, CAM_ENGINE_FAMILIES } from "@/lib/engineOptions";
 import { DynoGraph } from "@/components/DynoGraph";
+import { useTranslations } from "next-intl";
 
 interface DynoEntry {
   id: string;
@@ -21,6 +22,7 @@ interface DynoEntry {
 }
 
 export default function DynoWarsPage() {
+  const t = useTranslations();
   const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [entries, setEntries] = useState<DynoEntry[]>([]);

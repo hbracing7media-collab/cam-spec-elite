@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import LayawayBanner from "@/components/LayawayBanner";
+import { useTranslations } from "next-intl";
 
 interface Message {
   type: "ok" | "err";
@@ -11,6 +12,7 @@ interface Message {
 
 export default function AuthPage() {
   const router = useRouter();
+  const t = useTranslations();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -113,7 +115,7 @@ export default function AuthPage() {
             color: "#7dd3fc",
           }}
         >
-          {mode === "login" ? "Login" : "Sign Up"}
+          {mode === "login" ? t('auth.login') : t('auth.signUp')}
         </h1>
 
         <p
@@ -164,7 +166,7 @@ export default function AuthPage() {
                 letterSpacing: "0.05em",
               }}
             >
-              Email
+              {t('auth.email')}
             </label>
             <input
               type="email"
@@ -197,7 +199,7 @@ export default function AuthPage() {
                 letterSpacing: "0.05em",
               }}
             >
-              Password
+              {t('auth.password')}
             </label>
             <input
               type="password"
@@ -231,7 +233,7 @@ export default function AuthPage() {
                   letterSpacing: "0.05em",
                 }}
               >
-                Confirm Password
+                {t('auth.confirmPassword')}
               </label>
               <input
                 type="password"
@@ -273,12 +275,10 @@ export default function AuthPage() {
             }}
           >
             {loading
-              ? mode === "login"
-                ? "Logging in..."
-                : "Creating..."
+              ? t('common.loading')
               : mode === "login"
-                ? "Login"
-                : "Sign Up"}
+                ? t('auth.login')
+                : t('auth.signUp')}
           </button>
         </form>
 
@@ -292,7 +292,7 @@ export default function AuthPage() {
         >
           {mode === "login" ? (
             <>
-              Don't have an account?{" "}
+              {t('auth.noAccount')}{" "}
               <button
                 type="button"
                 onClick={() => setMode("signup")}
@@ -306,12 +306,12 @@ export default function AuthPage() {
                   fontWeight: 600,
                 }}
               >
-                Sign Up
+                {t('auth.signUp')}
               </button>
             </>
           ) : (
             <>
-              Already have an account?{" "}
+              {t('auth.hasAccount')}{" "}
               <button
                 type="button"
                 onClick={() => setMode("login")}
@@ -325,7 +325,7 @@ export default function AuthPage() {
                   fontWeight: 600,
                 }}
               >
-                Login
+                {t('auth.login')}
               </button>
             </>
           )}

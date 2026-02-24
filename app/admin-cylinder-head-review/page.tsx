@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 type Submission = {
   id: string;
@@ -23,6 +24,7 @@ type Submission = {
 };
 
 export default function AdminCylinderHeadReview() {
+  const t = useTranslations();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
@@ -79,15 +81,15 @@ export default function AdminCylinderHeadReview() {
     }
   }
 
-  if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
+  if (loading) return <div style={{ padding: 20 }}>{t('common.loading')}</div>;
 
   return (
     <main style={{ maxWidth: 1200, margin: "0 auto", padding: 20, color: "#e5e7eb", fontFamily: "system-ui" }}>
-      <h1 style={{ color: "#7dd3fc" }}>Cylinder Head Submissions Review</h1>
+      <h1 style={{ color: "#7dd3fc" }}>{t('admin.headReview')}</h1>
       {msg && <div style={{ padding: 12, marginBottom: 12, background: "rgba(34,197,94,0.18)", borderRadius: 8 }}>{msg}</div>}
 
       {submissions.length === 0 ? (
-        <p>No pending submissions.</p>
+        <p>{t('admin.noPending')}</p>
       ) : (
         <div style={{ display: "grid", gap: 20 }}>
           {submissions.map((sub) => (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface CamSubmission {
   id: string;
@@ -35,6 +36,7 @@ interface Message {
 }
 
 export default function AdminCamReviewPage() {
+  const t = useTranslations();
   const [submissions, setSubmissions] = useState<CamSubmission[]>([]);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<Message | null>(null);
@@ -111,7 +113,7 @@ export default function AdminCamReviewPage() {
             color: "#7dd3fc",
           }}
         >
-          Admin: Cam Review
+          {t('admin.camReview')}
         </h1>
 
         <p
@@ -122,7 +124,7 @@ export default function AdminCamReviewPage() {
             fontSize: 12,
           }}
         >
-          Approve or deny pending submissions from cse_cam_submissions_table.
+          {t('admin.camReviewDescription')}
         </p>
 
         {msg && (

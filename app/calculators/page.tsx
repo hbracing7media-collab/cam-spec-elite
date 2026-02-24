@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import LayawayBanner from "@/components/LayawayBanner";
+import { useTranslations } from "next-intl";
 
 const CALCULATORS: { slug: string; name: string; desc: string }[] = [
   { slug: "cam-spec-elite", name: "Cam Spec Elite Basic HP Calculator", desc: "Cam and engine combo estimator + dyno curve." },
@@ -26,21 +27,22 @@ const GENERATIVE_SLUGS = new Set(
 );
 
 export default function CalculatorsHubPage() {
+  const t = useTranslations();
   return (
     <div className="card">
       <div className="card-inner">
         <LayawayBanner />
         <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-          <h1 className="h1" style={{ margin: 0 }}>Calculators</h1>
+          <h1 className="h1" style={{ margin: 0 }}>{t('calculator.title')}</h1>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <Link className="pill" href="/">Home</Link>
-            <Link className="pill" href="/forum">Forum</Link>
-            <Link className="pill" href="/profile">Profile</Link>
+            <Link className="pill" href="/">{t('nav.home')}</Link>
+            <Link className="pill" href="/forum">{t('nav.forum')}</Link>
+            <Link className="pill" href="/profile">{t('nav.profile')}</Link>
           </div>
         </div>
 
         <p className="small" style={{ marginTop: 10 }}>
-          Select a tool. Each calculator is isolated so nothing breaks the rest of the system.
+          {t('calculator.selectTool')}
         </p>
 
         <hr className="hr" />

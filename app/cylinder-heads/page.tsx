@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 function FlowGraph({ flowData }: { flowData: Array<{ lift: number; intake_flow: number; exhaust_flow: number }> }) {
   if (!flowData || flowData.length === 0) return null;
@@ -269,6 +270,7 @@ const ENGINE_FAMILIES: Record<MakeKey, string[]> = {
 };
 
 export default function ViewHeadsPage() {
+  const t = useTranslations();
   const isAuthed = useAuthCheck();
   const [heads, setHeads] = useState<Head[]>([]);
   const [loading, setLoading] = useState(true);
@@ -333,8 +335,8 @@ export default function ViewHeadsPage() {
   const brands = Array.from(new Set(heads.map((h) => h.brand))).sort();
   const partNames = Array.from(new Set(heads.map((h) => h.part_name))).sort();
 
-  if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
-  if (isAuthed === null) return <div style={{ padding: 20 }}>Loading...</div>;
+  if (loading) return <div style={{ padding: 20 }}>{t('common.loading')}</div>;
+  if (isAuthed === null) return <div style={{ padding: 20 }}>{t('common.loading')}</div>;
 
   // Modal styles
   const modalOverlay: React.CSSProperties = {
@@ -385,7 +387,7 @@ export default function ViewHeadsPage() {
             color: "#d8b4fe",
           }}
         >
-          Cylinder Heads
+          {t('heads.title')}
         </h1>
 
         <p
@@ -396,7 +398,7 @@ export default function ViewHeadsPage() {
             fontSize: 13,
           }}
         >
-          Browse approved cylinder head specifications.
+          {t('heads.browseDescription')}
         </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 }}>
@@ -413,7 +415,7 @@ export default function ViewHeadsPage() {
                 letterSpacing: "0.05em",
               }}
             >
-              Make
+              {t('heads.engineMake')}
             </label>
             <select
               value={selectedMake}
@@ -433,7 +435,7 @@ export default function ViewHeadsPage() {
                 boxSizing: "border-box",
               }}
             >
-              <option value="">All Makes</option>
+              <option value="">{t('heads.allMakes')}</option>
               {MAKE_OPTIONS.map((make) => (
                 <option key={make} value={make}>
                   {make}
@@ -455,7 +457,7 @@ export default function ViewHeadsPage() {
                 letterSpacing: "0.05em",
               }}
             >
-              Engine Family
+              {t('heads.engineFamily')}
             </label>
             <select
               value={selectedFamily}
@@ -475,7 +477,7 @@ export default function ViewHeadsPage() {
                 cursor: !selectedMake ? "not-allowed" : "pointer",
               }}
             >
-              <option value="">All Families</option>
+              <option value="">{t('heads.allFamilies')}</option>
               {familyOptions.map((family) => (
                 <option key={family} value={family}>
                   {family}
@@ -497,7 +499,7 @@ export default function ViewHeadsPage() {
                 letterSpacing: "0.05em",
               }}
             >
-              Brand
+              {t('heads.brand')}
             </label>
             <select
               value={selectedBrand}
@@ -514,7 +516,7 @@ export default function ViewHeadsPage() {
                 boxSizing: "border-box",
               }}
             >
-              <option value="">All Brands</option>
+              <option value="">{t('heads.allBrands')}</option>
               {brands.map((brand) => (
                 <option key={brand} value={brand}>
                   {brand}
@@ -536,7 +538,7 @@ export default function ViewHeadsPage() {
                 letterSpacing: "0.05em",
               }}
             >
-              Head Part Name
+              {t('heads.partName')}
             </label>
             <select
               value={selectedPartName}
@@ -553,7 +555,7 @@ export default function ViewHeadsPage() {
                 boxSizing: "border-box",
               }}
             >
-              <option value="">All Part Names</option>
+              <option value="">{t('heads.allPartNames')}</option>
               {partNames.map((name) => (
                 <option key={name} value={name}>
                   {name}

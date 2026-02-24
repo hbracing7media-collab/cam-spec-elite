@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import LayawayBanner from "@/components/LayawayBanner";
+import { useTranslations } from "next-intl";
 
 interface MerchItem {
   id: string;
@@ -111,6 +112,7 @@ const merchItems: MerchItem[] = [
 ];
 
 export default function ShopPage() {
+  const t = useTranslations();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string; hasBack?: boolean; backSrc?: string } | null>(null);

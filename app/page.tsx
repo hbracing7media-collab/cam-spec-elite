@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import LayawayBanner from "@/components/LayawayBanner";
+import { useTranslations } from "next-intl";
 
 export default function Home() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
+  const t = useTranslations();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -21,7 +23,7 @@ export default function Home() {
     checkAuth();
   }, [router]);
 
-  if (checking) return <div>Loading...</div>;
+  if (checking) return <div>{t('common.loading')}</div>;
 
   return (
     <main
@@ -55,7 +57,7 @@ export default function Home() {
             letterSpacing: "0.12em",
           }}
         >
-          CAM SPEC ELITE
+          {t('home.title')}
         </h1>
 
         <p
@@ -66,7 +68,7 @@ export default function Home() {
             marginBottom: 24,
           }}
         >
-          Performance calculators • forum • build data
+          {t('home.subtitle')}
         </p>
 
         <LayawayBanner />
@@ -79,25 +81,25 @@ export default function Home() {
           }}
         >
           <Link href="/profile" className="pill">
-            Profile
+            {t('nav.profile')}
           </Link>
           <Link href="/forum" className="pill">
-            Forum
+            {t('nav.forum')}
           </Link>
           <Link href="/calculators" className="pill">
-            Calculators
+            {t('nav.calculators')}
           </Link>
           <Link href="/cams" className="pill">
-            Browse Cams
+            {t('nav.cams')}
           </Link>
           <Link href="/cylinder-heads" className="pill">
-            Heads
+            {t('nav.cylinderHeads')}
           </Link>
           <Link href="/dyno-wars" className="pill">
-            Dyno Wars
+            {t('nav.dynoWars')}
           </Link>
           <Link href="/shop" className="pill" style={{ gridColumn: "1 / -1" }}>
-            Shop & Support
+            {t('nav.shop')}
           </Link>
         </div>
 
@@ -113,10 +115,10 @@ export default function Home() {
           }}
         >
           <Link href="/forum/new" className="pill small">
-            New Thread
+            {t('forum.newThread')}
           </Link>
           <Link href="/logout" className="pill small">
-            Logout
+            {t('nav.logout')}
           </Link>
         </div>
       </div>

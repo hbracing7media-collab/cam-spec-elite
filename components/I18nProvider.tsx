@@ -3,13 +3,16 @@
 import { NextIntlClientProvider } from "next-intl";
 import { ReactNode, useEffect, useState } from "react";
 
+// Import English messages synchronously as fallback
+import enMessages from "../messages/en.json";
+
 type Props = {
   children: ReactNode;
 };
 
 export default function I18nProvider({ children }: Props) {
   const [locale, setLocale] = useState("en");
-  const [messages, setMessages] = useState<Record<string, any> | null>(null);
+  const [messages, setMessages] = useState<Record<string, any>>(enMessages);
 
   useEffect(() => {
     async function loadMessages() {
@@ -24,22 +27,18 @@ export default function I18nProvider({ children }: Props) {
       
       setLocale(finalLocale);
 
-      try {
-        const msgs = await import(`../messages/${finalLocale}.json`);
-        setMessages(msgs.default);
-      } catch {
-        // Fallback to English
-        const msgs = await import("../messages/en.json");
-        setMessages(msgs.default);
+      if (finalLocale !== "en") {
+        try {
+          const msgs = await import(`../messages/${finalLocale}.json`);
+          setMessages(msgs.default);
+        } catch {
+          // Keep English fallback
+        }
       }
     }
 
     loadMessages();
   }, []);
-
-  if (!messages) {
-    return <>{children}</>;
-  }
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>

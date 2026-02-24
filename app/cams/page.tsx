@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 function useAuthCheck() {
   const router = useRouter();
@@ -101,6 +102,7 @@ const ENGINE_FAMILIES: Record<MakeKey, string[]> = {
 export default function CamsPage() {
   const isAuthed = useAuthCheck();
   const router = useRouter();
+  const t = useTranslations();
   const [selectedMake, setSelectedMake] = useState<MakeKey | "">("");
   const [engineFamily, setEngineFamily] = useState("");
 
@@ -116,12 +118,12 @@ export default function CamsPage() {
 
   const familyOptions = selectedMake ? ENGINE_FAMILIES[selectedMake] : [];
 
-  if (isAuthed === null) return <div style={{ padding: 20, textAlign: "center" }}>Loading...</div>;
+  if (isAuthed === null) return <div style={{ padding: 20, textAlign: "center" }}>{t('common.loading')}</div>;
 
   return (
     <main style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
       <div style={{ display: "flex", gap: 10, marginBottom: 20, justifyContent: "center" }}>
-        <Link href="/cams/new" className="pill" style={{ textDecoration: "none" }}>Submit Cam</Link>
+        <Link href="/cams/new" className="pill" style={{ textDecoration: "none" }}>{t('cams.submitNew')}</Link>
       </div>
       <div
         style={{
@@ -260,7 +262,7 @@ export default function CamsPage() {
             letterSpacing: "0.05em",
           }}
         >
-          Search Cams
+          {t('cams.search')}
         </button>
       </div>
     </main>
