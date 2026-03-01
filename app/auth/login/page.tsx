@@ -26,19 +26,19 @@ export default function AuthPage() {
     setMsg(null);
 
     if (!email.trim() || !password.trim()) {
-      setMsg({ type: "err", text: "Email and password required." });
+      setMsg({ type: "err", text: t('auth.emailPasswordRequired') });
       setLoading(false);
       return;
     }
 
     if (mode === "signup") {
       if (password !== confirmPassword) {
-        setMsg({ type: "err", text: "Passwords do not match." });
+        setMsg({ type: "err", text: t('auth.passwordMismatch') });
         setLoading(false);
         return;
       }
       if (password.length < 6) {
-        setMsg({ type: "err", text: "Password must be at least 6 characters." });
+        setMsg({ type: "err", text: t('auth.passwordLength') });
         setLoading(false);
         return;
       }
@@ -53,20 +53,20 @@ export default function AuthPage() {
         const result = await res.json();
         
         if (!res.ok) {
-          setMsg({ type: "err", text: result.message || "Signup failed." });
+          setMsg({ type: "err", text: result.message || t('auth.signupFailed') });
           setLoading(false);
           return;
         }
         
         setMsg({ 
           type: "ok", 
-          text: "Signup successful! Please check your email to confirm your account." 
+          text: t('auth.verifyEmail')
         });
         setTimeout(() => setMode("login"), 3000);
       } catch (err) {
         setMsg({
           type: "err",
-          text: err instanceof Error ? err.message : "Signup failed.",
+          text: err instanceof Error ? err.message : t('auth.signupFailed'),
         });
       }
       setLoading(false);
@@ -81,11 +81,11 @@ export default function AuthPage() {
     });
     const result = await res.json();
     if (!res.ok) {
-      setMsg({ type: "err", text: result.message || "Login failed." });
+      setMsg({ type: "err", text: result.message || t('auth.loginFailed') });
       setLoading(false);
       return;
     }
-    setMsg({ type: "ok", text: "Login successful! Redirecting..." });
+    setMsg({ type: "ok", text: t('auth.loginSuccess') });
     setTimeout(() => {
       window.location.href = "/";
     }, 500);
@@ -127,8 +127,8 @@ export default function AuthPage() {
           }}
         >
           {mode === "login"
-            ? "Access your cam submissions."
-            : "Create your account to submit cams."}
+            ? t('auth.loginSubtitle')
+            : t('auth.signupSubtitle')}
         </p>
 
         {msg && (

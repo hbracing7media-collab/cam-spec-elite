@@ -108,7 +108,7 @@ export default function CamsPage() {
 
   function handleSearch() {
     if (!selectedMake || !engineFamily.trim()) {
-      alert("Please select engine make and engine family.");
+      alert(t('cams.selectValidation'));
       return;
     }
     router.push(
@@ -145,7 +145,7 @@ export default function CamsPage() {
             color: "#7dd3fc",
           }}
         >
-          Browse Cams
+          {t('cams.browseTitle')}
         </h1>
 
         <p
@@ -156,7 +156,7 @@ export default function CamsPage() {
             fontSize: 13,
           }}
         >
-          Select your engine to view approved cam specifications.
+          {t('cams.browseDescription')}
         </p>
 
         <div style={{ marginBottom: 24 }}>
@@ -171,7 +171,7 @@ export default function CamsPage() {
               letterSpacing: "0.05em",
             }}
           >
-            Engine Make
+            {t('cams.engineMake')}
           </label>
           <select
             value={selectedMake}
@@ -192,7 +192,7 @@ export default function CamsPage() {
               boxSizing: "border-box",
             }}
           >
-            <option value="">— Select Make —</option>
+            <option value="">{t('cams.selectMake')}</option>
             {MAKE_OPTIONS.map((make) => (
               <option key={make} value={make}>
                 {make}
@@ -213,7 +213,7 @@ export default function CamsPage() {
               letterSpacing: "0.05em",
             }}
           >
-            Engine Family
+            {t('cams.engineFamily')}
           </label>
           <select
             value={engineFamily}
@@ -232,7 +232,7 @@ export default function CamsPage() {
               boxSizing: "border-box",
             }}
           >
-            <option value="">— Select Family —</option>
+            <option value="">{t('cams.selectFamily')}</option>
             {familyOptions.map((fam) => (
               <option key={fam} value={fam}>
                 {fam}

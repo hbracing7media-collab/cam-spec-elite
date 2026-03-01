@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface CamSubmission {
   id: string;
@@ -35,6 +36,7 @@ interface Message {
 function CamsBrowseContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations();
   const make = searchParams.get("make") || "";
   const family = searchParams.get("family") || "";
 
@@ -110,7 +112,7 @@ function CamsBrowseContent() {
               fontWeight: 600,
             }}
           >
-            ← Back
+            ← {t("browse.back")}
           </button>
           <div>
             <h1
@@ -131,7 +133,7 @@ function CamsBrowseContent() {
                 fontSize: 11,
               }}
             >
-              Approved cams
+              {t("browse.approvedCams")}
             </p>
           </div>
         </div>
@@ -169,11 +171,11 @@ function CamsBrowseContent() {
 
         {loading ? (
           <div style={{ padding: 20, textAlign: "center", color: "rgba(226,232,240,0.7)" }}>
-            <p>Loading cams...</p>
+            <p>{t("browse.loadingCams")}</p>
           </div>
         ) : cams.length === 0 ? (
           <div style={{ padding: 20, textAlign: "center", color: "rgba(226,232,240,0.7)" }}>
-            <p>No approved cams found for {make} {family}.</p>
+            <p>{t("browse.noCamsFound", { make, family })}</p>
           </div>
         ) : (
           <div

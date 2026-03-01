@@ -61,6 +61,14 @@ export const ShortBlocksProvider: React.FC<{ children: ReactNode }> = ({ childre
       setError(null);
       
       const res = await fetch('/api/profile/short-blocks');
+      
+      // Handle 401 gracefully - user just isn't logged in
+      if (res.status === 401) {
+        setBlocks([]);
+        setIsInitialized(true);
+        return;
+      }
+      
       if (!res.ok) {
         throw new Error('Failed to load short blocks');
       }

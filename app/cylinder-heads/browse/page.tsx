@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 type CylinderHead = {
   id: string;
@@ -151,6 +152,7 @@ function FlowGraph({ head }: { head: CylinderHead }) {
 }
 
 export default function CylinderHeadsBrowse() {
+  const t = useTranslations();
   const [heads, setHeads] = useState<CylinderHead[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMake, setSelectedMake] = useState<string>("");
@@ -193,11 +195,11 @@ export default function CylinderHeadsBrowse() {
     return true;
   });
 
-  if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
+  if (loading) return <div style={{ padding: 20 }}>{t("common.loading")}</div>;
 
   return (
     <main style={{ maxWidth: 1200, margin: "0 auto", padding: 20, color: "#e5e7eb", fontFamily: "system-ui" }}>
-      <h1 style={{ color: "#d8b4fe", marginBottom: 12 }}>Cylinder Head Database</h1>
+      <h1 style={{ color: "#d8b4fe", marginBottom: 12 }}>{t("heads.databaseTitle")}</h1>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
         <div>

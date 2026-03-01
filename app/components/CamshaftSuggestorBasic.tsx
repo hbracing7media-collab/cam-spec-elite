@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 type Units = 'std' | 'met';
 type Induction = 'na' | 'boost';
@@ -223,6 +224,7 @@ function buildAutoSuggestions(inp: SuggestInput, compressionNotes: string): Cam[
 }
 
 export default function CamshaftSuggestorBasic() {
+  const t = useTranslations('camSuggestor');
   const [units, setUnits] = useState<Units>('std');
   const [induction, setInduction] = useState<Induction>('na');
   const [usage, setUsage] = useState<Usage>('street');
@@ -241,7 +243,7 @@ export default function CamshaftSuggestorBasic() {
   const [compressionNotes, setCompressionNotes] = useState('');
 
   const [status, setStatus] = useState('');
-  const [resultsNote, setResultsNote] = useState('Top matches will appear here.');
+  const [resultsNote, setResultsNote] = useState('');
   const [recommendations, setRecommendations] = useState<{ cam: Cam; score: number }[]>([]);
 
   useEffect(() => {
@@ -278,7 +280,7 @@ export default function CamshaftSuggestorBasic() {
     setUsage('street');
     setIdle('chop');
     setStatus('');
-    setResultsNote('Top matches will appear here.');
+    setResultsNote('');
     setRecommendations([]);
   }
 
@@ -378,52 +380,52 @@ export default function CamshaftSuggestorBasic() {
       <div className="hb-card">
         <div className="hb-head">
           <div className="hb-badge">HB Racing 7</div>
-          <div className="hb-title">Cam Suggestor</div>
-          <div className="hb-sub">Select Make → Family, set your goals, get ranked cam matches.</div>
+          <div className="hb-title">{t('title')}</div>
+          <div className="hb-sub">{t('subtitle')}</div>
         </div>
 
         <div className="hb-toprow">
           <div className="hb-field">
-            <label className="hb-label">Units</label>
+            <label className="hb-label">{t('units')}</label>
             <div className="hb-toggle">
               <button className={`hb-tbtn ${units === 'std' ? 'hb-tbtn-on' : ''}`} type="button" onClick={() => setUnits('std')}>
-                Standard
+                {t('standard')}
               </button>
               <button className={`hb-tbtn ${units === 'met' ? 'hb-tbtn-on' : ''}`} type="button" onClick={() => setUnits('met')}>
-                Metric
+                {t('metric')}
               </button>
             </div>
           </div>
 
           <div className="hb-field">
             <label className="hb-label" htmlFor="hbInduction">
-              Induction
+              {t('induction')}
             </label>
             <select id="hbInduction" className="hb-input" value={induction} onChange={(e) => setInduction(e.target.value as Induction)}>
-              <option value="na">Naturally Aspirated</option>
-              <option value="boost">Boost (Turbo/Supercharger)</option>
+              <option value="na">{t('naturallyAspirated')}</option>
+              <option value="boost">{t('boosted')}</option>
             </select>
           </div>
 
           <div className="hb-field">
             <label className="hb-label" htmlFor="hbUsage">
-              Use Case
+              {t('primaryUse')}
             </label>
             <select id="hbUsage" className="hb-input" value={usage} onChange={(e) => setUsage(e.target.value as Usage)}>
-              <option value="street">Street / Street Strip</option>
-              <option value="strip">Strip / Race</option>
-              <option value="truck">Truck / Tow</option>
+              <option value="street">{t('street')}</option>
+              <option value="strip">{t('strip')}</option>
+              <option value="truck">{t('truck')}</option>
             </select>
           </div>
 
           <div className="hb-field">
             <label className="hb-label" htmlFor="hbIdle">
-              Idle Preference
+              {t('idleQuality')}
             </label>
             <select id="hbIdle" className="hb-input" value={idle} onChange={(e) => setIdle(e.target.value as IdlePref)}>
-              <option value="smooth">Smooth</option>
-              <option value="chop">Choppy</option>
-              <option value="dontcare">Don’t care</option>
+              <option value="smooth">{t('smooth')}</option>
+              <option value="chop">{t('choppy')}</option>
+              <option value="dontcare">{t('dontCare')}</option>
             </select>
           </div>
         </div>
@@ -431,7 +433,7 @@ export default function CamshaftSuggestorBasic() {
         <div className="hb-grid">
           <div className="hb-field">
             <label className="hb-label" htmlFor="hbMake">
-              Engine Make
+              {t('engineMake')}
             </label>
             <select id="hbMake" className="hb-input" value={make} onChange={(e) => setMake(e.target.value)}>
               {makes.map((m) => (
@@ -444,7 +446,7 @@ export default function CamshaftSuggestorBasic() {
 
           <div className="hb-field">
             <label className="hb-label" htmlFor="hbFamily">
-              Engine Family
+              {t('engineFamily')}
             </label>
             <select id="hbFamily" className="hb-input" value={family} onChange={(e) => setFamily(e.target.value)}>
               {families.map((f) => (
@@ -458,51 +460,51 @@ export default function CamshaftSuggestorBasic() {
           {units === 'std' ? (
             <div className="hb-field" id="hbDispStdWrap">
               <label className="hb-label" htmlFor="hbCID">
-                Engine Size (CID)
+                {t('displacementCid')}
               </label>
-              <input id="hbCID" className="hb-input" type="number" inputMode="decimal" placeholder="e.g. 302, 351, 454" value={cid} onChange={(e) => setCid(e.target.value)} />
+              <input id="hbCID" className="hb-input" type="number" inputMode="decimal" placeholder={t('placeholderCid')} value={cid} onChange={(e) => setCid(e.target.value)} />
             </div>
           ) : (
             <div className="hb-field" id="hbDispMetWrap">
               <label className="hb-label" htmlFor="hbLiters">
-                Engine Size (Liters)
+                {t('displacementLiters')}
               </label>
-              <input id="hbLiters" className="hb-input" type="number" step="0.01" inputMode="decimal" placeholder="e.g. 2.0, 3.5, 6.2" value={liters} onChange={(e) => setLiters(e.target.value)} />
+              <input id="hbLiters" className="hb-input" type="number" step="0.01" inputMode="decimal" placeholder={t('placeholderLiters')} value={liters} onChange={(e) => setLiters(e.target.value)} />
             </div>
           )}
 
           {units === 'std' ? (
             <div className="hb-field" id="hbHpStdWrap">
               <label className="hb-label" htmlFor="hbTargetHp">
-                Desired HP
+                {t('targetHorsepower')}
               </label>
-              <input id="hbTargetHp" className="hb-input" type="number" inputMode="decimal" placeholder="e.g. 450" value={targetHp} onChange={(e) => setTargetHp(e.target.value)} />
+              <input id="hbTargetHp" className="hb-input" type="number" inputMode="decimal" placeholder={t('placeholderHp')} value={targetHp} onChange={(e) => setTargetHp(e.target.value)} />
             </div>
           ) : (
             <div className="hb-field" id="hbHpMetWrap">
               <label className="hb-label" htmlFor="hbTargetKw">
-                Desired kW
+                {t('targetKw')}
               </label>
-              <input id="hbTargetKw" className="hb-input" type="number" inputMode="decimal" placeholder="e.g. 335" value={targetKw} onChange={(e) => setTargetKw(e.target.value)} />
+              <input id="hbTargetKw" className="hb-input" type="number" inputMode="decimal" placeholder={t('placeholderKw')} value={targetKw} onChange={(e) => setTargetKw(e.target.value)} />
             </div>
           )}
 
           <div className="hb-field">
             <label className="hb-label" htmlFor="hbPeakRpm">
-              Peak HP RPM
+              {t('peakRpm')}
             </label>
-            <input id="hbPeakRpm" className="hb-input" type="number" inputMode="numeric" placeholder="e.g. 6500" value={peakRpm} onChange={(e) => setPeakRpm(e.target.value)} />
+            <input id="hbPeakRpm" className="hb-input" type="number" inputMode="numeric" placeholder={t('placeholderRpm')} value={peakRpm} onChange={(e) => setPeakRpm(e.target.value)} />
           </div>
 
           <div className="hb-field">
             <label className="hb-label" htmlFor="hbCompression">
-              Compression / Notes (optional)
+              {t('compressionNotes')}
             </label>
             <input
               id="hbCompression"
               className="hb-input"
               type="text"
-              placeholder="e.g. 10.5:1, E85, ported heads, etc."
+              placeholder={t('placeholderCompressionNotes')}
               value={compressionNotes}
               onChange={(e) => setCompressionNotes(e.target.value)}
             />
@@ -511,18 +513,18 @@ export default function CamshaftSuggestorBasic() {
 
         <div className="hb-actions">
           <button className="hb-btn hb-primary" type="button" onClick={runSuggest}>
-            Suggest Cams
+            {t('getSuggestions')}
           </button>
           <button className="hb-btn" type="button" onClick={resetInputs}>
-            Reset
+            {t('reset')}
           </button>
           <div className="hb-status">{status}</div>
         </div>
 
         <div className="hb-results">
           <div className="hb-results-head">
-            <div className="hb-results-title">Recommendations</div>
-            <div className="hb-results-note">{resultsNote}</div>
+            <div className="hb-results-title">{t('topMatches')}</div>
+            <div className="hb-results-note">{resultsNote || t('resultsPlaceholder')}</div>
           </div>
 
           {recommendations.length === 0 ? (
@@ -548,40 +550,40 @@ export default function CamshaftSuggestorBasic() {
 
                     <div className="hb-kv">
                       <div>
-                        <div className="hb-k">Dur @.050</div>
+                        <div className="hb-k">{t('duration')}</div>
                         <div className="hb-v">
                           {cam.durInt}/{cam.durExh}
                         </div>
                       </div>
                       <div>
-                        <div className="hb-k">Lift</div>
+                        <div className="hb-k">{t('lift')}</div>
                         <div className="hb-v">
                           {fmt3(cam.liftInt)}/{fmt3(cam.liftExh)}
                         </div>
                       </div>
                       <div>
-                        <div className="hb-k">LSA</div>
+                        <div className="hb-k">{t('lsa')}</div>
                         <div className="hb-v">{cam.lsa}</div>
                       </div>
                       <div>
-                        <div className="hb-k">Suggested Peak HP</div>
+                        <div className="hb-k">{t('suggestedPeakHp')}</div>
                         <div className="hb-v">{cam.peakHpRpm} rpm</div>
                       </div>
                       <div>
-                        <div className="hb-k">Your Target</div>
+                        <div className="hb-k">{t('yourTarget')}</div>
                         <div className="hb-v">
                           {powerText} @ {peakRpm || '—'}
                         </div>
                       </div>
                       <div>
-                        <div className="hb-k">Engine</div>
+                        <div className="hb-k">{t('engine')}</div>
                         <div className="hb-v">{dispText}</div>
                       </div>
                     </div>
 
                     {cam.notes ? (
                       <div className="hb-notes">
-                        <b>Notes:</b> {cam.notes}
+                        <b>{t('notes')}:</b> {cam.notes}
                       </div>
                     ) : null}
                   </div>
@@ -591,7 +593,7 @@ export default function CamshaftSuggestorBasic() {
           )}
         </div>
 
-        <div className="hb-foot">This suggestor ranks based on RPM target, HP-per-displacement, induction, and general cam behavior.</div>
+        <div className="hb-foot">{t('footer')}</div>
       </div>
 
       <style>{`

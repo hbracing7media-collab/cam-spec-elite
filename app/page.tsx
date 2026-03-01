@@ -1,29 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import LayawayBanner from "@/components/LayawayBanner";
 import { useTranslations } from "next-intl";
 
 export default function Home() {
-  const router = useRouter();
-  const [checking, setChecking] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const t = useTranslations();
 
   useEffect(() => {
     const checkAuth = async () => {
       const res = await fetch("/api/auth/me");
-      if (!res.ok) {
-        router.replace("/auth/login");
-      } else {
-        setChecking(false);
-      }
+      setIsLoggedIn(res.ok);
     };
     checkAuth();
-  }, [router]);
-
-  if (checking) return <div>{t('common.loading')}</div>;
+  }, []);
 
   return (
     <main
@@ -114,12 +106,20 @@ export default function Home() {
             marginTop: 14,
           }}
         >
-          <Link href="/forum/new" className="pill small">
-            {t('forum.newThread')}
-          </Link>
-          <Link href="/logout" className="pill small">
-            {t('nav.logout')}
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <Link href="/forum/new" className="pill small">
+                {t('forum.newThread')}
+              </Link>
+              <Link href="/logout" className="pill small">
+                {t('nav.logout')}
+              </Link>
+            </>
+          ) : (
+            <Link href="/auth/login" className="pill small">
+              {t('auth.login')}
+            </Link>
+          )}
         </div>
       </div>
     </main>

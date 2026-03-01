@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { CAM_MAKE_OPTIONS, CAM_ENGINE_FAMILIES } from '@/lib/engineOptions';
 
 interface EngineGeometry {
@@ -46,6 +47,7 @@ interface CurvePoint {
 }
 
 export default function CamSpecEliteCalculator() {
+  const t = useTranslations('selectiveCalc');
   const [engine, setEngine] = useState({
     bore: 4.03,
     stroke: 3.5,

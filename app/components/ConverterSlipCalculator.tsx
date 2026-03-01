@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslations } from 'next-intl';
 import type { BoostSuitability, CamRecommendation } from "@/lib/cams/types";
 import { familiesOverlap, familyTokensForSearch } from "@/lib/cams/utils";
 
@@ -276,6 +277,7 @@ function camDistanceScore(
 }
 
 export default function ConverterSlipCalculator({ mode = "selective", desiredSuggestions }: ConverterSlipCalculatorProps) {
+  const t = useTranslations('camSuggestor');
   const isGlobalMode = mode === "global";
   const usesGlobalCatalog = isGlobalMode;
   const suggestionCap = isGlobalMode ? Math.max(desiredSuggestions ?? 3, 3) : desiredSuggestions ?? 4;
@@ -583,53 +585,53 @@ export default function ConverterSlipCalculator({ mode = "selective", desiredSug
       <div className="hb-card">
         <div className="hb-head">
           <div className="hb-badge">HB Racing 7</div>
-          <div className="hb-title">Cam Suggestor</div>
-          <div className="hb-sub">{widgetSubtitle}</div>
+          <div className="hb-title">{t('title')}</div>
+          <div className="hb-sub">{t('subtitle')}</div>
         </div>
 
         <div className="hb-toprow">
           <div className="hb-field">
-            <label className="hb-label">Units</label>
+            <label className="hb-label">{t('units')}</label>
             <div className="hb-toggle">
               <button className={`hb-tbtn ${units === "std" ? "hb-tbtn-on" : ""}`} type="button" onClick={() => setUnits("std")}>
-                Standard
+                {t('standard')}
               </button>
               <button className={`hb-tbtn ${units === "met" ? "hb-tbtn-on" : ""}`} type="button" onClick={() => setUnits("met")}>
-                Metric
+                {t('metric')}
               </button>
             </div>
           </div>
 
           <div className="hb-field">
-            <label className="hb-label">Induction</label>
+            <label className="hb-label">{t('induction')}</label>
             <select className="hb-input" value={induction} onChange={(e) => setInduction(e.target.value as Induction)}>
-              <option value="na">Naturally Aspirated</option>
-              <option value="boost">Boost (Turbo/Supercharger)</option>
+              <option value="na">{t('naturallyAspirated')}</option>
+              <option value="boost">{t('boost')}</option>
             </select>
           </div>
 
           <div className="hb-field">
-            <label className="hb-label">Use Case</label>
+            <label className="hb-label">{t('useCase')}</label>
             <select className="hb-input" value={usage} onChange={(e) => setUsage(e.target.value as Usage)}>
-              <option value="street">Street / Street Strip</option>
-              <option value="strip">Strip / Race</option>
-              <option value="truck">Truck / Tow</option>
+              <option value="street">{t('street')}</option>
+              <option value="strip">{t('strip')}</option>
+              <option value="truck">{t('truck')}</option>
             </select>
           </div>
 
           <div className="hb-field">
-            <label className="hb-label">Idle Preference</label>
+            <label className="hb-label">{t('idlePreference')}</label>
             <select className="hb-input" value={idle} onChange={(e) => setIdle(e.target.value as IdlePref)}>
-              <option value="smooth">Smooth</option>
-              <option value="chop">Choppy</option>
-              <option value="dontcare">Don't care</option>
+              <option value="smooth">{t('smooth')}</option>
+              <option value="chop">{t('choppy')}</option>
+              <option value="dontcare">{t('dontCare')}</option>
             </select>
           </div>
         </div>
 
         <div className="hb-grid">
           <div className="hb-field">
-            <label className="hb-label">Engine Make</label>
+            <label className="hb-label">{t('engineMake')}</label>
             <select className="hb-input" value={make} onChange={(e) => setMake(e.target.value)}>
               {makes.map((m) => (
                 <option key={m} value={m}>
@@ -640,7 +642,7 @@ export default function ConverterSlipCalculator({ mode = "selective", desiredSug
           </div>
 
           <div className="hb-field">
-            <label className="hb-label">Engine Family</label>
+            <label className="hb-label">{t('engineFamily')}</label>
             <select className="hb-input" value={family} onChange={(e) => setFamily(e.target.value)}>
               {families.map((f) => (
                 <option key={f} value={f}>
@@ -652,45 +654,45 @@ export default function ConverterSlipCalculator({ mode = "selective", desiredSug
 
           {units === "std" ? (
             <div className="hb-field">
-              <label className="hb-label">Engine Size (CID)</label>
-              <input className="hb-input" type="number" inputMode="decimal" placeholder="e.g. 302, 351, 454" value={cid} onChange={(e) => setCid(e.target.value)} />
+              <label className="hb-label">{t('engineSizeCid')}</label>
+              <input className="hb-input" type="number" inputMode="decimal" placeholder={t('placeholderCid')} value={cid} onChange={(e) => setCid(e.target.value)} />
             </div>
           ) : (
             <div className="hb-field">
-              <label className="hb-label">Engine Size (Liters)</label>
-              <input className="hb-input" type="number" step="0.01" inputMode="decimal" placeholder="e.g. 2.0, 3.5, 6.2" value={liters} onChange={(e) => setLiters(e.target.value)} />
+              <label className="hb-label">{t('engineSizeLiters')}</label>
+              <input className="hb-input" type="number" step="0.01" inputMode="decimal" placeholder={t('placeholderLiters')} value={liters} onChange={(e) => setLiters(e.target.value)} />
             </div>
           )}
 
           {units === "std" ? (
             <div className="hb-field">
-              <label className="hb-label">Desired HP</label>
-              <input className="hb-input" type="number" inputMode="decimal" placeholder="e.g. 450" value={targetHp} onChange={(e) => setTargetHp(e.target.value)} />
+              <label className="hb-label">{t('desiredHp')}</label>
+              <input className="hb-input" type="number" inputMode="decimal" placeholder={t('placeholderHp')} value={targetHp} onChange={(e) => setTargetHp(e.target.value)} />
             </div>
           ) : (
             <div className="hb-field">
-              <label className="hb-label">Desired kW</label>
-              <input className="hb-input" type="number" inputMode="decimal" placeholder="e.g. 335" value={targetKw} onChange={(e) => setTargetKw(e.target.value)} />
+              <label className="hb-label">{t('desiredKw')}</label>
+              <input className="hb-input" type="number" inputMode="decimal" placeholder={t('placeholderKw')} value={targetKw} onChange={(e) => setTargetKw(e.target.value)} />
             </div>
           )}
 
           <div className="hb-field">
-            <label className="hb-label">Peak HP RPM</label>
-            <input className="hb-input" type="number" inputMode="numeric" placeholder="e.g. 6500" value={peakRpm} onChange={(e) => setPeakRpm(e.target.value)} />
+            <label className="hb-label">{t('peakHpRpm')}</label>
+            <input className="hb-input" type="number" inputMode="numeric" placeholder={t('placeholderRpm')} value={peakRpm} onChange={(e) => setPeakRpm(e.target.value)} />
           </div>
 
           <div className="hb-field">
-            <label className="hb-label">Combo Notes (optional)</label>
-            <input className="hb-input" type="text" placeholder="E85, VVT locked, ported heads, etc." value={comboNotes} onChange={(e) => setComboNotes(e.target.value)} />
+            <label className="hb-label">{t('comboNotes')}</label>
+            <input className="hb-input" type="text" placeholder={t('placeholderNotes')} value={comboNotes} onChange={(e) => setComboNotes(e.target.value)} />
           </div>
         </div>
 
         <div className="hb-actions">
           <button className="hb-btn hb-primary" type="button" onClick={runSuggestUseMySettings}>
-            Suggest
+            {t('suggest')}
           </button>
           <button className="hb-btn" type="button" onClick={resetAll}>
-            Reset
+            {t('reset')}
           </button>
           <div className="hb-status">
             {status || (libraryStatus === "loading" ? `Loading ${feedLabel}…` : libraryStatus === "error" ? libraryError : "")}
@@ -699,7 +701,7 @@ export default function ConverterSlipCalculator({ mode = "selective", desiredSug
 
         <div className="hb-results">
           <div className="hb-results-head">
-            <div className="hb-results-title">{resultsTitle}</div>
+            <div className="hb-results-title">{t('resultsTitle')}</div>
             <div className="hb-results-note">
               {libraryStatus === "loading"
                 ? `Loading ${sourceLabel} for this make/family…`
@@ -712,7 +714,7 @@ export default function ConverterSlipCalculator({ mode = "selective", desiredSug
           {target ? (
             <div className="hb-rec hb-target">
               <div className="hb-rec-top">
-                <div className="hb-rec-name">Perfect Target Specs (for this combo)</div>
+                <div className="hb-rec-name">{t('perfectTargetSpecs')}</div>
                 <div className="hb-pill">
                   {induction.toUpperCase()} / {usage.toUpperCase()}
                 </div>
@@ -720,35 +722,35 @@ export default function ConverterSlipCalculator({ mode = "selective", desiredSug
 
               <div className="hb-kv">
                 <div>
-                  <div className="hb-k">Target Dur @.050</div>
+                  <div className="hb-k">{t('targetDur')}</div>
                   <div className="hb-v">
                     {target.durInt}/{target.durExh}
                   </div>
                 </div>
                 <div>
-                  <div className="hb-k">Target LSA</div>
+                  <div className="hb-k">{t('targetLsa')}</div>
                   <div className="hb-v">{target.lsa}</div>
                 </div>
                 <div>
-                  <div className="hb-k">Target Lift</div>
+                  <div className="hb-k">{t('targetLift')}</div>
                   <div className="hb-v">
                     {target.liftInt.toFixed(3)}/{target.liftExh.toFixed(3)}
                   </div>
                 </div>
                 <div>
-                  <div className="hb-k">Peak HP Goal</div>
+                  <div className="hb-k">{t('peakHpGoal')}</div>
                   <div className="hb-v">
                     {powerText} @ {peakRpm}
                   </div>
                 </div>
                 <div>
-                  <div className="hb-k">Suggested Power Band</div>
+                  <div className="hb-k">{t('suggestedPowerBand')}</div>
                   <div className="hb-v">
                     {target.bandLo}-{target.bandHi} rpm
                   </div>
                 </div>
                 <div>
-                  <div className="hb-k">Combo</div>
+                  <div className="hb-k">{t('combo')}</div>
                   <div className="hb-v">
                     {dispText} / {target.hpPerCid} hp/cid
                   </div>
@@ -756,12 +758,12 @@ export default function ConverterSlipCalculator({ mode = "selective", desiredSug
               </div>
 
               <div className="hb-notes">
-                <b>How to use:</b> Find cams close to this Duration/LSA/Lift (then verify springs, PTV, and valvetrain).
+                <b>{t('howToUse')}</b> {t('howToUseText')}
                 {" "}
                 {comboNotes ? (
                   <>
                     <br />
-                    <b>Your notes:</b> {comboNotes}
+                    <b>{t('yourNotes')}</b> {comboNotes}
                   </>
                 ) : null}
               </div>
@@ -771,20 +773,18 @@ export default function ConverterSlipCalculator({ mode = "selective", desiredSug
           {target && topCams.length === 0 ? (
             <div className="hb-rec">
               <div className="hb-rec-name">
-                No {sourceLabel} found for {make} / {family}.
+                {t('noCamsFound', { make, family })}
               </div>
               <div className="hb-notes">
-                {isGlobalMode
-                  ? "We are still mapping trusted references for this combo. Try a nearby family or check back soon."
-                  : "We are still populating this combo. Try a nearby engine family or check back soon."}
+                {t('noCamsNote')}
               </div>
             </div>
           ) : null}
 
           {topCams.map((x, i) => {
             const cam = x.cam;
-            const boostPill = cam.boostOK === "yes" ? "Boost Friendly" : cam.boostOK === "no" ? "NA Focused" : "Either";
-            const label = `${cam.brand || "Unknown"} - ${cam.pn || "NO-PN"}`;
+            const boostPill = cam.boostOK === "yes" ? t('boostFriendly') : cam.boostOK === "no" ? t('naFocused') : t('either');
+            const label = `${cam.brand || t('unknown')} - ${cam.pn || "NO-PN"}`;
             const extraName = cam.name ? ` - ${cam.name}` : "";
 
             return (
@@ -797,49 +797,49 @@ export default function ConverterSlipCalculator({ mode = "selective", desiredSug
                     </span>
                   </div>
                   <div className="hb-pill">
-                    {boostPill} / Match {x.match}%
+                    {boostPill} / {t('match')} {x.match}%
                   </div>
                   {cam.sourceUrl ? (
                     <a className="hb-link" href={cam.sourceUrl} target="_blank" rel="noreferrer">
-                      Source
+                      {t('source')}
                     </a>
                   ) : null}
                 </div>
 
                 <div className="hb-kv">
                   <div>
-                    <div className="hb-k">Dur @.050</div>
+                    <div className="hb-k">{t('duration')}</div>
                     <div className="hb-v">
                       {cam.durInt}/{cam.durExh}
                     </div>
                   </div>
                   <div>
-                    <div className="hb-k">Lift</div>
+                    <div className="hb-k">{t('lift')}</div>
                     <div className="hb-v">
                       {fmt3(cam.liftInt)}/{fmt3(cam.liftExh)}
                     </div>
                   </div>
                   <div>
-                    <div className="hb-k">LSA</div>
+                    <div className="hb-k">{t('lsa')}</div>
                     <div className="hb-v">{cam.lsa}</div>
                   </div>
                   <div>
-                    <div className="hb-k">Suggested Peak HP</div>
+                    <div className="hb-k">{t('suggestedPeakHp')}</div>
                     <div className="hb-v">{cam.peakHpRpm} rpm</div>
                   </div>
                   <div>
-                    <div className="hb-k">Distance</div>
+                    <div className="hb-k">{t('distance')}</div>
                     <div className="hb-v">{x.dist.toFixed(1)}</div>
                   </div>
                   <div>
-                    <div className="hb-k">Your Peak</div>
+                    <div className="hb-k">{t('yourPeak')}</div>
                     <div className="hb-v">{peakRpm} rpm</div>
                   </div>
                 </div>
 
                 {cam.notes ? (
                   <div className="hb-notes">
-                    <b>Notes:</b> {cam.notes}
+                    <b>{t('notes')}</b> {cam.notes}
                   </div>
                 ) : null}
               </div>
@@ -847,7 +847,7 @@ export default function ConverterSlipCalculator({ mode = "selective", desiredSug
           })}
         </div>
 
-        <div className="hb-foot">This widget outputs target specs first, then matches the closest {suggestionCap} {sourceLabel} by part number.</div>
+        <div className="hb-foot">{t('footer')}</div>
       </div>
 
       <style>{`

@@ -34,10 +34,12 @@ export default function RootLayout({
                   draggable={false}
                 />
               </Link>
-              <div style={{ marginLeft: "auto", marginRight: 16 }}>
-                <LanguageSwitcher />
-              </div>
             </header>
+
+            {/* Language Switcher - fixed top right */}
+            <div style={{ position: "fixed", top: 12, right: 16, zIndex: 9999 }}>
+              <LanguageSwitcher />
+            </div>
 
             {/* Page content */}
             <main className="app-content">{children}</main>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 interface LayawayBannerProps {
   imageSrc?: string;
@@ -11,6 +12,7 @@ interface LayawayBannerProps {
 
 export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }: LayawayBannerProps) {
   const router = useRouter();
+  const t = useTranslations();
   const [animationComplete, setAnimationComplete] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
@@ -105,16 +107,14 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
               color: "#ff3bd4",
               marginBottom: 4,
             }}>
-              💰 LAYAWAY NOW AVAILABLE! 💰
+              💰 {t('shop.layawayBanner.title')} 💰
             </div>
             <div style={{ 
               fontSize: 14, 
               color: "#e2e8f0",
               lineHeight: 1.5,
             }}>
-              Pay over time, get your item when it&apos;s paid off! <span style={{ color: "#22c55e" }}>0% Interest</span> • 
-              <span style={{ color: "#00f5ff" }}> No credit check</span> • 
-              <span style={{ color: "#fbbf24" }}> Weekly, Bi-Weekly, or Monthly</span>
+              {t('shop.layawayBanner.subtitle')}
             </div>
             <div style={{ 
               fontSize: 12, 
@@ -125,7 +125,7 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
               justifyContent: "center",
               gap: 16,
             }}>
-              <span>Click to visit the shop →</span>
+              <span>{t('shop.layawayBanner.shopLink')}</span>
               <Link
                 href="/shop/layaway/info"
                 style={{
@@ -134,7 +134,7 @@ export default function LayawayBanner({ imageSrc = "/shop/Layaway graphic.png" }
                   fontWeight: 600,
                 }}
               >
-                Learn how layaway works
+                {t('shop.layawayBanner.learnMore')}
               </Link>
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { getSupabaseInstance } from "../../../lib/supabaseSingleton";
 import { HEAD_ENGINE_FAMILIES, HEAD_MAKE_OPTIONS, HeadMakeKey } from "@/lib/engineOptions";
 
@@ -43,6 +44,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 export default function CylinderHeadSubmitPage(): React.JSX.Element {
+  const t = useTranslations();
   const isAuthed = useAuthCheck();
   const [userId, setUserId] = useState("");
 
@@ -197,39 +199,39 @@ export default function CylinderHeadSubmitPage(): React.JSX.Element {
     }
   }
 
-  if (!isAuthed) return <div style={{ padding: 20, textAlign: "center" }}>Loading...</div>;
+  if (!isAuthed) return <div style={{ padding: 20, textAlign: "center" }}>{t('common.loading')}</div>;
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: 16, color: "#e5e7eb", fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif" }}>
       <div style={{ borderRadius: 18, padding: 18, background: "radial-gradient(circle at top left, rgba(56,189,248,0.18), rgba(2,6,23,0.92))", border: "1px solid rgba(56,189,248,0.35)", boxShadow: "0 18px 46px rgba(0,0,0,0.65)" }}>
         <h1 style={{ margin: 0, letterSpacing: "0.12em", textTransform: "uppercase", fontSize: 16, color: "#7dd3fc", textAlign: "center" }}>
-          Cylinder Head Submission
+          {t('heads.submitTitle')}
         </h1>
 
         <form onSubmit={handleSubmit} encType="multipart/form-data" style={{ marginTop: 14 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <label style={labelStyle}>
-                Brand (required)
-                <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="e.g., AFR, Edelbrock, Trick Flow" style={inputStyle} />
+                {t('heads.brand')} ({t('common.required')})
+                <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder={t('heads.brandPlaceholder')} style={inputStyle} />
               </label>
 
               <label style={labelStyle}>
-                Part Number (required)
-                <input value={partNumber} onChange={(e) => setPartNumber(e.target.value)} placeholder="e.g., 1067, RPM-R, TFS-51410101" style={inputStyle} />
-              </label>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <label style={labelStyle}>
-                Part Name (required)
-                <input value={partName} onChange={(e) => setPartName(e.target.value)} placeholder="e.g., 185cc Intake, Ported Heads" style={inputStyle} />
+                {t('heads.partNumber')} ({t('common.required')})
+                <input value={partNumber} onChange={(e) => setPartNumber(e.target.value)} placeholder={t('heads.partNumberPlaceholder')} style={inputStyle} />
               </label>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <label style={labelStyle}>
-                Engine Make (required)
+                {t('heads.partName')} ({t('common.required')})
+                <input value={partName} onChange={(e) => setPartName(e.target.value)} placeholder={t('heads.partNamePlaceholder')} style={inputStyle} />
+              </label>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <label style={labelStyle}>
+                {t('heads.engineMake')} ({t('common.required')})
                 <select value={engineMake} onChange={(e) => setEngineMake(e.target.value as HeadMakeKey)} style={inputStyle}>
                   {HEAD_MAKE_OPTIONS.map((m) => (
                     <option key={m} value={m}>{m}</option>
@@ -238,7 +240,7 @@ export default function CylinderHeadSubmitPage(): React.JSX.Element {
               </label>
 
               <label style={labelStyle}>
-                Engine Family (required)
+                {t('heads.engineFamily')} ({t('common.required')})
                 <select value={engineFamily} onChange={(e) => setEngineFamily(e.target.value)} style={inputStyle}>
                   {families.map((f) => (
                     <option key={f} value={f}>{f}</option>
@@ -249,52 +251,52 @@ export default function CylinderHeadSubmitPage(): React.JSX.Element {
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <label style={labelStyle}>
-                Intake Valve Size (mm, required)
-                <input value={intakeValveSize} onChange={(e) => setIntakeValveSize(e.target.value)} placeholder="e.g., 2.160" style={inputStyle} />
+                {t('heads.intakeValveSize')} ({t('common.required')})
+                <input value={intakeValveSize} onChange={(e) => setIntakeValveSize(e.target.value)} placeholder={t('heads.intakeValvePlaceholder')} style={inputStyle} />
               </label>
 
               <label style={labelStyle}>
-                Exhaust Valve Size (mm, required)
-                <input value={exhaustValveSize} onChange={(e) => setExhaustValveSize(e.target.value)} placeholder="e.g., 1.600" style={inputStyle} />
-              </label>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <label style={labelStyle}>
-                Max Lift (inches, required)
-                <input value={maxLift} onChange={(e) => setMaxLift(e.target.value)} placeholder="e.g., 0.600" style={inputStyle} />
-              </label>
-
-              <label style={labelStyle}>
-                Max RPM (required)
-                <input value={maxRpm} onChange={(e) => setMaxRpm(e.target.value)} placeholder="e.g., 7000" style={inputStyle} />
+                {t('heads.exhaustValveSize')} ({t('common.required')})
+                <input value={exhaustValveSize} onChange={(e) => setExhaustValveSize(e.target.value)} placeholder={t('heads.exhaustValvePlaceholder')} style={inputStyle} />
               </label>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <label style={labelStyle}>
-                Intake Runner CC (required)
-                <input value={intakeRunnerCc} onChange={(e) => setIntakeRunnerCc(e.target.value)} placeholder="e.g., 210" style={inputStyle} />
+                {t('heads.maxLift')} ({t('common.required')})
+                <input value={maxLift} onChange={(e) => setMaxLift(e.target.value)} placeholder={t('heads.maxLiftPlaceholder')} style={inputStyle} />
               </label>
 
               <label style={labelStyle}>
-                Combustion Chamber CC (required)
-                <input value={chamberCc} onChange={(e) => setChamberCc(e.target.value)} placeholder="e.g., 65" style={inputStyle} />
+                {t('heads.maxRpm')} ({t('common.required')})
+                <input value={maxRpm} onChange={(e) => setMaxRpm(e.target.value)} placeholder={t('heads.maxRpmPlaceholder')} style={inputStyle} />
+              </label>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <label style={labelStyle}>
+                {t('heads.intakeRunnerCC')} ({t('common.required')})
+                <input value={intakeRunnerCc} onChange={(e) => setIntakeRunnerCc(e.target.value)} placeholder={t('heads.intakeRunnerPlaceholder')} style={inputStyle} />
+              </label>
+
+              <label style={labelStyle}>
+                {t('heads.chamberCC')} ({t('common.required')})
+                <input value={chamberCc} onChange={(e) => setChamberCc(e.target.value)} placeholder={t('heads.chamberPlaceholder')} style={inputStyle} />
               </label>
             </div>
 
             {/* Flow Data Table */}
             <div style={{ marginTop: 12 }}>
               <div style={{ fontSize: 12, color: "#cbd5f5", fontWeight: 600, marginBottom: 12 }}>
-                Flow Data (Lift vs CFM) - Required
+                {t('heads.flowData')}
               </div>
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                   <thead>
                     <tr style={{ borderBottom: "1px solid rgba(56,189,248,0.35)" }}>
-                      <th style={{ padding: "8px 4px", textAlign: "left", color: "#7dd3fc" }}>Lift (in)</th>
-                      <th style={{ padding: "8px 4px", textAlign: "left", color: "#7dd3fc" }}>Intake Flow (CFM)</th>
-                      <th style={{ padding: "8px 4px", textAlign: "left", color: "#7dd3fc" }}>Exhaust Flow (CFM)</th>
+                      <th style={{ padding: "8px 4px", textAlign: "left", color: "#7dd3fc" }}>{t('heads.liftIn')}</th>
+                      <th style={{ padding: "8px 4px", textAlign: "left", color: "#7dd3fc" }}>{t('heads.intakeCFM')}</th>
+                      <th style={{ padding: "8px 4px", textAlign: "left", color: "#7dd3fc" }}>{t('heads.exhaustCFM')}</th>
                       <th style={{ padding: "8px 4px", width: 40 }}></th>
                     </tr>
                   </thead>
@@ -344,7 +346,7 @@ export default function CylinderHeadSubmitPage(): React.JSX.Element {
                                 fontSize: 11,
                               }}
                             >
-                              Remove
+                              {t('common.delete')}
                             </button>
                           )}
                         </td>
@@ -368,16 +370,16 @@ export default function CylinderHeadSubmitPage(): React.JSX.Element {
                   fontWeight: 600,
                 }}
               >
-                + Add Flow Data Point
+                {t('heads.addFlowPoint')}
               </button>
             </div>
 
             <label style={labelStyle}>
-              Additional Notes
+              {t('heads.notes')}
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Testing conditions, porting notes, modifications, etc..."
+                placeholder={t('heads.notesPlaceholder')}
                 style={{ ...inputStyle, minHeight: 80, fontFamily: "monospace" }}
               />
             </label>
@@ -390,7 +392,7 @@ export default function CylinderHeadSubmitPage(): React.JSX.Element {
 
             {!userId && (
               <div style={{ padding: 12, borderRadius: 8, background: "rgba(59,130,246,0.18)", border: "1px solid rgba(59,130,246,0.35)", color: "#93c5fd", fontSize: 12 }}>
-                Waiting for user session... {userId ? `(${userId})` : "(not loaded)"}
+                {t('common.loading')}
               </div>
             )}
 
@@ -408,7 +410,7 @@ export default function CylinderHeadSubmitPage(): React.JSX.Element {
                 opacity: loading ? 0.5 : 1,
               }}
             >
-              {loading ? "Submitting..." : "Submit for Approval"}
+              {loading ? t('common.loading') : t('heads.submitForApproval')}
             </button>
           </div>
         </form>

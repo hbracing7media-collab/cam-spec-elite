@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useTranslations } from 'next-intl';
 
 interface EngineSpec {
   displacement: number;
@@ -63,6 +64,7 @@ const INTENDED_USES = [
 ];
 
 export default function CamSpecEliteGenerativeCalculator() {
+  const t = useTranslations('generativeCalc');
   const [specs, setSpecs] = useState<EngineSpec>(DEFAULT_SPECS);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);

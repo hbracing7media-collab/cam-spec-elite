@@ -2,10 +2,12 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function Logout() {
   const router = useRouter();
+  const t = useTranslations();
 
   useEffect(() => {
     let finished = false;
@@ -29,7 +31,7 @@ export default function Logout() {
 
   return (
     <main style={{ padding: 20, textAlign: "center" }}>
-      <h1>Logging out...</h1>
+      <h1>{t("logout.message")}</h1>
     </main>
   );
 }

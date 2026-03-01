@@ -223,7 +223,7 @@ export default function ShopPage() {
         <div style={{ padding: 20, borderBottom: "1px solid rgba(100, 100, 120, 0.3)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h2 style={{ color: "#e2e8f0", fontSize: 20, fontWeight: 700, margin: 0 }}>
-              🛒 Cart ({cartCount})
+              🛒 {t('shop.cart')} ({cartCount})
             </h2>
             <button
               onClick={() => setCartOpen(false)}
@@ -243,7 +243,7 @@ export default function ShopPage() {
         <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
           {cart.length === 0 ? (
             <p style={{ color: "#64748b", textAlign: "center", marginTop: 40 }}>
-              Your cart is empty
+              {t('shop.emptyCart')}
             </p>
           ) : (
             cart.map(item => (
@@ -323,13 +323,13 @@ export default function ShopPage() {
         {cart.length > 0 && (
           <div style={{ padding: 20, borderTop: "1px solid rgba(100, 100, 120, 0.3)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ color: "#94a3b8", fontSize: 14 }}>Subtotal:</span>
+              <span style={{ color: "#94a3b8", fontSize: 14 }}>{t('shop.subtotal')}:</span>
               <span style={{ color: "#e2e8f0", fontSize: 14 }}>
                 ${cartTotal.toFixed(2)}
               </span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ color: "#94a3b8", fontSize: 14 }}>Shipping:</span>
+              <span style={{ color: "#94a3b8", fontSize: 14 }}>{t('shop.shipping')}:</span>
               <span style={{ color: "#e2e8f0", fontSize: 14 }}>
                 ${SHIPPING_COST.toFixed(2)}
               </span>
@@ -490,7 +490,7 @@ export default function ShopPage() {
           marginBottom: 20,
         }}
       >
-        ← Back to Home
+        ← {t('shop.backToHome')}
       </Link>
 
       {/* Layaway Banner */}
@@ -536,7 +536,7 @@ export default function ShopPage() {
             letterSpacing: "0.02em",
             textShadow: "0 0 20px rgba(0, 255, 136, 0.3)",
           }}>
-            ⚡ Performance Build Advisory
+            ⚡ {t('shop.consulting.title')}
           </h2>
           <p style={{
             color: "#e2e8f0",
@@ -544,7 +544,7 @@ export default function ShopPage() {
             margin: "0 0 20px 0",
             fontWeight: 500,
           }}>
-            No fluff — you&apos;ll instantly understand what you&apos;re paying for.
+            {t('shop.consulting.subtitle')}
           </p>
           
           {/* Service Tags */}
@@ -556,10 +556,10 @@ export default function ShopPage() {
             marginBottom: 24,
           }}>
             {[
-              "Engine Build Consulting",
-              "Race Engine Consulting", 
-              "Performance Parts Consulting",
-              "Build Strategy Consulting"
+              t('shop.consulting.engineBuild'),
+              t('shop.consulting.raceEngine'), 
+              t('shop.consulting.performanceParts'),
+              t('shop.consulting.buildStrategy')
             ].map((service) => (
               <span
                 key={service}
@@ -594,7 +594,7 @@ export default function ShopPage() {
               transition: "transform 0.2s, box-shadow 0.2s",
             }}
           >
-            Get Expert Advice →
+            {t('shop.consulting.getAdvice')}
           </Link>
         </div>
       </div>
@@ -617,11 +617,10 @@ export default function ShopPage() {
             margin: "0 0 12px 0",
             letterSpacing: "0.05em",
           }}>
-            Shop & Support
+            {t('shop.support.title')}
           </h1>
           <p style={{ color: "#94a3b8", fontSize: 16, margin: 0, maxWidth: 600, marginLeft: "auto", marginRight: "auto" }}>
-            Rep the HB Racing 7 crew and help keep the servers running. 
-            Every purchase supports development of new features.
+            {t('shop.support.subtitle')}
           </p>
         </div>
 
@@ -642,10 +641,10 @@ export default function ShopPage() {
           }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>💳</div>
             <h3 style={{ color: "#00f5ff", fontSize: 18, fontWeight: 700, margin: "0 0 8px 0" }}>
-              PayPal Donation
+              {t('shop.support.paypalDonation')}
             </h3>
             <p style={{ color: "#94a3b8", fontSize: 13, marginBottom: 16 }}>
-              One-time or recurring support via PayPal
+              {t('shop.support.paypalDesc')}
             </p>
             <a
               href="https://paypal.me/HBRacing7"
@@ -700,10 +699,10 @@ export default function ShopPage() {
               />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0ff", margin: "0 0 8px 0" }}>
-              Camshafts
+              {t('shop.parts.camshafts')}
             </h2>
             <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
-              Performance camshafts for street and race
+              {t('shop.parts.camshaftsDesc')}
             </p>
             <span style={{
               display: "inline-block",
@@ -714,7 +713,7 @@ export default function ShopPage() {
               fontWeight: 600,
               fontSize: 13,
             }}>
-              Shop Cams →
+              {t('shop.parts.shopCams')}
             </span>
           </Link>
 
@@ -741,10 +740,10 @@ export default function ShopPage() {
               />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#f0f", margin: "0 0 8px 0" }}>
-              Cylinder Heads
+              {t('shop.parts.cylinderHeads')}
             </h2>
             <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
-              AFR, Trick Flow - SBC, SBF, LS, BBC, Hemi
+              {t('shop.parts.cylinderHeadsDesc')}
             </p>
             <span style={{
               display: "inline-block",
@@ -755,7 +754,7 @@ export default function ShopPage() {
               fontWeight: 600,
               fontSize: 13,
             }}>
-              Shop Heads →
+              {t('shop.parts.shopHeads')}
             </span>
           </Link>
 
@@ -782,10 +781,10 @@ export default function ShopPage() {
               />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0f0", margin: "0 0 8px 0" }}>
-              All Performance Parts
+              {t('shop.parts.allParts')}
             </h2>
             <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
-              Browse entire catalog - dropship available
+              {t('shop.parts.allPartsDesc')}
             </p>
             <span style={{
               display: "inline-block",
@@ -796,7 +795,7 @@ export default function ShopPage() {
               fontWeight: 600,
               fontSize: 13,
             }}>
-              Browse All →
+              {t('shop.parts.browseAll')}
             </span>
           </Link>
 
@@ -823,10 +822,10 @@ export default function ShopPage() {
               />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ff6432", margin: "0 0 8px 0" }}>
-              Fuel Delivery
+              {t('shop.parts.fuelDelivery')}
             </h2>
             <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
-              Injectors, pumps, rails, regulators & E85 parts
+              {t('shop.parts.fuelDeliveryDesc')}
             </p>
             <span style={{
               display: "inline-block",
@@ -837,7 +836,7 @@ export default function ShopPage() {
               fontWeight: 600,
               fontSize: 13,
             }}>
-              Shop Fuel →
+              {t('shop.parts.shopFuel')}
             </span>
           </Link>
 
@@ -864,10 +863,10 @@ export default function ShopPage() {
               />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#9632ff", margin: "0 0 8px 0" }}>
-              Engine Management
+              {t('shop.parts.engineManagement')}
             </h2>
             <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
-              ECUs, wideband controllers, sensors & tuning
+              {t('shop.parts.engineManagementDesc')}
             </p>
             <span style={{
               display: "inline-block",
@@ -878,7 +877,7 @@ export default function ShopPage() {
               fontWeight: 600,
               fontSize: 13,
             }}>
-              Shop EMS →
+              {t('shop.parts.shopEMS')}
             </span>
           </Link>
 
@@ -898,10 +897,10 @@ export default function ShopPage() {
           >
             <div style={{ fontSize: 40, marginBottom: 8 }}>🏭</div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ffc800", margin: "0 0 8px 0" }}>
-              Machine Shop Services
+              {t('shop.parts.machineShop')}
             </h2>
             <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
-              Engine building, porting, balancing & more
+              {t('shop.parts.machineShopDesc')}
             </p>
             <span style={{
               display: "inline-block",
@@ -912,7 +911,7 @@ export default function ShopPage() {
               fontWeight: 600,
               fontSize: 13,
             }}>
-              View Services →
+              {t('shop.parts.viewServices')}
             </span>
           </Link>
 
@@ -932,10 +931,10 @@ export default function ShopPage() {
           >
             <div style={{ fontSize: 40, marginBottom: 8 }}>🔴</div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ff3264", margin: "0 0 8px 0" }}>
-              Pistons
+              {t('shop.parts.pistons')}
             </h2>
             <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
-              Forged, hypereutectic, racing pistons & rings
+              {t('shop.parts.pistonsDesc')}
             </p>
             <span style={{
               display: "inline-block",
@@ -946,7 +945,7 @@ export default function ShopPage() {
               fontWeight: 600,
               fontSize: 13,
             }}>
-              Shop Pistons →
+              {t('shop.parts.shopPistons')}
             </span>
           </Link>
 
@@ -966,10 +965,10 @@ export default function ShopPage() {
           >
             <div style={{ fontSize: 40, marginBottom: 8 }}>⚙️</div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#3296ff", margin: "0 0 8px 0" }}>
-              Rotating Assemblies
+              {t('shop.parts.rotatingAssemblies')}
             </h2>
             <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
-              Cranks, rods, bearings & bottom end kits
+              {t('shop.parts.rotatingAssembliesDesc')}
             </p>
             <span style={{
               display: "inline-block",
@@ -980,7 +979,7 @@ export default function ShopPage() {
               fontWeight: 600,
               fontSize: 13,
             }}>
-              Shop Bottom End →
+              {t('shop.parts.shopBottomEnd')}
             </span>
           </Link>
 
@@ -1000,10 +999,10 @@ export default function ShopPage() {
           >
             <div style={{ fontSize: 40, marginBottom: 8 }}>🛞</div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#e0e0e0", margin: "0 0 8px 0" }}>
-              Wheels & Tires
+              {t('shop.parts.wheelsTires')}
             </h2>
             <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
-              Drag radials, slicks, skinnies & racing wheels
+              {t('shop.parts.wheelsTiresDesc')}
             </p>
             <span style={{
               display: "inline-block",
@@ -1014,7 +1013,7 @@ export default function ShopPage() {
               fontWeight: 600,
               fontSize: 13,
             }}>
-              Shop Wheels →
+              {t('shop.parts.shopWheels')}
             </span>
           </Link>
         </div>
@@ -1030,7 +1029,7 @@ export default function ShopPage() {
             alignItems: "center",
             gap: 12,
           }}>
-            <span>🛒</span> Merch
+            <span>🛒</span> {t('shop.merch.title')}
           </h2>
 
           {/* Category Filter */}
@@ -1050,10 +1049,9 @@ export default function ShopPage() {
                   border: `1px solid ${selectedCategory === cat ? "rgba(0, 245, 255, 0.4)" : "rgba(100, 100, 120, 0.3)"}`,
                   borderRadius: 6,
                   cursor: "pointer",
-                  textTransform: "capitalize",
                 }}
               >
-                {cat}
+                {t(`shop.${cat}`)}
               </button>
             ))}
           </div>
@@ -1172,7 +1170,7 @@ export default function ShopPage() {
                       }}
                       onClick={() => addToCart(item)}
                     >
-                      Add to Cart
+                      {t('shop.addToCart')}
                     </button>
                   ) : (
                     <button
@@ -1196,7 +1194,7 @@ export default function ShopPage() {
                 {item.isRealImage && item.sizes && (
                   <div style={{ marginTop: 12 }}>
                     <label style={{ color: "#94a3b8", fontSize: 11, display: "block", marginBottom: 6 }}>
-                      Select Size:
+                      {t('shop.selectSize')}:
                     </label>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                       {item.sizes.map(size => (
@@ -1235,8 +1233,7 @@ export default function ShopPage() {
           marginTop: 40,
         }}>
           <p style={{ color: "#64748b", fontSize: 13, margin: 0 }}>
-            Questions about orders or want to suggest new merch? Hit us up on the{" "}
-            <a href="/forum" style={{ color: "#00f5ff", textDecoration: "none" }}>forum</a>!
+            {t('shop.merch.questionsHint')}
           </p>
         </div>
 
@@ -1258,7 +1255,7 @@ export default function ShopPage() {
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
           }}>
-            💰 How Layaway Works
+            💰 {t('shop.layaway.howItWorks')}
           </h2>
           
           <div style={{
@@ -1269,33 +1266,33 @@ export default function ShopPage() {
           }}>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>🛒</div>
-              <h3 style={{ color: "#00f5ff", fontSize: 16, fontWeight: 600, marginBottom: 6 }}>1. Add to Cart</h3>
+              <h3 style={{ color: "#00f5ff", fontSize: 16, fontWeight: 600, marginBottom: 6 }}>1. {t('shop.layaway.step1Title')}</h3>
               <p style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.5 }}>
-                Shop like normal and add items to your cart.
+                {t('shop.layaway.step1Desc')}
               </p>
             </div>
             
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>📋</div>
-              <h3 style={{ color: "#00f5ff", fontSize: 16, fontWeight: 600, marginBottom: 6 }}>2. Choose Layaway</h3>
+              <h3 style={{ color: "#00f5ff", fontSize: 16, fontWeight: 600, marginBottom: 6 }}>2. {t('shop.layaway.step2Title')}</h3>
               <p style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.5 }}>
-                At checkout, select Weekly, Bi-Weekly, or Monthly payments.
+                {t('shop.layaway.step2Desc')}
               </p>
             </div>
             
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>💳</div>
-              <h3 style={{ color: "#00f5ff", fontSize: 16, fontWeight: 600, marginBottom: 6 }}>3. Make Payments</h3>
+              <h3 style={{ color: "#00f5ff", fontSize: 16, fontWeight: 600, marginBottom: 6 }}>3. {t('shop.layaway.step3Title')}</h3>
               <p style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.5 }}>
-                Pay on your schedule from your profile. <span style={{ color: "#22c55e", fontWeight: 600 }}>0% Interest!</span>
+                {t('shop.layaway.step3Desc')}
               </p>
             </div>
             
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>📦</div>
-              <h3 style={{ color: "#00f5ff", fontSize: 16, fontWeight: 600, marginBottom: 6 }}>4. We Ship!</h3>
+              <h3 style={{ color: "#00f5ff", fontSize: 16, fontWeight: 600, marginBottom: 6 }}>4. {t('shop.layaway.step4Title')}</h3>
               <p style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.5 }}>
-                Once paid off, your order ships! No credit check required.
+                {t('shop.layaway.step4Desc')}
               </p>
             </div>
           </div>
@@ -1306,7 +1303,7 @@ export default function ShopPage() {
             borderTop: "1px solid rgba(100, 100, 120, 0.2)",
           }}>
             <p style={{ color: "#e2e8f0", fontSize: 14, marginBottom: 12 }}>
-              Already have a layaway plan? Manage your payments from your profile.
+              {t('shop.layaway.manageHint')}
             </p>
             <Link
               href="/profile"
@@ -1323,7 +1320,7 @@ export default function ShopPage() {
                 transition: "all 0.2s ease",
               }}
             >
-              Go to Profile →
+              {t('shop.layaway.goToProfile')}
             </Link>
           </div>
         </div>

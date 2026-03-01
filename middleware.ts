@@ -1,13 +1,24 @@
 ﻿import { NextResponse, type NextRequest } from "next/server";
 
-// Only these specific routes require authentication
+// Routes that require authentication
+// - profile: user profile pages
+// - admin: admin dashboards
+// - forum: all forum pages (viewing and posting)
+// - cams/new, cams/submit: creating new cams requires login (browsing is public)
+// - cylinder-heads/submit: submitting heads requires login (browsing is public)
+// - dyno-wars/submit: submitting dyno results
+// - shop/checkout: checking out requires login (browsing shop is public)
+// - shop/layaway: layaway management requires login
 const PROTECTED_ROUTES = [
   "/profile",
   "/admin",
-  "/forum/new",
+  "/forum",
   "/cams/new",
+  "/cams/submit",
   "/cylinder-heads/submit",
   "/dyno-wars/submit",
+  "/shop/checkout",
+  "/shop/layaway",
 ];
 
 export async function middleware(req: NextRequest) {

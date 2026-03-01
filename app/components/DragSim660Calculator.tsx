@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const gradientBg = 'radial-gradient(circle at top left, #ff6bd5 0%, #1b1b3a 35%, #02151f 100%)';
 
@@ -126,10 +127,11 @@ function calcPass(hp: number, weight: number): Omit<Results, 'reaction' | 'car'>
 }
 
 export default function DragSim660Calculator() {
+  const t = useTranslations('dragSim');
   const [carName, setCarName] = useState('');
   const [horsepower, setHorsepower] = useState('');
   const [raceWeight, setRaceWeight] = useState('');
-  const [treeStatus, setTreeStatus] = useState('Press “Start Tree” to stage.');
+  const [treeStatus, setTreeStatus] = useState('');
   const [bulbs, setBulbs] = useState<{ amber1: BulbState; amber2: BulbState; amber3: BulbState; green: BulbState; red: BulbState}>(
     { amber1: 'idle', amber2: 'idle', amber3: 'idle', green: 'idle', red: 'idle' }
   );
@@ -180,7 +182,7 @@ export default function DragSim660Calculator() {
 
     resetBulbs();
     setResults(null);
-    setTreeStatus('Pre-staged…');
+    setTreeStatus(t('preStaged'));
     setStartDisabled(true);
     setLaunchDisabled(false);
     setTreeRunning(true);
@@ -188,13 +190,13 @@ export default function DragSim660Calculator() {
 
     schedule(() => {
       if (!treeRunningRef.current) return;
-      setTreeStatus('Staged. Watch the tree…');
+      setTreeStatus(t('staged'));
 
       schedule(() => {
         if (!treeRunningRef.current) return;
         resetBulbs();
         setBulbs((prev) => ({ ...prev, amber1: 'amber' }));
-        setTreeStatus('Amber…');
+        setTreeStatus(t('amber'));
 
         schedule(() => {
           if (!treeRunningRef.current) return;
@@ -210,7 +212,7 @@ export default function DragSim660Calculator() {
               if (!treeRunningRef.current) return;
               resetBulbs();
               setBulbs((prev) => ({ ...prev, green: 'green' }));
-              setTreeStatus('GREEN! Hit LAUNCH!');
+              setTreeStatus(t('greenHitLaunch'));
               setGreenTime(Date.now());
             }, 500);
           }, 500);
@@ -227,12 +229,12 @@ export default function DragSim660Calculator() {
 
     if (greenTime === null) {
       reaction = -0.1;
-      setTreeStatus('RED LIGHT! You left before green.');
+      setTreeStatus(t('redLight'));
       resetBulbs();
       setBulbs((prev) => ({ ...prev, red: 'red' }));
     } else {
       reaction = (now - greenTime) / 1000;
-      setTreeStatus('Pass complete. Check your times below.');
+      setTreeStatus(t('passComplete'));
     }
 
     setTreeRunning(false);
@@ -244,9 +246,9 @@ export default function DragSim660Calculator() {
     if (!numbers) return;
 
     const base = calcPass(numbers.hp, numbers.weight);
-    const reactionText = reaction < 0 ? '-0.100 sec (RED)' : `${reaction.toFixed(3)} sec`;
+    const reactionText = reaction < 0 ? t('redLightTime') : `${reaction.toFixed(3)} sec`;
     setResults({
-      car: carName.trim() || 'Unnamed combo',
+      car: carName.trim() || t('unnamedCombo'),
       reaction: reactionText,
       sixty: base.sixty,
       eighth: base.eighth,
@@ -262,20 +264,20 @@ export default function DragSim660Calculator() {
   return (
     <div style={responsiveContainer}>
       <h1 style={{ textAlign: 'center', marginBottom: 6, fontSize: '1.8rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#7ffcff', textShadow: '0 0 8px rgba(127,252,255,0.7)' }}>
-        HB Racing Drag Simulator
+        {t('title')}
       </h1>
       <div style={{ textAlign: 'center', fontSize: '0.95rem', color: '#d8d8ff', marginBottom: 18 }}>
-        Enter HP and race weight, hit the tree, and see your reaction time plus estimated ETs.
+        {t('subtitle')}
       </div>
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
         <div style={{ flex: '1 1 160px' }}>
-          <label style={labelStyle} htmlFor="hb-car-name">Car / Combo Name (optional)</label>
+          <label style={labelStyle} htmlFor="hb-car-name">{t('carComboName')}</label>
           <input
             id="hb-car-name"
             style={inputStyle}
             type="text"
-            placeholder="’69 Ford LTD, Turbo 351W, etc."
+            placeholder={t('placeholderCarName')}
             value={carName}
             onChange={(e) => setCarName(e.target.value)}
           />
@@ -284,23 +286,23 @@ export default function DragSim660Calculator() {
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
         <div style={{ flex: '1 1 160px' }}>
-          <label style={labelStyle} htmlFor="hb-hp">Horsepower (HP)</label>
+          <label style={labelStyle} htmlFor="hb-hp">{t('horsepowerHp')}</label>
           <input
             id="hb-hp"
             style={inputStyle}
             type="number"
-            placeholder="e.g. 600"
+            placeholder={t('placeholderHp')}
             value={horsepower}
             onChange={(e) => setHorsepower(e.target.value)}
           />
         </div>
         <div style={{ flex: '1 1 160px' }}>
-          <label style={labelStyle} htmlFor="hb-weight">Race Weight (lbs)</label>
+          <label style={labelStyle} htmlFor="hb-weight">{t('vehicleWeightLbs')}</label>
           <input
             id="hb-weight"
             style={inputStyle}
             type="number"
-            placeholder="e.g. 3800"
+            placeholder={t('placeholderWeight')}
             value={raceWeight}
             onChange={(e) => setRaceWeight(e.target.value)}
           />
@@ -314,7 +316,7 @@ export default function DragSim660Calculator() {
           onClick={handleStartTree}
           disabled={startDisabled}
         >
-          Start Tree
+          {t('startTree')}
         </button>
         <button
           type="button"
@@ -322,12 +324,12 @@ export default function DragSim660Calculator() {
           onClick={handleLaunch}
           disabled={launchDisabled}
         >
-          Launch!
+          {t('launch')}
         </button>
       </div>
 
       <div style={{ marginTop: 18, padding: 12, background: 'rgba(3,7,15,0.9)', borderRadius: 14, textAlign: 'center', border: '1px solid rgba(127,252,255,0.25)' }}>
-        <div style={{ marginBottom: 10, fontSize: '0.95rem' }}>{treeStatus}</div>
+        <div style={{ marginBottom: 10, fontSize: '0.95rem' }}>{treeStatus || t('pressStartTree')}</div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 4 }}>
           {(['amber1', 'amber2', 'amber3', 'green', 'red'] as const).map((key) => (
             <div key={key} style={{ ...bulbBaseStyle, ...bulbStyle(bulbs[key]) }} />
@@ -337,15 +339,15 @@ export default function DragSim660Calculator() {
 
       {results && (
         <div style={{ marginTop: 20, padding: 14, background: 'rgba(3,7,15,0.95)', borderRadius: 14, border: '1px solid rgba(255,154,255,0.3)' }}>
-          <h2 style={{ marginTop: 0, fontSize: '1.1rem', marginBottom: 8, color: '#ffb6ff' }}>Pass Results</h2>
-          {[['Car / Combo', results.car], ['Reaction Time (RT)', results.reaction], ['60 Foot', results.sixty], ['1/8 Mile', results.eighth], ['1/4 Mile', results.quarter]].map(([label, value]) => (
+          <h2 style={{ marginTop: 0, fontSize: '1.1rem', marginBottom: 8, color: '#ffb6ff' }}>{t('passResults')}</h2>
+          {[[t('carCombo'), results.car], [t('reactionTime'), results.reaction], [t('sixtyFoot'), results.sixty], [t('eighthMile'), results.eighth], [t('quarterMile'), results.quarter]].map(([label, value]) => (
             <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #222a', fontSize: '0.95rem' }}>
               <span>{label}:</span>
               <span>{value}</span>
             </div>
           ))}
           <div style={{ fontSize: '0.8rem', color: '#b0b0ff', marginTop: 8 }}>
-            ETs are estimates based on HP/weight formulas and typical drag car ratios. Real track surface, gearing, and traction will change actual numbers.
+            {t('disclaimer')}
           </div>
         </div>
       )}

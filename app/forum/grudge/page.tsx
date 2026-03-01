@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import DragSimulator, { TimeSlip } from "@/components/DragSimulator";
 import RollRaceSimulator, { RollTimeSlip } from "@/components/RollRaceSimulator";
 
@@ -51,6 +52,7 @@ interface User {
 function GrudgeMatchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations();
   const matchId = searchParams.get("match");
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);

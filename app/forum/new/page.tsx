@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { getSupabaseInstance } from "@/lib/supabaseSingleton";
 
@@ -14,6 +15,7 @@ function getSupabaseSafe(): SupabaseClient | null {
 }
 
 export default function NewThreadPage() {
+  const t = useTranslations();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
@@ -51,15 +53,15 @@ export default function NewThreadPage() {
       return;
     }
     if (!title.trim()) {
-      setMsg("Title is required.");
+      setMsg(t("forum.titleRequired"));
       return;
     }
     if (!body.trim()) {
-      setMsg("Body is required.");
+      setMsg(t("forum.bodyRequired"));
       return;
     }
     if (!userId) {
-      setMsg("You must be logged in.");
+      setMsg(t("forum.mustBeLoggedIn"));
       return;
     }
 
@@ -95,30 +97,30 @@ export default function NewThreadPage() {
   return (
     <div className="card">
       <div className="card-inner">
-        <h1 className="h1">New Thread</h1>
-        <p className="small">Create a discussion thread. Image attachments come next.</p>
+        <h1 className="h1">{t("forum.newThread")}</h1>
+        <p className="small">{t("forum.createThreadDescription")}</p>
 
         <hr className="hr" />
 
         {loading ? (
           <div className="card" style={{ background: "rgba(2,6,23,0.55)" }}>
             <div className="card-inner">
-              <p className="small">Loading...</p>
+              <p className="small">{t("common.loading")}</p>
             </div>
           </div>
         ) : !userId ? (
           <div className="card" style={{ background: "rgba(2,6,23,0.55)" }}>
             <div className="card-inner">
-              <p className="small">You must be logged in to create a thread.</p>
+              <p className="small">{t("forum.mustBeLoggedIn")}</p>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
-                <Link className="pill" href="/forum">Back to Forum</Link>
-                <Link className="pill" href="/auth/login">Login</Link>
+                <Link className="pill" href="/forum">{t("nav.forum")}</Link>
+                <Link className="pill" href="/auth/login">{t("nav.login")}</Link>
               </div>
             </div>
           </div>
         ) : (
           <>
-            <label className="label">Title</label>
+            <label className="label">{t("forum.threadTitle")}</label>
             <input
               className="input"
               value={title}
@@ -127,7 +129,7 @@ export default function NewThreadPage() {
             />
 
             <label className="label" style={{ marginTop: 10 }}>
-              Body
+              {t("forum.threadBody")}
             </label>
             <textarea
               className="textarea"
@@ -138,9 +140,9 @@ export default function NewThreadPage() {
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
               <button className="btn" disabled={busy} onClick={createThread}>
-                {busy ? "Creating..." : "Create Thread"}
+                {busy ? t("forum.creating") : t("forum.createThread")}
               </button>
-              <Link className="pill" href="/forum">Cancel</Link>
+              <Link className="pill" href="/forum">{t("common.cancel")}</Link>
             </div>
 
             {msg ? <p className="small" style={{ marginTop: 12 }}>{msg}</p> : null}

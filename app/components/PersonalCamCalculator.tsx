@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface ShortBlock {
   id: string;
@@ -73,6 +74,7 @@ interface Props {
 }
 
 export default function PersonalCamCalculator({ shortBlocks = [] }: Props) {
+  const t = useTranslations('selectiveCalc');
 
   // HP display state at top level
   const [hpDisplay, setHpDisplay] = useState<string>('-');

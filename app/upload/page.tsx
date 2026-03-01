@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export default function UploadHubPage() {
+  const t = useTranslations();
   return (
     <main style={{ padding: 18, maxWidth: 980, margin: "0 auto", color: "#e2e8f0" }}>
       <div
@@ -16,16 +18,16 @@ export default function UploadHubPage() {
         }}
       >
         <h1 style={{ margin: 0, letterSpacing: "0.12em", textTransform: "uppercase", fontSize: 16, color: "#7dd3fc" }}>
-          Uploads
+          {t("upload.title")}
         </h1>
 
         <p style={{ marginTop: 8, marginBottom: 14, color: "rgba(226,232,240,0.9)", fontSize: 12 }}>
-          Use “Submit Cam” to enter specs + upload cam card and dyno sheets (admin approval required).
+          {t("upload.description")}
         </p>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <BigBtn href="/api/admin/storage/pending">Admin Pending (JSON)</BigBtn>
-          <BigBtn href="/forum">Back to Forum</BigBtn>
+          <BigBtn href="/api/admin/storage/pending">{t("upload.adminPending")}</BigBtn>
+          <BigBtn href="/forum">{t("nav.forum")}</BigBtn>
         </div>
       </div>
     </main>

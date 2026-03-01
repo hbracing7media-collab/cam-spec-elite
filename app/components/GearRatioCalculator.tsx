@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from "react";
+import { useTranslations } from 'next-intl';
 
 type Units = "imperial" | "metric";
 type Mode = "speedAtRpm" | "rpmAtSpeed";
@@ -30,6 +31,7 @@ function rpmFromMph(mph: number, tireDiaIn: number, gear: number, axle: number) 
 }
 
 export default function GearRatioCalculator() {
+  const t = useTranslations('gearCalc');
   const [units, setUnits] = useState<Units>("imperial");
   const [mode, setMode] = useState<Mode>("speedAtRpm");
   const [axleRatio, setAxleRatio] = useState<string>("3.73");
@@ -83,7 +85,7 @@ export default function GearRatioCalculator() {
     const { axle, tireIn, rpm, mph, gearNums } = parsed;
 
     return gearNums.map((gr, idx) => {
-      const gearLabel = `Gear ${idx + 1}`;
+      const gearLabel = `${t('gear')} ${idx + 1}`;
       const speedMph = mphFromRpm(rpm, tireIn, gr, axle);
       const speedKph = speedMph * 1.609344;
       const rpmAtMph = rpmFromMph(mph, tireIn, gr, axle);
@@ -96,66 +98,66 @@ export default function GearRatioCalculator() {
     const out: string[] = [];
     const { axle, tireIn, rpm, mph, gearNums } = parsed;
 
-    if (!(axle > 0)) out.push("Axle ratio must be > 0.");
-    if (!(tireIn > 0)) out.push("Tire diameter must be > 0.");
-    if (mode === "speedAtRpm" && !(rpm > 0)) out.push("Target RPM must be > 0.");
-    if (mode === "rpmAtSpeed" && !(mph >= 0)) out.push("Target speed must be 0 or higher.");
+    if (!(axle > 0)) out.push(t('errorAxle'));
+    if (!(tireIn > 0)) out.push(t('errorTire'));
+    if (mode === "speedAtRpm" && !(rpm > 0)) out.push(t('errorRpm'));
+    if (mode === "rpmAtSpeed" && !(mph >= 0)) out.push(t('errorSpeed'));
 
     gearNums.forEach((g, i) => {
-      if (!(g > 0)) out.push(`Gear ${i + 1} ratio must be > 0.`);
+      if (!(g > 0)) out.push(t('errorGear', { gear: i + 1 }));
     });
 
     return out;
-  }, [parsed, mode]);
+  }, [parsed, mode, t]);
 
   return (
     <div className="wrap">
       <div className="card">
         <div className="head">
           <div className="badge">HB Racing 7</div>
-          <div className="title">10-Speed Transmission Ratio / RPM Calculator</div>
-          <div className="sub">Enter axle ratio, tire diameter, and up to 10 gear ratios. Then calculate road speed at RPM or RPM at road speed.</div>
+          <div className="title">{t('title')}</div>
+          <div className="sub">{t('subtitle')}</div>
         </div>
 
         <div className="toprow">
           <div className="field">
-            <label className="label">Units</label>
+            <label className="label">{t('units')}</label>
             <div className="toggle">
               <button type="button" className={`tbtn ${units === "imperial" ? "on" : ""}`} onClick={toImperial}>
-                Imperial (MPH / Inches)
+                {t('imperial')}
               </button>
               <button type="button" className={`tbtn ${units === "metric" ? "on" : ""}`} onClick={toMetric}>
-                Metric (km/h / mm)
+                {t('metric')}
               </button>
             </div>
           </div>
 
           <div className="field">
-            <label className="label">Mode</label>
+            <label className="label">{t('mode')}</label>
             <div className="toggle">
               <button type="button" className={`tbtn ${mode === "speedAtRpm" ? "on" : ""}`} onClick={() => setMode("speedAtRpm")}>
-                Speed at RPM
+                {t('rpmToSpeed')}
               </button>
               <button type="button" className={`tbtn ${mode === "rpmAtSpeed" ? "on" : ""}`} onClick={() => setMode("rpmAtSpeed")}>
-                RPM at Speed
+                {t('speedToRpm')}
               </button>
             </div>
           </div>
 
           <div className="field">
-            <label className="label">Axle (Final Drive) Ratio</label>
-            <input className="input" type="number" step="0.01" inputMode="decimal" value={axleRatio} onChange={(e) => setAxleRatio(e.target.value)} placeholder="e.g. 3.73" />
+            <label className="label">{t('axleRatio')}</label>
+            <input className="input" type="number" step="0.01" inputMode="decimal" value={axleRatio} onChange={(e) => setAxleRatio(e.target.value)} placeholder={t('placeholderAxle')} />
           </div>
 
           {units === "imperial" ? (
             <div className="field">
-              <label className="label">Tire Diameter (in)</label>
-              <input className="input" type="number" step="0.01" inputMode="decimal" value={tireDiaIn} onChange={(e) => setTireDiaIn(e.target.value)} placeholder="e.g. 28" />
+              <label className="label">{t('tireDiameter')} ({t('inches')})</label>
+              <input className="input" type="number" step="0.01" inputMode="decimal" value={tireDiaIn} onChange={(e) => setTireDiaIn(e.target.value)} placeholder={t('placeholderTireIn')} />
             </div>
           ) : (
             <div className="field">
-              <label className="label">Tire Diameter (mm)</label>
-              <input className="input" type="number" step="1" inputMode="numeric" value={tireDiaMm} onChange={(e) => setTireDiaMm(e.target.value)} placeholder="e.g. 711" />
+              <label className="label">{t('tireDiameter')} ({t('mm')})</label>
+              <input className="input" type="number" step="1" inputMode="numeric" value={tireDiaMm} onChange={(e) => setTireDiaMm(e.target.value)} placeholder={t('placeholderTireMm')} />
             </div>
           )}
         </div>
@@ -163,22 +165,22 @@ export default function GearRatioCalculator() {
         <div className="grid">
           {mode === "speedAtRpm" ? (
             <div className="field">
-              <label className="label">Target Engine RPM</label>
-              <input className="input" type="number" step="1" inputMode="numeric" value={targetRpm} onChange={(e) => setTargetRpm(e.target.value)} placeholder="e.g. 2000" />
+              <label className="label">{t('targetRpm')}</label>
+              <input className="input" type="number" step="1" inputMode="numeric" value={targetRpm} onChange={(e) => setTargetRpm(e.target.value)} placeholder={t('placeholderRpm')} />
             </div>
           ) : (
             <div className="field">
-              <label className="label">Target Road Speed ({units === "imperial" ? "MPH" : "km/h"})</label>
+              <label className="label">{t('targetSpeed')} ({units === "imperial" ? t('mph') : t('kmh')})</label>
               {units === "imperial" ? (
-                <input className="input" type="number" step="0.1" inputMode="decimal" value={targetSpeedMph} onChange={(e) => setTargetSpeedMph(e.target.value)} placeholder="e.g. 60" />
+                <input className="input" type="number" step="0.1" inputMode="decimal" value={targetSpeedMph} onChange={(e) => setTargetSpeedMph(e.target.value)} placeholder={t('placeholderSpeedMph')} />
               ) : (
-                <input className="input" type="number" step="0.1" inputMode="decimal" value={targetSpeedKph} onChange={(e) => setTargetSpeedKph(e.target.value)} placeholder="e.g. 96.6" />
+                <input className="input" type="number" step="0.1" inputMode="decimal" value={targetSpeedKph} onChange={(e) => setTargetSpeedKph(e.target.value)} placeholder={t('placeholderSpeedKph')} />
               )}
             </div>
           )}
 
           <div className="field" style={{ gridColumn: "1 / -1" }}>
-            <label className="label">Gear Ratios (10-speed)</label>
+            <label className="label">{t('gearRatios')}</label>
             <div className="gearGrid">
               {gears.map((g, i) => (
                 <div key={i} className="gearBox">
@@ -198,7 +200,7 @@ export default function GearRatioCalculator() {
                 </div>
               ))}
             </div>
-            <div className="hint">Tip: put your transmission ratios in order (1st → 10th). You can overwrite any gear.</div>
+            <div className="hint">{t('gearTip')}</div>
           </div>
         </div>
 
@@ -209,16 +211,16 @@ export default function GearRatioCalculator() {
             ))}
           </div>
         ) : (
-          <div className="status ok">Live results below. (Math updates instantly)</div>
+          <div className="status ok">{t('liveResults')}</div>
         )}
 
         <div className="results">
           <div className="resultsHead">
-            <div className="resultsTitle">Results</div>
+            <div className="resultsTitle">{t('results')}</div>
             <div className="resultsNote">
               {mode === "speedAtRpm"
-                ? `Speed at ${targetRpm || "—"} RPM`
-                : `RPM at ${units === "imperial" ? (targetSpeedMph || "—") + " MPH" : (targetSpeedKph || "—") + " km/h"}`}
+                ? `${t('speedAt')} ${targetRpm || "—"} ${t('rpmLabel')}`
+                : `${t('rpmAt')} ${units === "imperial" ? (targetSpeedMph || "—") + " " + t('mph') : (targetSpeedKph || "—") + " " + t('kmh')}`}
             </div>
           </div>
 
@@ -226,17 +228,17 @@ export default function GearRatioCalculator() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Gear</th>
-                  <th>Gear Ratio</th>
+                  <th>{t('gear')}</th>
+                  <th>{t('gearRatio')}</th>
                   {mode === "speedAtRpm" ? (
                     <>
-                      <th>Speed (MPH)</th>
-                      <th>Speed (km/h)</th>
+                      <th>{t('speedMph')}</th>
+                      <th>{t('speedKmh')}</th>
                     </>
                   ) : (
                     <>
-                      <th>RPM @ Speed</th>
-                      <th>Wheel RPM (est)</th>
+                      <th>{t('rpmAtSpeed')}</th>
+                      <th>{t('wheelRpm')}</th>
                     </>
                   )}
                 </tr>
@@ -274,7 +276,7 @@ export default function GearRatioCalculator() {
           </div>
 
           <div className="foot">
-            Formulas: <b>MPH = RPM × TireDia(in) ÷ (Gear × Axle × 336)</b> and <b>RPM = MPH × Gear × Axle × 336 ÷ TireDia(in)</b>.
+            {t('formula')}
           </div>
         </div>
       </div>

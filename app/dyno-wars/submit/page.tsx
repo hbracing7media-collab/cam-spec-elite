@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { CAM_MAKE_OPTIONS, CAM_ENGINE_FAMILIES, CamMakeKey } from "@/lib/engineOptions";
 import { SearchableDropdown } from "@/components/SearchableDropdown";
 
 export default function DynoSubmitPage() {
   const router = useRouter();
+  const t = useTranslations();
   const [checking, setChecking] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submissionMsg, setSubmissionMsg] = useState<string | null>(null);
@@ -235,7 +237,7 @@ export default function DynoSubmitPage() {
   if (checking) {
     return (
       <main style={{ padding: 40, textAlign: "center" }}>
-        <h1>Loading...</h1>
+        <h1>{t("common.loading")}</h1>
       </main>
     );
   }
@@ -268,7 +270,7 @@ export default function DynoSubmitPage() {
               textTransform: "uppercase",
             }}
           >
-            ⚡ Submit Your Dyno
+            ⚡ {t("dynoWars.submit.title")}
           </h1>
           <p
             style={{
@@ -277,7 +279,7 @@ export default function DynoSubmitPage() {
               margin: 0,
             }}
           >
-            Share your performance data and compete on the leaderboard
+            {t("dynoWars.submit.description")}
           </p>
         </div>
 

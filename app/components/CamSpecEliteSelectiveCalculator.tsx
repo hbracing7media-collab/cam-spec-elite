@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import type { CamMakeKey, HeadMakeKey } from '../../lib/engineOptions';
 
 interface ShortBlock {
@@ -413,6 +414,7 @@ const TUNE_DEFAULT = {
 };
 
 export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { shortBlocks?: ShortBlock[] } = {}) {
+  const t = useTranslations('selectiveCalc');
 
   const [engine, setEngine] = useState<EngineState>(ENGINE_DEFAULT);
   const [selectedShortBlockId, setSelectedShortBlockId] = useState<string>('');
@@ -1203,6 +1205,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
 
     const points: CurvePoint[] = [];
 
+    // Generate curve points at regular intervals
     for (let r = startRpm; r <= endRpm; r += rpmStep) {
       if (hpPeak <= 0 || r <= 0) {
         points.push({ rpm: r, hp: 0, tq: 0, dynCR, effCR });
@@ -1224,6 +1227,26 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
       const hp = hpPeak * shape;
       const tq = (hp * 5252) / r;
 
+      points.push({ rpm: r, hp, tq, dynCR, effCR });
+    }
+
+    // Ensure the exact endpoint is included if it wasn't hit by the step interval
+    const lastPoint = points[points.length - 1];
+    if (lastPoint && lastPoint.rpm < endRpm) {
+      const r = endRpm;
+      let shape;
+      if (r <= hpRpm) {
+        const tRaw = (r - startRpm) / upSpan;
+        const t = Math.max(0, Math.min(1, tRaw));
+        shape = 0.2 + 0.8 * Math.pow(t, 1.6);
+      } else {
+        const tRaw = (r - hpRpm) / downSpan;
+        const t = Math.max(0, Math.min(1, tRaw));
+        shape = 1.0 - 0.95 * Math.pow(t, 1.4);
+        if (shape < 0.05) shape = 0.05;
+      }
+      const hp = hpPeak * shape;
+      const tq = (hp * 5252) / r;
       points.push({ rpm: r, hp, tq, dynCR, effCR });
     }
 
@@ -1324,30 +1347,30 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
     <div style={{ maxWidth: '980px', margin: '0 auto', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#f5f5f5' }}>
       <section style={{ borderRadius: '18px', padding: '18px', background: 'radial-gradient(circle at top left, #ff2bd6 0%, #00d4ff 35%, #050816 75%, #020617 100%)', boxShadow: '0 16px 40px rgba(0,0,0,0.7)', border: '1px solid rgba(0,212,255,0.45)' }}>
         <p style={{ fontSize: '11px', color: '#c7d2fe', textAlign: 'center', margin: '0 0 12px 0' }}>
-          Step 1: Geometry • Step 2: Catalog • Step 3: Cam Spec • Step 4: Intake/Fuel/Boost → Dyno curve. Estimations only; real-world dyno wins.
+          {t('stepsDescription')}
         </p>
 
         {/* STEP TABS */}
         <div style={{ display: 'flex', gap: '4px', marginBottom: '12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', justifyContent: 'center' }}>
-          <div style={{ padding: '4px 10px', borderRadius: '999px', background: 'rgba(255,43,214,0.18)', border: '1px solid rgba(255,43,214,0.75)', color: '#ffd6f5' }}>1 • Engine</div>
-          <div style={{ padding: '4px 10px', borderRadius: '999px', background: 'rgba(0,212,255,0.10)', border: '1px solid rgba(0,212,255,0.35)', color: '#c7f7ff' }}>2 • Catalog</div>
-          <div style={{ padding: '4px 10px', borderRadius: '999px', background: 'rgba(124,255,203,0.10)', border: '1px solid rgba(124,255,203,0.35)', color: '#d7fff0' }}>3 • Cam Spec</div>
-          <div style={{ padding: '4px 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.25)', color: '#e5e7eb' }}>4 • Tune</div>
+          <div style={{ padding: '4px 10px', borderRadius: '999px', background: 'rgba(255,43,214,0.18)', border: '1px solid rgba(255,43,214,0.75)', color: '#ffd6f5' }}>1 • {t('step1Engine')}</div>
+          <div style={{ padding: '4px 10px', borderRadius: '999px', background: 'rgba(0,212,255,0.10)', border: '1px solid rgba(0,212,255,0.35)', color: '#c7f7ff' }}>2 • {t('step2Catalog')}</div>
+          <div style={{ padding: '4px 10px', borderRadius: '999px', background: 'rgba(124,255,203,0.10)', border: '1px solid rgba(124,255,203,0.35)', color: '#d7fff0' }}>3 • {t('step3CamSpec')}</div>
+          <div style={{ padding: '4px 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.25)', color: '#e5e7eb' }}>4 • {t('step4Tune')}</div>
 
         <div style={{ marginTop: '8px', marginBottom: '10px', padding: '8px 10px', borderRadius: '12px', background: 'rgba(6,11,30,0.78)', border: '1px solid rgba(0,212,255,0.22)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-            <strong style={{ fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#c7f7ff' }}>Rocker Ratio Adjustment</strong>
+            <strong style={{ fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#c7f7ff' }}>{t('rockerRatioAdjustment')}</strong>
             <button
               type="button"
               onClick={syncUserRockerToCatalog}
               style={{ fontSize: '10px', padding: '4px 8px', borderRadius: '999px', border: '1px solid rgba(0,212,255,0.35)', background: 'transparent', color: '#c7f7ff', cursor: 'pointer' }}
             >
-              Match Catalog
+              {t('matchCatalog')}
             </button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '8px', fontSize: '12px' }}>
             <div>
-              <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>Catalog / Published Ratio</label>
+              <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>{t('catalogPublishedRatio')}</label>
               <input
                 type="number"
                 value={catalogRockerInput}
@@ -1365,7 +1388,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
             </div>
 
             <div>
-              <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>Your Rocker Ratio</label>
+              <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>{t('yourRockerRatio')}</label>
               <input
                 type="number"
                 value={userRockerInput}
@@ -1399,10 +1422,10 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flex: 1 }}>
               <h3 style={{ margin: '0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#e5e7eb' }}>
-                Step 1 • {shortBlocks.length > 0 ? 'Select Short Block' : 'Engine Geometry'}
+                {t('step1Title')} {shortBlocks.length > 0 ? t('selectShortBlock') : t('engineGeometry')}
               </h3>
               <span style={{ fontSize: '10px', color: '#a5b4fc' }}>
-                {shortBlocks.length > 0 ? 'Load engine specs' : 'Bore • Stroke • Rod • Volumes'}
+                {shortBlocks.length > 0 ? t('loadEngineSpecs') : t('boreStrokeRodVolumes')}
               </span>
             </div>
             
@@ -1410,7 +1433,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
             {shortBlocks.length === 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginLeft: 'auto' }}>
               <span style={{ fontSize: '10px', color: unitSystem === 'imperial' ? '#00d4ff' : '#7CFFCB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', minWidth: '50px', textAlign: 'center' }}>
-                {unitSystem === 'imperial' ? 'Imperial' : 'Metric'}
+                {unitSystem === 'imperial' ? t('imperial') : t('metric')}
               </span>
               <button
                 onClick={toggleUnitSystem}
@@ -1454,7 +1477,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
           {/* SHORT BLOCK SELECTOR */}
           {shortBlocks.length > 0 && (
             <div style={{ marginBottom: '10px' }}>
-              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '6px', fontSize: '11px', fontWeight: 600 }}>Select Short Block</label>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '6px', fontSize: '11px', fontWeight: 600 }}>{t('selectShortBlock')}</label>
               <select
                 value={selectedShortBlockId}
                 onChange={(e) => {
@@ -1477,14 +1500,14 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
                 }}
                 style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
               >
-                <option value="">Choose a short block...</option>
+                <option value="">{t('chooseShortBlock')}</option>
                 {shortBlocks.map(block => (
                   <option key={block.id} value={block.id}>{block.block_name}</option>
                 ))}
               </select>
               {selectedShortBlockId && (
                 <div style={{ marginTop: '8px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(2,6,23,0.85)', border: '1px solid rgba(255,43,214,0.30)', fontSize: '11px', color: '#e5e7eb' }}>
-                  Displacement: {geomDisplay.cid} CID • Static CR: {geomDisplay.crStatic} : 1
+                  {t('displacement')}: {geomDisplay.cid} CID • {t('staticCR')}: {geomDisplay.crStatic} : 1
                 </div>
               )}
             </div>
@@ -1557,7 +1580,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
 
           {shortBlocks.length === 0 && (
           <div style={{ marginTop: '8px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(2,6,23,0.85)', border: '1px solid rgba(255,43,214,0.30)', fontSize: '11px', color: '#e5e7eb' }}>
-            Displacement: {geomDisplay.cid} CID • Static CR: {geomDisplay.crStatic} : 1
+            {t('displacement')}: {geomDisplay.cid} CID • {t('staticCR')}: {geomDisplay.crStatic} : 1
           </div>
           )}
         </div>
@@ -1566,10 +1589,10 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
         <div style={{ borderRadius: '12px', padding: '10px 12px', background: 'rgba(6,11,30,0.78)', border: '1px solid rgba(0,212,255,0.22)', marginBottom: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <h3 style={{ margin: 0, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#e5e7eb' }}>
-              Step 2 • {shortBlocks.length > 0 && selectedShortBlockId ? 'Cylinder Head' : 'Catalog Selection'}
+              {t('step2Title')} {shortBlocks.length > 0 && selectedShortBlockId ? t('cylinderHead') : t('catalogSelection')}
             </h3>
             <span style={{ fontSize: '10px', color: '#a5b4fc' }}>
-              {shortBlocks.length > 0 && selectedShortBlockId ? 'From short block' : 'Make → Family → Cam → Head'}
+              {shortBlocks.length > 0 && selectedShortBlockId ? t('fromShortBlock') : t('makeFamilyCamHead')}
             </span>
           </div>
 
@@ -1585,12 +1608,12 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <div style={{ color: '#f9fafb', fontSize: '12px', fontWeight: 500 }}>
-                        {selected?.label || 'No head attached'}
-                        {isAttached && <span style={{ color: '#7CFFCB', marginLeft: 8, fontSize: 10 }}>(From short block)</span>}
+                        {selected?.label || t('noHeadAttached')}
+                        {isAttached && <span style={{ color: '#7CFFCB', marginLeft: 8, fontSize: 10 }}>({t('fromShortBlock')})</span>}
                       </div>
                     </div>
                     <div style={{ textAlign: 'right', fontSize: '10px', color: '#a5b4fc' }}>
-                      <div>Chamber: {selected?.chamberCc ?? '-' } cc</div>
+                      <div>{t('chamber')}: {selected?.chamberCc ?? '-' } cc</div>
                       {/* Optionally, show more info if available */}
                     </div>
                   </div>
@@ -1603,7 +1626,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
           {shortBlocks.length === 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px', fontSize: '12px' }}>
             <div>
-              <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>Engine Make</label>
+              <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>{t('engineMake')}</label>
               <select
                 value={selectedMakeId}
                 onChange={(e) => handleMakeChange(e.target.value)}
@@ -1616,7 +1639,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
             </div>
 
             <div>
-              <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>Engine Family</label>
+              <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>{t('engineFamily')}</label>
               <select
                 value={selectedFamilyId}
                 onChange={(e) => handleFamilyChange(e.target.value)}
@@ -1630,14 +1653,14 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
             </div>
 
             <div>
-              <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>Cam Selection</label>
+              <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>{t('camSelection')}</label>
               <select
                 value={selectedCatalogCam}
                 onChange={(e) => setSelectedCatalogCam(e.target.value)}
                 disabled={camLoading || camOptions.length === 0}
                 style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(255,43,214,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none', opacity: camLoading || camOptions.length === 0 ? 0.5 : 1, cursor: camLoading || camOptions.length === 0 ? 'not-allowed' : 'pointer' }}
               >
-                <option value="">{camLoading ? 'Loading cam library…' : 'Select Cam...'}</option>
+                <option value="">{camLoading ? t('loadingCamLibrary') : t('selectCam')}</option>
                 {camOptions.map((option) => (
                   <option key={option.id} value={option.id}>{option.label}</option>
                 ))}
@@ -1645,14 +1668,14 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
             </div>
 
             <div>
-              <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>Cylinder Head</label>
+              <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>{t('cylinderHead')}</label>
               <select
                 value={selectedHead}
                 onChange={(e) => setSelectedHead(e.target.value)}
                 disabled={headLoading || headOptions.length === 0}
                 style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(255,43,214,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none', opacity: headLoading || headOptions.length === 0 ? 0.5 : 1, cursor: headLoading || headOptions.length === 0 ? 'not-allowed' : 'pointer' }}
               >
-                <option value="">{headLoading ? 'Loading head library…' : 'Select Head...'}</option>
+                <option value="">{headLoading ? t('loadingHeadLibrary') : t('selectHead')}</option>
                 {headOptions.map((option) => (
                   <option key={option.id} value={option.id}>{option.label}</option>
                 ))}
@@ -1663,10 +1686,10 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
           )}
 
           <div style={{ marginTop: '8px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(2,6,23,0.85)', border: '1px solid rgba(255,43,214,0.30)', fontSize: '11px', color: '#e5e7eb', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
-            <span>Dynamic CR (est): {dynCrDisplay} : 1</span>
-            <span>Head Flow Applied: {engine.portCfm.toFixed(0)} cfm @28"</span>
+            <span>{t('dynamicCR')}: {dynCrDisplay} : 1</span>
+            <span>{t('headFlowApplied')}: {engine.portCfm.toFixed(0)} cfm @28"</span>
             {selectedCatalogCam && camOptions.find(c => c.id === selectedCatalogCam) && (
-              <span>Catalog Cam: {camOptions.find(c => c.id === selectedCatalogCam)?.label}</span>
+              <span>{t('catalogCam')}: {camOptions.find(c => c.id === selectedCatalogCam)?.label}</span>
             )}
           </div>
         </div>
@@ -1675,10 +1698,10 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
         <div style={{ borderRadius: '12px', padding: '10px 12px', background: 'rgba(6,11,30,0.78)', border: '1px solid rgba(255,43,214,0.22)', marginBottom: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <h3 style={{ margin: '0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#e5e7eb' }}>
-              Step 3 • {shortBlocks.length > 0 && selectedShortBlockId ? 'Camshaft Selection' : 'Cam Specifications'}
+              {t('step3Title')} {shortBlocks.length > 0 && selectedShortBlockId ? t('camshaftSelection') : t('camSpecifications')}
             </h3>
             <span style={{ fontSize: '10px', color: '#a5b4fc' }}>
-              {shortBlocks.length > 0 && selectedShortBlockId ? 'Choose from catalog' : 'Auto-filled from catalog — tweak as needed'}
+              {shortBlocks.length > 0 && selectedShortBlockId ? t('chooseFromCatalog') : t('autoFilledFromCatalog')}
             </span>
           </div>
 
@@ -1690,14 +1713,14 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
             return (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', fontSize: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>Camshaft</label>
+                  <label style={{ display: 'block', color: '#ffd6f5', marginBottom: '2px', fontSize: '11px' }}>{t('camshaft')}</label>
                   <select
                     value={selectedCatalogCam}
                     onChange={(e) => setSelectedCatalogCam(e.target.value)}
                     disabled={attachedCams.length === 0}
                     style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(255,43,214,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none', opacity: attachedCams.length === 0 ? 0.5 : 1, cursor: attachedCams.length === 0 ? 'not-allowed' : 'pointer' }}
                   >
-                    <option value="">{attachedCams.length === 0 ? 'No camshafts attached' : 'Select Camshaft...'}</option>
+                    <option value="">{attachedCams.length === 0 ? t('noCamshaftsAttached') : t('selectCamshaft')}</option>
                     {attachedCams.map((option: any) => (
                       <option key={option.id} value={option.id}>{option.label || option.name || option.part_number || 'Camshaft'}</option>
                     ))}
@@ -1705,7 +1728,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
                 </div>
                 {selectedCatalogCam && (
                   <div style={{ padding: '6px 8px', borderRadius: '8px', background: 'rgba(2,6,23,0.85)', border: '1px solid rgba(255,43,214,0.30)', fontSize: '11px', color: '#e5e7eb' }}>
-                    <div>Selected: {attachedCams.find((c: any) => c.id === selectedCatalogCam)?.label || attachedCams.find((c: any) => c.id === selectedCatalogCam)?.name}</div>
+                    <div>{t('selected')}: {attachedCams.find((c: any) => c.id === selectedCatalogCam)?.label || attachedCams.find((c: any) => c.id === selectedCatalogCam)?.name}</div>
                   </div>
                 )}
               </div>
@@ -1741,41 +1764,41 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
         {/* STEP 4: TUNE / INTAKE / FUEL / BOOST */}
         <div style={{ borderRadius: '12px', padding: '10px 12px', background: 'rgba(6,11,30,0.78)', border: '1px solid rgba(124,255,203,0.22)', marginBottom: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-            <h3 style={{ margin: '0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#e5e7eb' }}>Step 4 • Intake, Fuel & Boost</h3>
-            <span style={{ fontSize: '10px', color: '#a5b4fc' }}>Tune layer • Dyno RPM range</span>
+            <h3 style={{ margin: '0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#e5e7eb' }}>{t('step4Title')}</h3>
+            <span style={{ fontSize: '10px', color: '#a5b4fc' }}>{t('tuneLayerDynoRange')}</span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px', fontSize: '12px' }}>
             <div>
-              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Intake Type</label>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>{t('intakeType')}</label>
               <select
                 value={tune.intake}
                 onChange={(e) => setTune({ ...tune, intake: e.target.value })}
                 style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
               >
-                <option value="dual_plane">Dual Plane NA</option>
-                <option value="single_plane">Single Plane NA</option>
-                <option value="tunnel_ram">Tunnel Ram NA</option>
-                <option value="boosted">Boosted (Turbo/SC)</option>
+                <option value="dual_plane">{t('dualPlaneNA')}</option>
+                <option value="single_plane">{t('singlePlaneNA')}</option>
+                <option value="tunnel_ram">{t('tunnelRamNA')}</option>
+                <option value="boosted">{t('boosted')}</option>
               </select>
             </div>
 
             <div>
-              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Fuel</label>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>{t('fuel')}</label>
               <select
                 value={tune.fuel}
                 onChange={(e) => setTune({ ...tune, fuel: e.target.value })}
                 style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
               >
-                <option value="pump91">Pump 91</option>
-                <option value="pump93">Pump 93</option>
-                <option value="race_gas">Race Gas</option>
-                <option value="e85">E85</option>
+                <option value="pump91">{t('pump91')}</option>
+                <option value="pump93">{t('pump93')}</option>
+                <option value="race_gas">{t('raceGas')}</option>
+                <option value="e85">{t('e85')}</option>
               </select>
             </div>
 
             <div>
-              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Boost (psi)</label>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>{t('boostPsi')}</label>
               <input
                 type="number"
                 value={isNaN(tune.boostPsi) ? 0 : tune.boostPsi}
@@ -1786,7 +1809,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
             </div>
 
             <div>
-              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Target AFR (WOT)</label>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>{t('targetAFR')}</label>
               <input
                 type="number"
                 value={tune.afr}
@@ -1797,7 +1820,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
             </div>
 
             <div>
-              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Intercooler Eff (0-1)</label>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>{t('intercoolerEff')}</label>
               <input
                 type="number"
                 value={tune.intercoolerEff}
@@ -1808,7 +1831,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
             </div>
 
             <div>
-              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Compressor Eff (0.4-0.85)</label>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>{t('compressorEff')}</label>
               <input
                 type="number"
                 value={tune.compressorEff}
@@ -1819,19 +1842,19 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
             </div>
 
             <div>
-              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Turbo or Blower</label>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>{t('turboOrBlower')}</label>
               <select
                 value={tune.turboOrBlower}
                 onChange={(e) => setTune({ ...tune, turboOrBlower: e.target.value })}
                 style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.35)', background: 'rgba(2,6,23,0.9)', color: '#f9fafb', fontSize: '12px', outline: 'none' }}
               >
-                <option value="turbo">Turbo</option>
-                <option value="blower">Blower</option>
+                <option value="turbo">{t('turbo')}</option>
+                <option value="blower">{t('blower')}</option>
               </select>
             </div>
 
             <div>
-              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Graph RPM Start</label>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>{t('graphRpmStart')}</label>
               <input
                 type="number"
                 value={tune.graphRpmStart}
@@ -1842,7 +1865,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
             </div>
 
             <div>
-              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>Graph RPM End</label>
+              <label style={{ display: 'block', color: '#c7f7ff', marginBottom: '2px', fontSize: '11px' }}>{t('graphRpmEnd')}</label>
               <input
                 type="number"
                 value={tune.graphRpmEnd}
@@ -1858,7 +1881,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
               onClick={handleRunCalc}
               style={{ padding: '7px 20px', borderRadius: '999px', border: '0', background: 'linear-gradient(135deg, #ff2bd6, #00d4ff, #7CFFCB)', color: '#020617', fontSize: '12px', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer' }}
             >
-              Run Cam Spec Elite
+              {t('runCamSpecElite')}
             </button>
           </div>
         </div>
@@ -1869,10 +1892,10 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center', marginBottom: '10px', fontSize: '12px' }}>
               <div style={{ flex: '1 1 260px', maxWidth: '460px', padding: '10px 12px', borderRadius: '12px', background: 'rgba(2,6,23,0.9)', border: '1px solid rgba(0,212,255,0.30)' }}>
                 <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a5b4fc', marginBottom: '4px' }}>
-                  Peak Output
+                  {t('peakOutput')}
                 </div>
                 <div style={{ fontSize: '14px', fontWeight: 700, color: '#e5e7eb' }}>
-                  {results.hp.toFixed(1)} hp @ {results.hpRpm.toFixed(0)} rpm • {results.tq.toFixed(1)} ft-lb
+                  {results.hp.toFixed(1)} {t('hpAt')} {results.hpRpm.toFixed(0)} {t('rpm')} • {results.tq.toFixed(1)} {t('ftLb')}
                 </div>
                 <div style={{ marginTop: '8px', position: 'relative', height: '16px', borderRadius: '999px', background: 'rgba(2,6,23,0.9)', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
                   <div
@@ -1883,18 +1906,18 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
                   />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '10px' }}>
-                  <span style={{ color: '#ff2bd6' }}>HP bar (relative)</span>
-                  <span style={{ color: '#7CFFCB' }}>TQ bar (relative)</span>
+                  <span style={{ color: '#ff2bd6' }}>{t('hpBarRelative')}</span>
+                  <span style={{ color: '#7CFFCB' }}>{t('tqBarRelative')}</span>
                 </div>
               </div>
 
               <div style={{ minWidth: '160px', padding: '10px 12px', borderRadius: '12px', background: 'rgba(2,6,23,0.9)', border: '1px solid rgba(255,43,214,0.25)', textAlign: 'center' }}>
-                <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a5b4fc' }}>Compression Ratios</div>
+                <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a5b4fc' }}>{t('compressionRatios')}</div>
                 <div style={{ fontSize: '13px', fontWeight: 800, color: '#e5e7eb', marginTop: '2px' }}>
                   {results.staticCR.toFixed(2)} / {results.dynCR.toFixed(2)} / {results.effCR.toFixed(2)}
                 </div>
                 <div style={{ fontSize: '10px', color: '#a5b4fc', marginTop: '2px' }}>
-                  Static / Dynamic / Effective (boosted)
+                  {t('staticDynamicEffective')}
                 </div>
               </div>
             </div>
@@ -1961,33 +1984,63 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
                         <line x1={padding} y1={padding + graphHeight} x2={padding + graphWidth} y2={padding + graphHeight} stroke="#00d4ff" strokeWidth="2" />
                         <line x1={padding} y1={padding} x2={padding} y2={padding + graphHeight} stroke="#00d4ff" strokeWidth="2" />
 
-                        {/* RPM Labels (X-axis) */}
-                        {[2000, 3000, 4000, 5000, 6000, 7000, 8000].map((rpmVal) => {
-                          if (rpmVal < minRpm || rpmVal > maxRpm) return null;
-                          const x = padding + ((rpmVal - minRpm) / (maxRpm - minRpm)) * graphWidth;
-                          return (
-                            <g key={`rpm-${rpmVal}`}>
-                              <line x1={x} y1={padding + graphHeight} x2={x} y2={padding + graphHeight + 4} stroke="#00d4ff" strokeWidth="1" />
-                              <text x={x} y={padding + graphHeight + 18} textAnchor="middle" fontSize="11" fill="#a5b4fc">
-                                {rpmVal / 1000}k
-                              </text>
-                            </g>
-                          );
-                        })}
+                        {/* RPM Labels (X-axis) - dynamically generated */}
+                        {(() => {
+                          // Generate tick marks at 1000 RPM intervals within the graph range
+                          const ticks = [];
+                          const startTick = Math.ceil(minRpm / 1000) * 1000;
+                          for (let rpmVal = startTick; rpmVal <= maxRpm; rpmVal += 1000) {
+                            ticks.push(rpmVal);
+                          }
+                          // Always include the exact maxRpm if it's not already a tick
+                          if (maxRpm % 1000 !== 0 && !ticks.includes(maxRpm)) {
+                            ticks.push(maxRpm);
+                          }
+                          return ticks.map((rpmVal) => {
+                            const x = padding + ((rpmVal - minRpm) / (maxRpm - minRpm)) * graphWidth;
+                            return (
+                              <g key={`rpm-${rpmVal}`}>
+                                <line x1={x} y1={padding + graphHeight} x2={x} y2={padding + graphHeight + 4} stroke="#00d4ff" strokeWidth="1" />
+                                <text x={x} y={padding + graphHeight + 18} textAnchor="middle" fontSize="11" fill="#a5b4fc">
+                                  {rpmVal >= 1000 ? `${(rpmVal / 1000).toFixed(rpmVal % 1000 === 0 ? 0 : 1)}k` : rpmVal}
+                                </text>
+                              </g>
+                            );
+                          });
+                        })()}
 
-                        {/* HP Labels (Y-axis) */}
-                        {[0, 100, 200, 300, 400, 500].map((hpVal) => {
-                          if (hpVal > maxHp) return null;
-                          const y = padding + graphHeight - (hpVal / maxHp) * graphHeight;
-                          return (
-                            <g key={`hp-${hpVal}`}>
-                              <line x1={padding - 4} y1={y} x2={padding} y2={y} stroke="#00d4ff" strokeWidth="1" />
-                              <text x={padding - 8} y={y + 4} textAnchor="end" fontSize="11" fill="#a5b4fc">
-                                {hpVal}
-                              </text>
-                            </g>
-                          );
-                        })}
+                        {/* HP Labels (Y-axis) - dynamically generated */}
+                        {(() => {
+                          // Calculate nice intervals based on maxHp
+                          const rawInterval = maxHp / 5;
+                          // Round to nearest nice number (25, 50, 100, etc.)
+                          const magnitude = Math.pow(10, Math.floor(Math.log10(rawInterval)));
+                          const normalized = rawInterval / magnitude;
+                          let interval;
+                          if (normalized <= 1.5) interval = 1 * magnitude;
+                          else if (normalized <= 3) interval = 2 * magnitude;
+                          else if (normalized <= 7) interval = 5 * magnitude;
+                          else interval = 10 * magnitude;
+                          
+                          // Round interval to nice number
+                          interval = Math.max(25, Math.round(interval / 25) * 25);
+                          
+                          const ticks = [];
+                          for (let hpVal = 0; hpVal <= maxHp; hpVal += interval) {
+                            ticks.push(hpVal);
+                          }
+                          return ticks.map((hpVal) => {
+                            const y = padding + graphHeight - (hpVal / maxHp) * graphHeight;
+                            return (
+                              <g key={`hp-${hpVal}`}>
+                                <line x1={padding - 4} y1={y} x2={padding} y2={y} stroke="#00d4ff" strokeWidth="1" />
+                                <text x={padding - 8} y={y + 4} textAnchor="end" fontSize="11" fill="#a5b4fc">
+                                  {hpVal}
+                                </text>
+                              </g>
+                            );
+                          });
+                        })()}
 
                         {/* HP Curve */}
                         <path d={hpPath.join(" ")} fill="none" stroke="#00d4ff" strokeWidth="3" />
@@ -2029,10 +2082,10 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
 
                         {/* Axis Labels */}
                         <text x={padding + graphWidth / 2} y={svgHeight - 10} textAnchor="middle" fontSize="12" fill="#a5b4fc">
-                          RPM
+                          {t('rpm').toUpperCase()}
                         </text>
                         <text x={20} y={padding + graphHeight / 2} textAnchor="middle" fontSize="12" fill="#a5b4fc" transform={`rotate(-90, 20, ${padding + graphHeight / 2})`}>
-                          Horsepower (hp)
+                          {t('horsepowerHp')}
                         </text>
                       </svg>
 
@@ -2061,7 +2114,7 @@ export default function CamSpecEliteSelectiveCalculator({ shortBlocks = [] }: { 
                 })()
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: '#a5b4fc', fontSize: '12px' }}>
-                  Click "Run Cam Spec Elite" to generate dyno curve
+                  {t('clickToGenerate')}
                 </div>
               )}
             </div>

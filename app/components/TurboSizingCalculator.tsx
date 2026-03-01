@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 type UnitSystem = 'imperial' | 'metric';
 type TurboConfig = 'single' | 'twin';
@@ -33,6 +34,7 @@ function formatNumber(value: number, decimals: number) {
 }
 
 export default function TurboSizingCalculator() {
+  const t = useTranslations('turboCalc');
   const [unitSystem, setUnitSystem] = useState<UnitSystem>('imperial');
 
   const [displacement, setDisplacement] = useState('');
@@ -330,21 +332,21 @@ export default function TurboSizingCalculator() {
           <div>
             <div className="title">
               <span>HBRacing7</span>
-              <span>Turbo Sizing Calculator</span>
+              <span>{t('title')}</span>
             </div>
             <div className="subtitle">
-              Enter engine size, RPM, VE, and power goal. The calculator estimates boost pressure, turbine backpressure, and compressor/turbine suggestions.
+              {t('subtitle')}
             </div>
           </div>
 
           <div className="units-wrapper">
-            <div className="units-label">Unit System</div>
+            <div className="units-label">{t('unitSystem')}</div>
             <div className="units-toggle">
               <button type="button" className={unitSystem === 'imperial' ? 'active' : ''} onClick={() => setUnitSystem('imperial')}>
-                Imperial
+                {t('imperial')}
               </button>
               <button type="button" className={unitSystem === 'metric' ? 'active' : ''} onClick={() => setUnitSystem('metric')}>
-                Metric
+                {t('metric')}
               </button>
             </div>
           </div>
@@ -352,11 +354,11 @@ export default function TurboSizingCalculator() {
 
         <div className="grid">
           <div className="card">
-            <div className="card-title">Engine & Power Goal</div>
+            <div className="card-title">{t('enginePowerGoal')}</div>
 
             <div className="field">
               <label>
-                <span>Engine Displacement</span>
+                <span>{t('engineDisplacement')}</span>
                 <span>{lblDisplacementUnit}</span>
               </label>
               <input
@@ -368,27 +370,27 @@ export default function TurboSizingCalculator() {
               />
               <div className="helper">
                 {unitSystem === 'imperial'
-                  ? 'Imperial: cubic inches (CID). Metric: liters (L).'
-                  : 'Metric: liters (L). Imperial: cubic inches (CID).'}
+                  ? t('displacementHelperImperial')
+                  : t('displacementHelperMetric')}
               </div>
             </div>
 
             <div className="field">
               <label>
-                <span>Cylinders</span>
-                <span>(count)</span>
+                <span>{t('cylinders')}</span>
+                <span>({t('count')})</span>
               </label>
               <select value={cylinders} onChange={(e) => setCylinders(e.target.value)}>
                 <option value="8">V8</option>
-                <option value="6">6-cylinder</option>
-                <option value="4">4-cylinder</option>
-                <option value="other">Other / custom</option>
+                <option value="6">{t('sixCylinder')}</option>
+                <option value="4">{t('fourCylinder')}</option>
+                <option value="other">{t('otherCustom')}</option>
               </select>
             </div>
 
             <div className="field">
               <label>
-                <span>RPM at Power Peak</span>
+                <span>{t('rpmAtPowerPeak')}</span>
                 <span>(rpm)</span>
               </label>
               <input value={rpm} onChange={(e) => setRpm(e.target.value)} type="number" step="10" placeholder="6500" />
@@ -396,16 +398,16 @@ export default function TurboSizingCalculator() {
 
             <div className="field">
               <label>
-                <span>Volumetric Efficiency</span>
+                <span>{t('volumetricEfficiency')}</span>
                 <span>(%)</span>
               </label>
               <input value={ve} onChange={(e) => setVe(e.target.value)} type="number" step="1" />
-              <div className="helper">Typical: 80–90% mild builds, 90–105% aggressive / race combos.</div>
+              <div className="helper">{t('veHelper')}</div>
             </div>
 
             <div className="field">
               <label>
-                <span>Target Power (flywheel)</span>
+                <span>{t('targetPowerFlywheel')}</span>
                 <span>(HP)</span>
               </label>
               <input
@@ -415,27 +417,27 @@ export default function TurboSizingCalculator() {
                 step="1"
                 placeholder={targetPlaceholder}
               />
-              <div className="helper">Total flywheel power goal for the engine (flywheel HP).</div>
+              <div className="helper">{t('targetPowerHelper')}</div>
             </div>
 
             <div className="field">
               <label>
-                <span>Turbo Configuration</span>
-                <span>(per engine)</span>
+                <span>{t('turboConfiguration')}</span>
+                <span>({t('perEngine')})</span>
               </label>
               <select value={turboConfig} onChange={(e) => setTurboConfig(e.target.value as TurboConfig)}>
-                <option value="single">Single turbo</option>
-                <option value="twin">Twin turbo</option>
+                <option value="single">{t('singleTurbo')}</option>
+                <option value="twin">{t('twinTurbo')}</option>
               </select>
-              <div className="helper">We size per turbo. A twin setup splits airflow across both units.</div>
+              <div className="helper">{t('turboConfigHelper')}</div>
             </div>
 
             <div className="actions">
               <button className="btn-main" type="button" onClick={onCalculateClick}>
-                Calculate
+                {t('calculate')}
               </button>
               <button className="btn-ghost" type="button" onClick={resetAll}>
-                Reset
+                {t('reset')}
               </button>
             </div>
 
@@ -445,41 +447,41 @@ export default function TurboSizingCalculator() {
           </div>
 
           <div className="card">
-            <div className="card-title">Turbo Suggestions</div>
+            <div className="card-title">{t('turboSuggestions')}</div>
             <div className="card-subtitle">
-              Boost and turbine pressure are approximations for a well-matched turbo at your goal. Always confirm with manufacturer maps and data.
+              {t('resultsDisclaimer')}
             </div>
 
             <div className="results" style={{ opacity: resultsOpacity }}>
               <div>
-                <div className="result-label">Approx. Boost Needed to Reach Goal</div>
+                <div className="result-label">{t('approxBoostNeeded')}</div>
                 <div className="result-value">{calc.ok ? calc.boostText : '–'}</div>
                 <div className="chip">
-                  Estimated pressure ratio: {calc.ok ? `${formatNumber(calc.prNeeded, 2)} : 1` : '–'}
+                  {t('estimatedPressureRatio')}: {calc.ok ? `${formatNumber(calc.prNeeded, 2)} : 1` : '–'}
                 </div>
               </div>
 
               <div>
-                <div className="result-label">Target Turbine Backpressure (EMP)</div>
+                <div className="result-label">{t('targetTurbineBackpressure')}</div>
                 <div className="result-value">{calc.ok ? calc.empText : '–'}</div>
                 <div className="chip">
-                  EMP:MAP target ratio: {calc.ok ? `${formatNumber(calc.empLowRatio, 2)}–${formatNumber(calc.empHighRatio, 2)} : 1` : '–'}
+                  {t('empMapRatio')}: {calc.ok ? `${formatNumber(calc.empLowRatio, 2)}–${formatNumber(calc.empHighRatio, 2)} : 1` : '–'}
                 </div>
               </div>
 
               <div>
-                <div className="result-label">Suggested Compressor Size Range</div>
+                <div className="result-label">{t('suggestedCompressorSize')}</div>
                 <div className="result-value">{calc.ok ? calc.compSizeSuggestion : '–'}</div>
                 <div className="chip">
-                  HP per turbo goal: {calc.ok ? `${formatNumber(calc.hpPerTurbo, 0)} HP` : '–'}
+                  {t('hpPerTurboGoal')}: {calc.ok ? `${formatNumber(calc.hpPerTurbo, 0)} HP` : '–'}
                 </div>
               </div>
 
               <div>
-                <div className="result-label">Suggested Turbine Housing A/R</div>
+                <div className="result-label">{t('suggestedTurbineAR')}</div>
                 <div className="result-value">{calc.ok ? calc.turbineAR : '–'}</div>
                 <div className="chip">
-                  {calc.ok ? calc.turbineNote || 'Adjust toward smaller end for spool, larger end for top end.' : 'Adjust toward smaller end for spool, larger end for top end.'}
+                  {calc.ok ? calc.turbineNote || t('turbineARNote') : t('turbineARNote')}
                 </div>
               </div>
             </div>

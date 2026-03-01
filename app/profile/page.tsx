@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { CAM_MAKE_OPTIONS, CAM_ENGINE_FAMILIES } from "@/lib/engineOptions";
 import { UserAwardsProfile } from "@/components/UserAwardsProfile";
 import { UserDynoSubmissions } from "@/components/UserDynoSubmissions";
@@ -43,6 +44,7 @@ interface ShortBlock {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const t = useTranslations();
   const [checking, setChecking] = useState(true);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [forumHandle, setForumHandle] = useState("");

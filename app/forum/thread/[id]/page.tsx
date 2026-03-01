@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { getSupabaseInstance } from "@/lib/supabaseSingleton";
 import UserHoverCard from "@/components/UserHoverCard";
@@ -62,6 +63,7 @@ function getSupabaseSafe(): SupabaseClient | null {
 export default function ThreadPage() {
   const params = useParams<{ id: string }>();
   const threadId = params?.id;
+  const t = useTranslations();
 
   const supabase = useMemo(() => getSupabaseSafe(), []);
   const [userId, setUserId] = useState<string | null>(null);
@@ -156,8 +158,8 @@ export default function ThreadPage() {
     console.log("addReply called", { threadId, replyBody: replyBody.trim(), userId, replyImage: replyImage?.name });
     setStatus("");
     if (!threadId) return setStatus("Missing thread id.");
-    if (!replyBody.trim()) return setStatus("Reply cannot be empty.");
-    if (!userId) return setStatus("You must be logged in.");
+    if (!replyBody.trim()) return setStatus(t("forum.replyEmpty"));
+    if (!userId) return setStatus(t("forum.mustBeLoggedIn"));
 
     // Validate file before submitting
     if (replyImage) {
@@ -281,10 +283,10 @@ export default function ThreadPage() {
     <div className="card">
       <div className="card-inner">
         <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-          <h1 className="h1">Thread</h1>
+          <h1 className="h1">{t("forum.thread")}</h1>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <Link className="pill" href="/forum">Back to Forum</Link>
-            <Link className="pill" href="/forum/new">New Thread</Link>
+            <Link className="pill" href="/forum">{t("nav.forum")}</Link>
+            <Link className="pill" href="/forum/new">{t("forum.newThread")}</Link>
           </div>
         </div>
 
@@ -306,7 +308,7 @@ export default function ThreadPage() {
               <p className="small">{status}</p>
               {!userId ? (
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
-                  <Link className="pill" href="/login">Go to Login</Link>
+                  <Link className="pill" href="/login">{t("nav.login")}</Link>
                 </div>
               ) : null}
             </div>
@@ -314,7 +316,7 @@ export default function ThreadPage() {
         ) : null}
 
         {loading ? (
-          <p className="small">Loading…</p>
+          <p className="small">{t("common.loading")}</p>
         ) : thread ? (
           <>
             <div className="card" style={{ background: "rgba(2,6,23,0.55)" }}>
@@ -453,13 +455,13 @@ export default function ThreadPage() {
             <div className="card" style={{ background: "rgba(2,6,23,0.55)" }}>
               <div className="card-inner">
                 <div style={{ fontWeight: 800, letterSpacing: "0.10em", textTransform: "uppercase", fontSize: 12, color: "#7dd3fc" }}>
-                  Replies
+                  {t("forum.replies")}
                 </div>
 
                 <hr className="hr" />
 
                 {posts.length === 0 ? (
-                  <div className="small">No replies yet.</div>
+                  <div className="small">{t("forum.noReplies")}</div>
                 ) : (
                   <div style={{ display: "grid", gap: 12 }}>
                     {posts.map((p: any) => {
@@ -521,18 +523,18 @@ export default function ThreadPage() {
 
                 <hr className="hr" />
 
-                <label className="label">Add Reply</label>
+                <label className="label">{t("forum.addReply")}</label>
                 <textarea
                   className="textarea"
                   value={replyBody}
                   onChange={(e) => setReplyBody(e.target.value)}
-                  placeholder="Write your reply…"
+                  placeholder={t("forum.replyPlaceholder")}
                 />
 
-                <label className="label" style={{ marginTop: 10 }}>Attach Image or Video (Optional)</label>
+                <label className="label" style={{ marginTop: 10 }}>{t("forum.attachImage")}</label>
                 <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
                   <label className="pill" style={{ cursor: "pointer" }}>
-                    Choose File
+                    {t("common.chooseFile")}
                     <input
                       type="file"
                       accept="image/*,video/*"
@@ -545,15 +547,15 @@ export default function ThreadPage() {
 
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
                   <button className="btn" disabled={busyReply} onClick={addReply}>
-                    {busyReply ? "Posting..." : "Post Reply"}
+                    {busyReply ? t("forum.posting") : t("forum.postReply")}
                   </button>
-                  <Link className="pill" href="/forum">Back</Link>
+                  <Link className="pill" href="/forum">{t("browse.back")}</Link>
                 </div>
               </div>
             </div>
           </>
         ) : (
-          <div className="small">Thread not found.</div>
+          <div className="small">{t("forum.threadNotFound")}</div>
         )}
       </div>
     </div>

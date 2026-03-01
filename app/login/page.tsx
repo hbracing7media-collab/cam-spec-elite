@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +28,7 @@ export default function LoginPage() {
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setMsg(json?.error || "Login failed");
+        setMsg(json?.error || t('auth.loginFailed'));
         setLoading(false);
         return;
       }
@@ -35,7 +37,7 @@ export default function LoginPage() {
       router.push("/forum");
       router.refresh();
     } catch {
-      setMsg("Login error");
+      setMsg(t('auth.loginError'));
     } finally {
       setLoading(false);
     }
@@ -44,12 +46,12 @@ export default function LoginPage() {
   return (
     <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 18 }}>
       <div style={{ width: "min(520px, 100%)", borderRadius: 18, border: "1px solid rgba(56,189,248,0.35)", padding: 18, background: "rgba(2,6,23,0.72)", boxShadow: "0 18px 50px rgba(0,0,0,0.55)" }}>
-        <h1 style={{ margin: 0, fontSize: 18, letterSpacing: "0.12em", textTransform: "uppercase" }}>Cam Spec Elite</h1>
-        <p style={{ marginTop: 8, marginBottom: 16, opacity: 0.85, fontSize: 12 }}>Sign in to manage your builds, uploads, and forum.</p>
+        <h1 style={{ margin: 0, fontSize: 18, letterSpacing: "0.12em", textTransform: "uppercase" }}>{t('auth.loginTitle')}</h1>
+        <p style={{ marginTop: 8, marginBottom: 16, opacity: 0.85, fontSize: 12 }}>{t('auth.loginSubtitle')}</p>
 
         <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
           <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 12, opacity: 0.85 }}>Email</span>
+            <span style={{ fontSize: 12, opacity: 0.85 }}>{t('auth.email')}</span>
             <input
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -60,7 +62,7 @@ export default function LoginPage() {
           </label>
 
           <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 12, opacity: 0.85 }}>Password</span>
+            <span style={{ fontSize: 12, opacity: 0.85 }}>{t('auth.password')}</span>
             <input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -85,7 +87,7 @@ export default function LoginPage() {
               cursor: loading ? "not-allowed" : "pointer",
             }}
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? t('auth.signingIn') : t('auth.signIn')}
           </button>
 
           {msg ? (

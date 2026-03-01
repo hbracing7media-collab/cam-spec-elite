@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 type Unit = 'psi' | 'kpa';
 type AtmPreset = '14.7' | '13.2' | '12.2' | 'custom';
@@ -20,6 +21,7 @@ function fmtInt(n: number) {
 }
 
 export default function BoostEstimatorCalculator() {
+  const t = useTranslations('boostCalc');
   const [baseHp, setBaseHp] = useState('');
   const [boost, setBoost] = useState('');
   const [unit, setUnit] = useState<Unit>('psi');
@@ -89,66 +91,66 @@ export default function BoostEstimatorCalculator() {
   return (
     <div id="hb-boosthp-widget">
       <div className="hb-card">
-        <div className="hb-title">HP + BOOST → ESTIMATED NEW HP</div>
-        <div className="hb-sub">Rule-of-thumb estimate using pressure ratio + efficiency factor (quick bench racing)</div>
+        <div className="hb-title">{t('title')}</div>
+        <div className="hb-sub">{t('subtitle')}</div>
 
         <div className="hb-row">
           <div className="hb-col-6">
-            <label className="hb-label">Base horsepower (NA or current HP)</label>
+            <label className="hb-label">{t('baseHorsepower')}</label>
             <input
               className="hb-input"
               type="number"
               inputMode="decimal"
-              placeholder="e.g. 450"
+              placeholder={t('placeholderHp')}
               value={baseHp}
               onChange={(e) => setBaseHp(e.target.value)}
             />
           </div>
 
           <div className="hb-col-6">
-            <label className="hb-label">Boost value</label>
+            <label className="hb-label">{t('boostValue')}</label>
             <input
               className="hb-input"
               type="number"
               inputMode="decimal"
-              placeholder="e.g. 12"
+              placeholder={t('placeholderBoost')}
               value={boost}
               onChange={(e) => setBoost(e.target.value)}
             />
           </div>
 
           <div className="hb-col-4">
-            <label className="hb-label">Boost unit</label>
+            <label className="hb-label">{t('boostUnit')}</label>
             <select className="hb-select" value={unit} onChange={(e) => setUnit(e.target.value as Unit)}>
-              <option value="psi">PSI</option>
-              <option value="kpa">kPa (gauge)</option>
+              <option value="psi">{t('psi')}</option>
+              <option value="kpa">{t('kpaGauge')}</option>
             </select>
           </div>
 
           <div className="hb-col-4">
-            <label className="hb-label">Atmospheric pressure</label>
+            <label className="hb-label">{t('atmosphericPressure')}</label>
             <select className="hb-select" value={atmPreset} onChange={(e) => setAtmPreset(e.target.value as AtmPreset)}>
-              <option value="14.7">Sea level (14.7 psi)</option>
-              <option value="13.2">~5,000 ft (13.2 psi)</option>
-              <option value="12.2">~8,000 ft (12.2 psi)</option>
-              <option value="custom">Custom</option>
+              <option value="14.7">{t('seaLevel')}</option>
+              <option value="13.2">{t('alt5000ft')}</option>
+              <option value="12.2">{t('alt8000ft')}</option>
+              <option value="custom">{t('custom')}</option>
             </select>
           </div>
 
           <div className="hb-col-4" style={{ display: atmPreset === 'custom' ? 'block' : 'none' }}>
-            <label className="hb-label">Custom atm (psi)</label>
+            <label className="hb-label">{t('customAtm')}</label>
             <input
               className="hb-input"
               type="number"
               inputMode="decimal"
-              placeholder="e.g. 14.0"
+              placeholder={t('placeholderAtm')}
               value={customAtm}
               onChange={(e) => setCustomAtm(e.target.value)}
             />
           </div>
 
           <div className="hb-col-8">
-            <label className="hb-label">Efficiency / real-world factor (0.70–1.00 typical)</label>
+            <label className="hb-label">{t('efficiencyFactor')}</label>
             <input
               className="hb-input"
               type="number"
@@ -163,19 +165,19 @@ export default function BoostEstimatorCalculator() {
           </div>
 
           <div className="hb-col-4">
-            <label className="hb-label">Fuel / setup preset</label>
+            <label className="hb-label">{t('fuelPreset')}</label>
             <select className="hb-select" value={effPreset} onChange={(e) => onChangeEffPreset(e.target.value as EffPreset)}>
-              <option value="0.80">Pump gas (safe) ~0.80</option>
-              <option value="0.85">Intercooled street ~0.85</option>
-              <option value="0.90">Good intercooler / E85 ~0.90</option>
-              <option value="0.95">Dialed setup ~0.95</option>
-              <option value="custom">Custom (use box)</option>
+              <option value="0.80">{t('pumpGas')}</option>
+              <option value="0.85">{t('intercooledStreet')}</option>
+              <option value="0.90">{t('goodIntercoolerE85')}</option>
+              <option value="0.95">{t('dialedSetup')}</option>
+              <option value="custom">{t('customUseBox')}</option>
             </select>
           </div>
 
           <div className="hb-col-12">
             <button className="hb-btn" type="button">
-              Calculate
+              {t('calculate')}
             </button>
           </div>
         </div>
@@ -183,24 +185,24 @@ export default function BoostEstimatorCalculator() {
         <div className="hb-results" style={{ display: computed.ok ? 'block' : 'none' }}>
           <div className="hb-grid">
             <div className="hb-metric">
-              <div className="k">Estimated New HP</div>
+              <div className="k">{t('estimatedNewHp')}</div>
               <div className="v">{computed.ok ? `${fmtInt(computed.newHp)} HP` : '—'}</div>
             </div>
 
             <div className="hb-metric">
-              <div className="k">HP Gain</div>
+              <div className="k">{t('hpGain')}</div>
               <div className="v">{computed.ok ? `+${fmtInt(computed.gain)} HP` : '—'}</div>
             </div>
 
             <div className="hb-metric">
-              <div className="k">Multiplier</div>
+              <div className="k">{t('multiplier')}</div>
               <div className="v">{computed.ok ? `${computed.mult.toFixed(3)}×` : '—'}</div>
             </div>
           </div>
 
           <div className="hb-note">
             {computed.ok
-              ? `Math: PR = (atm + boost) / atm = (${computed.atmPsi.toFixed(2)} + ${computed.boostPsi.toFixed(2)}) / ${computed.atmPsi.toFixed(2)} = ${computed.pr.toFixed(3)}. Applied efficiency factor: ${computed.eff.toFixed(2)}. This is a rule-of-thumb estimate (real results depend on turbo/SC efficiency, timing, AFR, temps, backpressure, and fuel).`
+              ? t('mathNote', { atmPsi: computed.atmPsi.toFixed(2), boostPsi: computed.boostPsi.toFixed(2), pr: computed.pr.toFixed(3), eff: computed.eff.toFixed(2) })
               : ''}
           </div>
         </div>

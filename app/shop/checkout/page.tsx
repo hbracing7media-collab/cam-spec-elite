@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import Script from "next/script";
+import { useTranslations } from "next-intl";
 import { calculateSalesTax, getAllStates } from "@/lib/salesTax";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";

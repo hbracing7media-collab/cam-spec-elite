@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from 'next-intl';
 
 interface ShortBlock {
   id: string;
@@ -32,6 +33,7 @@ interface Props {
 }
 
 export default function ProfileCalculator({ shortBlocks = [] }: Props) {
+  const t = useTranslations('selectiveCalc');
   return (
     <div style={{ border: "2px solid #7dd3fc", borderRadius: 12, padding: 24, background: "rgba(2,6,23,0.85)", color: "#e2e8f0", marginBottom: 32 }}>
       <h2 style={{ color: "#7dd3fc", fontWeight: 700, fontSize: 18, marginBottom: 16 }}>Profile Calculator (Isolated)</h2>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import type { CamMakeKey, HeadMakeKey } from '../../lib/engineOptions';
 
 interface ShortBlock {
@@ -416,6 +417,7 @@ const TUNE_DEFAULT = {
 };
 
 export default function MyCalculator() {
+  const t = useTranslations('selectiveCalc');
 
   const [engine, setEngine] = useState<EngineState>(ENGINE_DEFAULT);
   const [selectedShortBlockId, setSelectedShortBlockId] = useState<string>('');

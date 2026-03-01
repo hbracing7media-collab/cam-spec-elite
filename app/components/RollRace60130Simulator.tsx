@@ -1,15 +1,17 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function RollRace60130Simulator() {
+  const t = useTranslations('rollRace');
   const [carName, setCarName] = useState('');
   const [hp, setHp] = useState('');
   const [weight, setWeight] = useState('');
 
   const [treeRunning, setTreeRunning] = useState(false);
   const [greenTime, setGreenTime] = useState<number | null>(null);
-  const [statusText, setStatusText] = useState('Press “Start Tree” to stage.');
+  const [statusText, setStatusText] = useState('');
   const [canLaunch, setCanLaunch] = useState(false);
 
   const [amber1, setAmber1] = useState(false);
@@ -65,15 +67,15 @@ export default function RollRace60130Simulator() {
     setGreenTime(null);
     setTreeRunning(true);
     setCanLaunch(true);
-    setStatusText('Pre-staged…');
+    setStatusText(t('preStaged'));
 
     queue(() => {
-      setStatusText('Staged. Watch the tree…');
+      setStatusText(t('staged'));
 
       queue(() => {
         resetBulbs();
         setAmber1(true);
-        setStatusText('Amber…');
+        setStatusText(t('amber'));
 
         queue(() => {
           resetBulbs();
@@ -86,7 +88,7 @@ export default function RollRace60130Simulator() {
             queue(() => {
               resetBulbs();
               setGreen(true);
-              setStatusText('GREEN! Hit LAUNCH!');
+              setStatusText(t('greenHitLaunch'));
               setGreenTime(Date.now());
             }, 500);
           }, 500);
@@ -105,12 +107,12 @@ export default function RollRace60130Simulator() {
       setTreeRunning(false);
       resetBulbs();
       setRed(true);
-      setStatusText('RED LIGHT! You left before green.');
+      setStatusText(t('redLight'));
       reaction = -0.1;
     } else {
       setTreeRunning(false);
       reaction = (now - greenTime) / 1000;
-      setStatusText('Run complete. Check your times below.');
+      setStatusText(t('runComplete'));
     }
 
     setCanLaunch(false);
@@ -121,7 +123,7 @@ export default function RollRace60130Simulator() {
     const { ok, hpNum, wtNum } = parseInputs();
     if (!ok) return;
 
-    const name = carName.trim() || 'Unnamed combo';
+    const name = carName.trim() || t('unnamedCombo');
 
     let base60130 = 1.15 * (wtNum / hpNum);
     if (base60130 < 2.5) base60130 = 2.5;
@@ -129,7 +131,7 @@ export default function RollRace60130Simulator() {
     const total60130 = reactionTime < 0 ? base60130 : base60130 + reactionTime;
 
     setResCar(name);
-    setResRT(reactionTime < 0 ? '-0.100 sec (RED)' : `${reactionTime.toFixed(3)} sec`);
+    setResRT(reactionTime < 0 ? t('redLightTime') : `${reactionTime.toFixed(3)} sec`);
     setRes60130(`${base60130.toFixed(2)} sec`);
     setRes60130Total(`${total60130.toFixed(2)} sec`);
     setShowResults(true);
@@ -140,21 +142,21 @@ export default function RollRace60130Simulator() {
   return (
     <div style={{ padding: 22 }}>
       <div id="hb60130-container">
-        <h1 className="hb60130-title">HB Racing 60–130 MPH Simulator</h1>
+        <h1 className="hb60130-title">{t('title')}</h1>
         <div className="hb60130-subtitle">
-          Enter HP and race weight, hit the tree, and see your reaction time and estimated 60–130 MPH time.
+          {t('subtitle')}
         </div>
 
         <div className="hb60130-row">
           <div>
             <label className="hb60130-label" htmlFor="hb60130-carName">
-              Car / Combo Name (optional)
+              {t('carName')}
             </label>
             <input
               className="hb60130-input"
               id="hb60130-carName"
               type="text"
-              placeholder="Hellwind, Sidewinder, etc."
+              placeholder={t('placeholderCarName')}
               value={carName}
               onChange={(e) => setCarName(e.target.value)}
             />
@@ -164,26 +166,26 @@ export default function RollRace60130Simulator() {
         <div className="hb60130-row">
           <div>
             <label className="hb60130-label" htmlFor="hb60130-hp">
-              Horsepower (HP)
+              {t('horsepower')}
             </label>
             <input
               className="hb60130-input"
               id="hb60130-hp"
               type="number"
-              placeholder="e.g. 800"
+              placeholder={t('placeholderHp')}
               value={hp}
               onChange={(e) => setHp(e.target.value)}
             />
           </div>
           <div>
             <label className="hb60130-label" htmlFor="hb60130-weight">
-              Race Weight (lbs)
+              {t('weight')}
             </label>
             <input
               className="hb60130-input"
               id="hb60130-weight"
               type="number"
-              placeholder="e.g. 3800"
+              placeholder={t('placeholderWeight')}
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
             />
@@ -197,7 +199,7 @@ export default function RollRace60130Simulator() {
             onClick={startTree}
             disabled={treeRunning}
           >
-            Start Tree
+            {t('startTree')}
           </button>
 
           <button
@@ -206,7 +208,7 @@ export default function RollRace60130Simulator() {
             onClick={launch}
             disabled={!canLaunch}
           >
-            LAUNCH!
+            {t('launch')}
           </button>
         </div>
 
@@ -225,30 +227,30 @@ export default function RollRace60130Simulator() {
         </div>
 
         <div className="hb60130-results" style={{ display: showResults ? 'block' : 'none' }}>
-          <h2 className="hb60130-results-title">Run Results</h2>
+          <h2 className="hb60130-results-title">{t('runResults')}</h2>
 
           <div className="hb60130-result-line">
-            <span>Car / Combo:</span>
+            <span>{t('carCombo')}</span>
             <span>{resCar}</span>
           </div>
 
           <div className="hb60130-result-line">
-            <span>Reaction Time (RT):</span>
+            <span>{t('reactionTime')}</span>
             <span>{resRT}</span>
           </div>
 
           <div className="hb60130-result-line">
-            <span>60–130 MPH Time (no RT):</span>
+            <span>{t('rollTimeNoRT')}</span>
             <span>{res60130}</span>
           </div>
 
           <div className="hb60130-result-line">
-            <span>60–130 MPH Time (with RT):</span>
+            <span>{t('rollTimeWithRT')}</span>
             <span>{res60130Total}</span>
           </div>
 
           <div className="hb60130-note">
-            60–130 MPH time is an estimate based on HP/weight only. Real-world aero, gearing, traction, and conditions will change actual results.
+            {t('disclaimer')}
           </div>
         </div>
       </div>

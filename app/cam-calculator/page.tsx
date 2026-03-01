@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -52,6 +53,7 @@ const faqJsonLd = {
 
 export default function CamCalculatorLanding() {
   const router = useRouter();
+  const t = useTranslations();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -74,8 +76,8 @@ export default function CamCalculatorLanding() {
     }
   };
 
-  const buttonText = isLoggedIn === null ? "Loading..." : "🔥 Launch Calculator";
-  const subText = isLoggedIn ? "Go to dashboard" : "Free account required";
+  const buttonText = isLoggedIn === null ? t("camCalculator.loading") : t("camCalculator.launchCalculator");
+  const subText = isLoggedIn ? t("camCalculator.goToDashboard") : t("camCalculator.freeAccountRequired");
 
   return (
     <>
@@ -119,11 +121,10 @@ export default function CamCalculatorLanding() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              Cam Horsepower Calculator
+              {t("camCalculator.title")}
             </h1>
             <p style={{ fontSize: "1.1rem", opacity: 0.9, maxWidth: 600, margin: "0 auto" }}>
-              Predict your engine's peak horsepower and torque from camshaft specs.
-              Enter duration, lift, and LSA to see estimated power output.
+              {t("camCalculator.description")}
             </p>
           </header>
 
@@ -154,7 +155,7 @@ export default function CamCalculatorLanding() {
           {/* Features */}
           <section style={{ marginBottom: 48 }}>
             <h2 style={{ fontSize: "1.4rem", marginBottom: 20, color: "#0ff" }}>
-              What You Can Calculate
+              {t("camCalculator.whatYouCanCalculate")}
             </h2>
             <div
               style={{
@@ -164,10 +165,10 @@ export default function CamCalculatorLanding() {
               }}
             >
               {[
-                { icon: "⚡", title: "Peak Horsepower", desc: "Estimated max HP from cam specs" },
-                { icon: "🔧", title: "Peak Torque", desc: "Torque output and RPM range" },
-                { icon: "📊", title: "Power Band", desc: "Where your engine makes power" },
-                { icon: "🎯", title: "Cam Suggestions", desc: "Find cams that match your goals" },
+                { icon: "⚡", title: t("camCalculator.peakHorsepower"), desc: t("camCalculator.peakHorsepowerDesc") },
+                { icon: "🔧", title: t("camCalculator.peakTorque"), desc: t("camCalculator.peakTorqueDesc") },
+                { icon: "📊", title: t("camCalculator.powerBand"), desc: t("camCalculator.powerBandDesc") },
+                { icon: "🎯", title: t("camCalculator.camSuggestions"), desc: t("camCalculator.camSuggestionsDesc") },
               ].map((f) => (
                 <div
                   key={f.title}
@@ -189,7 +190,7 @@ export default function CamCalculatorLanding() {
           {/* FAQ */}
           <section style={{ marginBottom: 48 }}>
             <h2 style={{ fontSize: "1.4rem", marginBottom: 20, color: "#0ff" }}>
-              Frequently Asked Questions
+              {t("camCalculator.faq")}
             </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <details
@@ -200,12 +201,10 @@ export default function CamCalculatorLanding() {
                 }}
               >
                 <summary style={{ cursor: "pointer", fontWeight: 600 }}>
-                  How does cam duration affect horsepower?
+                  {t("camCalculator.faq1Question")}
                 </summary>
                 <p style={{ marginTop: 10, opacity: 0.85, lineHeight: 1.6 }}>
-                  Longer cam duration keeps valves open longer, allowing more air/fuel
-                  mixture into the cylinder at high RPM. This shifts the power band higher,
-                  increasing peak horsepower but often sacrificing low-end torque and idle quality.
+                  {t("camCalculator.faq1Answer")}
                 </p>
               </details>
               <details
@@ -216,12 +215,10 @@ export default function CamCalculatorLanding() {
                 }}
               >
                 <summary style={{ cursor: "pointer", fontWeight: 600 }}>
-                  What is lobe separation angle (LSA)?
+                  {t("camCalculator.faq2Question")}
                 </summary>
                 <p style={{ marginTop: 10, opacity: 0.85, lineHeight: 1.6 }}>
-                  LSA is the angle in camshaft degrees between the intake and exhaust lobe
-                  centerlines. Tighter LSA (106-110°) builds cylinder pressure for more
-                  mid-range torque. Wider LSA (112-118°) smooths idle and broadens the power band.
+                  {t("camCalculator.faq2Answer")}
                 </p>
               </details>
               <details
@@ -232,12 +229,10 @@ export default function CamCalculatorLanding() {
                 }}
               >
                 <summary style={{ cursor: "pointer", fontWeight: 600 }}>
-                  Does more lift always mean more power?
+                  {t("camCalculator.faq3Question")}
                 </summary>
                 <p style={{ marginTop: 10, opacity: 0.85, lineHeight: 1.6 }}>
-                  Not always. Lift must match your cylinder head's flow capacity. Once airflow
-                  maxes out, extra lift adds valve train stress without power gains. Most street
-                  heads peak around 0.550-0.600" lift.
+                  {t("camCalculator.faq3Answer")}
                 </p>
               </details>
             </div>
@@ -257,14 +252,14 @@ export default function CamCalculatorLanding() {
                 border: "none",
               }}
             >
-              Get Started Free →
+              {t("camCalculator.getStartedFree")}
             </button>
           </div>
         </article>
 
         {/* Footer */}
         <footer style={{ textAlign: "center", marginTop: 32, opacity: 0.6, fontSize: "0.85rem" }}>
-          <p>© {new Date().getFullYear()} Cam Spec Elite. Built for enthusiasts.</p>
+          <p>{t("camCalculator.copyright", { year: new Date().getFullYear() })}</p>
         </footer>
       </main>
     </>

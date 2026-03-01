@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CAM_ENGINE_FAMILIES, CAM_MAKE_OPTIONS, CamMakeKey } from "@/lib/engineOptions";
+import { useTranslations } from "next-intl";
 
 function useAuthCheck() {
   const router = useRouter();
@@ -26,6 +27,7 @@ function useAuthCheck() {
 type Msg = { type: "ok" | "err" | "info"; text: string };
 
 export default function NewCamSubmissionPage() {
+  const t = useTranslations();
   const isAuthed = useAuthCheck();
   const [userId, setUserId] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -71,14 +73,14 @@ export default function NewCamSubmissionPage() {
       if (!res || !res.ok) {
         setUserId("");
         setEmail("");
-        setMsg({ type: "info", text: "Log in to submit a cam." });
+        setMsg({ type: "info", text: t('cams.loginRequired') });
         return;
       }
       const j: any = await res.json().catch(() => ({}));
       if (!j?.ok || !j?.user?.id) {
         setUserId("");
         setEmail("");
-        setMsg({ type: "info", text: "Log in to submit a cam." });
+        setMsg({ type: "info", text: t('cams.loginRequired') });
         return;
       }
       setUserId(String(j.user.id));
@@ -92,18 +94,18 @@ export default function NewCamSubmissionPage() {
   async function submit() {
     setMsg(null);
 
-    if (!userId) return setMsg({ type: "err", text: "You must be logged in to submit." });
+    if (!userId) return setMsg({ type: "err", text: t('cams.mustBeLoggedIn') });
 
     const cn = camName.trim();
     const br = brand.trim();
     const pn = partNumber.trim();
 
-    if (!cn) return setMsg({ type: "err", text: "Cam Name is required." });
-    if (!br) return setMsg({ type: "err", text: "Brand is required." });
-    if (!pn) return setMsg({ type: "err", text: "Part Number is required." });
-    if (!engineMake) return setMsg({ type: "err", text: "Engine Make is required." });
-    if (!engineFamily) return setMsg({ type: "err", text: "Engine Family is required." });
-    if (!camCardFile) return setMsg({ type: "err", text: "Cam Card file is required." });
+    if (!cn) return setMsg({ type: "err", text: t('cams.camNameRequired') });
+    if (!br) return setMsg({ type: "err", text: t('cams.brandRequired') });
+    if (!pn) return setMsg({ type: "err", text: t('cams.partNumberRequired') });
+    if (!engineMake) return setMsg({ type: "err", text: t('cams.engineMakeRequired') });
+    if (!engineFamily) return setMsg({ type: "err", text: t('cams.engineFamilyRequired') });
+    if (!camCardFile) return setMsg({ type: "err", text: t('cams.camCardRequired') });
 
     setBusy(true);
     try {
@@ -158,7 +160,7 @@ export default function NewCamSubmissionPage() {
         return setMsg({ type: "err", text: txt });
       }
 
-      setMsg({ type: "ok", text: "Submitted! Waiting for admin approval." });
+      setMsg({ type: "ok", text: t('cams.submittedSuccess') });
 
       setCamName("");
       setBrand("");
@@ -169,13 +171,13 @@ export default function NewCamSubmissionPage() {
       setRpmStart("");
       setRpmEnd("");
     } catch (e: any) {
-      setMsg({ type: "err", text: e?.message || "Submit failed." });
+      setMsg({ type: "err", text: e?.message || t('cams.submitFailed') });
     } finally {
       setBusy(false);
     }
   }
 
-  if (isAuthed === null) return <div style={{ padding: 20, textAlign: "center" }}>Loading...</div>;
+  if (isAuthed === null) return <div style={{ padding: 20, textAlign: "center" }}>{t('common.loading')}</div>;
 
   return (
     <main style={{ padding: 18, maxWidth: 980, margin: "0 auto" }}>
@@ -191,42 +193,42 @@ export default function NewCamSubmissionPage() {
         }}
       >
         <h1 style={{ margin: 0, letterSpacing: "0.12em", textTransform: "uppercase", fontSize: 16, color: "#7dd3fc" }}>
-          Cam Submission
+          {t('cams.submitTitle')}
         </h1>
 
         <p style={{ marginTop: 8, marginBottom: 14, color: "rgba(226,232,240,0.9)", fontSize: 12 }}>
-          Enter the cam specs, upload the cam card, and optionally dyno sheets. Cam card + dyno sheets remain private until admin approval.
+          {t('cams.submitDescription')}
         </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-          <Field label="Cam Name (required)" value={camName} setValue={setCamName} />
-          <Field label="Brand (required)" value={brand} setValue={setBrand} />
-          <Field label="Part Number (required)" value={partNumber} setValue={setPartNumber} />
+          <Field label={t('cams.camNameLabel')} value={camName} setValue={setCamName} />
+          <Field label={t('cams.brandLabel')} value={brand} setValue={setBrand} />
+          <Field label={t('cams.partNumberLabel')} value={partNumber} setValue={setPartNumber} />
           <div />
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-          <Select label="Engine Make (required)" value={engineMake} onChange={(v) => setEngineMake(v as CamMakeKey)} options={CAM_MAKE_OPTIONS} />
-          <Select key={engineMake} label="Engine Family (required)" value={engineFamily} onChange={(v) => setEngineFamily(v)} options={familyOptions} />
+          <Select label={t('cams.engineMakeLabel')} value={engineMake} onChange={(v) => setEngineMake(v as CamMakeKey)} options={CAM_MAKE_OPTIONS} />
+          <Select key={engineMake} label={t('cams.engineFamilyLabel')} value={engineFamily} onChange={(v) => setEngineFamily(v)} options={familyOptions} />
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-          <NumField label="LSA" value={lsa} setValue={setLsa} />
-          <NumField label="ICL" value={icl} setValue={setIcl} />
-          <NumField label="Rocker Ratio" value={rocker} setValue={setRocker} />
+          <NumField label={t('cams.lsa')} value={lsa} setValue={setLsa} />
+          <NumField label={t('cams.icl')} value={icl} setValue={setIcl} />
+          <NumField label={t('cams.rockerRatio')} value={rocker} setValue={setRocker} />
 
-          <NumField label="Dur Int @ .050" value={durInt050} setValue={setDurInt050} />
-          <NumField label="Dur Exh @ .050" value={durExh050} setValue={setDurExh050} />
-          <NumField label="Lift Int" value={liftInt} setValue={setLiftInt} />
+          <NumField label={t('cams.durInt050')} value={durInt050} setValue={setDurInt050} />
+          <NumField label={t('cams.durExh050')} value={durExh050} setValue={setDurExh050} />
+          <NumField label={t('cams.liftInt')} value={liftInt} setValue={setLiftInt} />
 
-          <NumField label="Lift Exh" value={liftExh} setValue={setLiftExh} />
-          <NumField label="Cam RPM Start" value={rpmStart} setValue={setRpmStart} />
-          <NumField label="Cam RPM End" value={rpmEnd} setValue={setRpmEnd} />
-          <NumField label="Adv Int" value={advInt} setValue={setAdvInt} />
-          <NumField label="Adv Exh" value={advExh} setValue={setAdvExh} />
+          <NumField label={t('cams.liftExh')} value={liftExh} setValue={setLiftExh} />
+          <NumField label={t('cams.rpmStart')} value={rpmStart} setValue={setRpmStart} />
+          <NumField label={t('cams.rpmEnd')} value={rpmEnd} setValue={setRpmEnd} />
+          <NumField label={t('cams.advInt')} value={advInt} setValue={setAdvInt} />
+          <NumField label={t('cams.advExh')} value={advExh} setValue={setAdvExh} />
 
-          <NumField label="Lash Int" value={lashInt} setValue={setLashInt} />
-          <NumField label="Lash Exh" value={lashExh} setValue={setLashExh} />
+          <NumField label={t('cams.lashInt')} value={lashInt} setValue={setLashInt} />
+          <NumField label={t('cams.lashExh')} value={lashExh} setValue={setLashExh} />
           <div />
         </div>
 
@@ -234,7 +236,7 @@ export default function NewCamSubmissionPage() {
 
         <div style={{ borderRadius: 14, border: "1px solid rgba(148,163,184,0.25)", background: "rgba(2,6,23,0.55)", padding: 14 }}>
           <label style={{ display: "block", fontSize: 12, color: "#cbd5e1", marginBottom: 8 }}>
-            Cam Card (required) — image or PDF
+            {t('cams.camCardLabel')}
           </label>
           <input
             type="file"
@@ -245,7 +247,7 @@ export default function NewCamSubmissionPage() {
           <div style={{ height: 12 }} />
 
           <label style={{ display: "block", fontSize: 12, color: "#cbd5e1", marginBottom: 8 }}>
-            Dyno Sheets (optional) — multiple images/PDFs
+            {t('cams.dynoSheetsLabel')}
           </label>
           <input
             type="file"
@@ -257,7 +259,7 @@ export default function NewCamSubmissionPage() {
           <div style={{ height: 12 }} />
 
           <label style={{ display: "block", fontSize: 12, color: "#cbd5e1", marginBottom: 8 }}>
-            Notes (optional)
+            {t('cams.notesLabel')}
           </label>
           <textarea
             value={notes}
@@ -294,7 +296,7 @@ export default function NewCamSubmissionPage() {
               fontSize: 12,
             }}
           >
-            {busy ? "Submitting..." : "Submit for Approval"}
+            {busy ? t('common.loading') : t('cams.submitForApproval')}
           </button>
 
           {msg ? (
