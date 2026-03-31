@@ -47,6 +47,9 @@ interface CreateQuoteRequest {
     amount: number;
     description?: string;
   };
+  tax_amount?: number;      // Pre-calculated tax (0 = calculate at checkout)
+  shipping_cost?: number;   // Shipping cost (defaults to 5.99)
+  total_amount?: number;    // Override calculated total if provided
   valid_days?: number;  // Days until quote expires, defaults to 14
   customer_notes?: string;
   admin_notes?: string;
@@ -98,6 +101,9 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status");
     const email = searchParams.get("email");
     const quoteId = searchParams.get("id");
+    const search = searchParams.get("search");  // Search name/email
+    const fromDate = searchParams.get("from");  // Date filter start (YYYY-MM-DD)
+    const toDate = searchParams.get("to");      // Date filter end (YYYY-MM-DD)
 
     let query = supabase
       .from("layaway_quotes")
@@ -112,6 +118,16 @@ export async function GET(req: NextRequest) {
     }
     if (email) {
       query = query.ilike("customer_email", `%${email}%`);
+    }
+    if (search) {
+      // Search both customer name and email
+      query = query.or(`customer_name.ilike.%${search}%,customer_email.ilike.%${search}%`);
+    }
+    if (fromDate) {
+      query = query.gte("created_at", `${fromDate}T00:00:00Z`);
+    }
+    if (toDate) {
+      query = query.lte("created_at", `${toDate}T23:59:59Z`);
     }
 
     const { data: quotes, error } = await query;
@@ -161,12 +177,11 @@ export async function POST(req: NextRequest) {
     // Calculate totals
     const subtotal = body.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const discountAmount = body.discount?.amount || 0;
-    const shippingCost = 5.99;
+    const shippingCost = body.shipping_cost ?? 5.99;
     
-    // Tax is not calculated at quote time - it will be calculated 
-    // when the customer pays via Stripe (using their shipping address)
-    const taxAmount = 0;
-    const totalAmount = subtotal - discountAmount + shippingCost;
+    // Tax can be provided directly, or will be 0 (calculated at checkout via Stripe)
+    const taxAmount = body.tax_amount ?? 0;
+    const totalAmount = body.total_amount ?? (subtotal - discountAmount + shippingCost + taxAmount);
 
     // Payment structure
     const downPaymentPercent = body.plan_config?.down_payment_percent || 25;

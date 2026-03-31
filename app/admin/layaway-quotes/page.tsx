@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 interface QuoteItem {
@@ -36,15 +36,33 @@ interface LayawayQuote {
   created_at: string;
 }
 
+type StatusFolder = "pending" | "accepted" | "declined" | "cancelled" | "expired" | "completed";
+
 const emptyItem: QuoteItem = { name: "", quantity: 1, price: 0, description: "" };
+
+const STATUS_FOLDERS: { key: StatusFolder; label: string; icon: string; color: string; bgColor: string }[] = [
+  { key: "pending", label: "Pending Quotes", icon: "⏳", color: "text-yellow-400", bgColor: "bg-yellow-900/30 border-yellow-700" },
+  { key: "accepted", label: "Accepted Quotes", icon: "✅", color: "text-green-400", bgColor: "bg-green-900/30 border-green-700" },
+  { key: "completed", label: "Completed / Paid", icon: "💰", color: "text-blue-400", bgColor: "bg-blue-900/30 border-blue-700" },
+  { key: "declined", label: "Declined Quotes", icon: "❌", color: "text-red-400", bgColor: "bg-red-900/30 border-red-700" },
+  { key: "cancelled", label: "Cancelled Quotes", icon: "🚫", color: "text-gray-400", bgColor: "bg-gray-800/50 border-gray-600" },
+  { key: "expired", label: "Expired Quotes", icon: "⌛", color: "text-gray-500", bgColor: "bg-gray-800/30 border-gray-700" },
+];
 
 export default function AdminLayawayQuotesPage() {
   const router = useRouter();
+  const printRef = useRef<HTMLDivElement>(null);
   
   const [checking, setChecking] = useState(true);
   const [quotes, setQuotes] = useState<LayawayQuote[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  
+  // Filter state
+  const [expandedFolders, setExpandedFolders] = useState<Set<StatusFolder>>(new Set(["pending"]));
+  const [searchTerm, setSearchTerm] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   
   // Form state for creating new quote
   const [showForm, setShowForm] = useState(false);
@@ -71,6 +89,13 @@ export default function AdminLayawayQuotesPage() {
     checkAuth();
   }, []);
 
+  // Reload when filters change
+  useEffect(() => {
+    if (!checking) {
+      loadQuotes();
+    }
+  }, [fromDate, toDate]);
+
   const checkAuth = async () => {
     const res = await fetch("/api/auth/me", { credentials: "include" });
     if (!res.ok) {
@@ -84,7 +109,18 @@ export default function AdminLayawayQuotesPage() {
   const loadQuotes = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/layaway-quotes", {
+      const params = new URLSearchParams();
+      if (searchTerm) {
+        params.set("search", searchTerm);
+      }
+      if (fromDate) {
+        params.set("from", fromDate);
+      }
+      if (toDate) {
+        params.set("to", toDate);
+      }
+      
+      const res = await fetch(`/api/admin/layaway-quotes?${params.toString()}`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -98,6 +134,34 @@ export default function AdminLayawayQuotesPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    loadQuotes();
+  };
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setFromDate("");
+    setToDate("");
+    loadQuotes();
+  };
+
+  const toggleFolder = (folder: StatusFolder) => {
+    setExpandedFolders((prev) => {
+      const next = new Set(prev);
+      if (next.has(folder)) {
+        next.delete(folder);
+      } else {
+        next.add(folder);
+      }
+      return next;
+    });
+  };
+
+  const getQuotesForFolder = (status: StatusFolder): LayawayQuote[] => {
+    return quotes.filter((q) => q.status === status);
   };
 
   const handleAddItem = () => {
@@ -165,6 +229,8 @@ export default function AdminLayawayQuotesPage() {
             amount: discountAmount,
             description: discountDescription,
           } : undefined,
+          tax_amount: taxAmount,
+          shipping_cost: shippingCost,
           valid_days: validDays,
           customer_notes: customerNotes || undefined,
           admin_notes: adminNotes || undefined,
@@ -260,6 +326,190 @@ export default function AdminLayawayQuotesPage() {
     );
   };
 
+  // Count quotes by status
+  const getStatusCount = (status: StatusFolder) => {
+    return quotes.filter(q => q.status === status).length;
+  };
+
+  // Print receipt function
+  const handlePrintReceipt = (quote: LayawayQuote) => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    const receiptHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Receipt - ${quote.quote_number}</title>
+        <style>
+          body { 
+            font-family: Arial, sans-serif; 
+            padding: 40px; 
+            max-width: 800px; 
+            margin: 0 auto;
+            color: #333;
+          }
+          .header { 
+            text-align: center; 
+            border-bottom: 2px solid #333; 
+            padding-bottom: 20px; 
+            margin-bottom: 30px; 
+          }
+          .header h1 { margin: 0; font-size: 24px; }
+          .header p { margin: 5px 0; color: #666; }
+          .section { margin-bottom: 25px; }
+          .section-title { 
+            font-weight: bold; 
+            font-size: 14px; 
+            text-transform: uppercase; 
+            color: #666;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+          }
+          .row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 5px 0; 
+          }
+          .item-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 8px 0;
+            border-bottom: 1px dotted #ddd;
+          }
+          .total-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 10px 0;
+            font-weight: bold;
+            font-size: 18px;
+            border-top: 2px solid #333;
+            margin-top: 10px;
+          }
+          .customer-info { 
+            background: #f5f5f5; 
+            padding: 15px; 
+            border-radius: 5px; 
+          }
+          .payment-plan {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+          }
+          .footer { 
+            text-align: center; 
+            margin-top: 40px; 
+            padding-top: 20px; 
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 12px;
+          }
+          @media print {
+            body { padding: 20px; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>LAYAWAY QUOTE RECEIPT</h1>
+          <p>Quote #: ${quote.quote_number}</p>
+          <p>Date: ${formatDate(quote.created_at)}</p>
+          <p>Status: ${quote.status.toUpperCase()}</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Customer Information</div>
+          <div class="customer-info">
+            <div class="row"><span>Name:</span><span>${quote.customer_name}</span></div>
+            <div class="row"><span>Email:</span><span>${quote.customer_email}</span></div>
+            ${quote.customer_phone ? `<div class="row"><span>Phone:</span><span>${quote.customer_phone}</span></div>` : ""}
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Items</div>
+          ${quote.items.map(item => `
+            <div class="item-row">
+              <span>${item.quantity}x ${item.name}${item.description ? ` (${item.description})` : ""}</span>
+              <span>${formatCurrency(item.price * item.quantity)}</span>
+            </div>
+          `).join("")}
+        </div>
+
+        <div class="section">
+          <div class="section-title">Pricing</div>
+          <div class="row"><span>Subtotal:</span><span>${formatCurrency(quote.subtotal)}</span></div>
+          <div class="row"><span>Shipping:</span><span>${formatCurrency(quote.shipping_cost)}</span></div>
+          <div class="row"><span>Tax:</span><span>${quote.tax_amount > 0 ? formatCurrency(quote.tax_amount) : "Calculated at checkout"}</span></div>
+          ${quote.discount_amount > 0 ? `<div class="row"><span>Discount${quote.discount_description ? ` (${quote.discount_description})` : ""}:</span><span>-${formatCurrency(quote.discount_amount)}</span></div>` : ""}
+          <div class="total-row"><span>TOTAL:</span><span>${formatCurrency(quote.total_amount)}</span></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Payment Plan</div>
+          <div class="payment-plan">
+            <div class="row"><span>Down Payment (${quote.suggested_down_payment_percent}%):</span><span>${formatCurrency(quote.suggested_down_payment_amount)}</span></div>
+            <div class="row"><span>Number of Payments:</span><span>${quote.suggested_num_payments} ${quote.suggested_payment_frequency}</span></div>
+            <div class="row"><span>Payment Amount:</span><span>${formatCurrency(quote.suggested_payment_amount)} each</span></div>
+          </div>
+        </div>
+
+        ${quote.customer_notes ? `
+          <div class="section">
+            <div class="section-title">Notes</div>
+            <p>${quote.customer_notes}</p>
+          </div>
+        ` : ""}
+
+        <div class="footer">
+          <p>Valid Until: ${formatDate(quote.valid_until)}</p>
+          <p>Cam Spec Elite - Layaway Program</p>
+          <p>For tax purposes - Keep this receipt for your records</p>
+        </div>
+
+        <script>window.print();</script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(receiptHtml);
+    printWindow.document.close();
+  };
+
+  // Export filtered quotes for tax report
+  const handleExportTaxReport = (status?: StatusFolder) => {
+    const filteredQuotes = status 
+      ? quotes.filter(q => q.status === status)
+      : quotes;
+
+    const csvRows = [
+      ["Quote #", "Date", "Customer", "Email", "Status", "Subtotal", "Tax", "Shipping", "Discount", "Total"].join(","),
+      ...filteredQuotes.map(q => [
+        q.quote_number,
+        formatDate(q.created_at),
+        `"${q.customer_name}"`,
+        q.customer_email,
+        q.status,
+        q.subtotal.toFixed(2),
+        q.tax_amount.toFixed(2),
+        q.shipping_cost.toFixed(2),
+        q.discount_amount.toFixed(2),
+        q.total_amount.toFixed(2),
+      ].join(","))
+    ];
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `layaway-quotes-${status || "all"}-${fromDate || "all"}-to-${toDate || "now"}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (checking) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -274,12 +524,20 @@ export default function AdminLayawayQuotesPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-white">Layaway Quotes</h1>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-          >
-            {showForm ? "Cancel" : "+ New Quote"}
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => handleExportTaxReport()}
+              className="px-4 py-2 bg-green-700 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center gap-2"
+            >
+              📥 Export All
+            </button>
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            >
+              {showForm ? "Cancel" : "+ New Quote"}
+            </button>
+          </div>
         </div>
 
         {/* Message */}
@@ -289,6 +547,53 @@ export default function AdminLayawayQuotesPage() {
             <button onClick={() => setMessage(null)} className="ml-4 text-blue-400 hover:text-blue-300">×</button>
           </div>
         )}
+
+        {/* Search & Filter Bar */}
+        <div className="bg-gray-800 rounded-lg p-4 mb-6">
+          <form onSubmit={handleSearch} className="flex flex-wrap gap-4 items-end">
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-gray-400 text-sm mb-1">Search Customer</label>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Name or email..."
+                className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-400 text-sm mb-1">From Date</label>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="p-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-400 text-sm mb-1">To Date</label>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="p-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+            >
+              Search
+            </button>
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors"
+            >
+              Clear
+            </button>
+          </form>
+        </div>
 
         {/* Create Quote Form */}
         {showForm && (
@@ -403,9 +708,15 @@ export default function AdminLayawayQuotesPage() {
                 </div>
                 <div>
                   <label className="block text-gray-300 text-sm mb-1">Tax</label>
-                  <div className="w-full p-2 bg-gray-600 text-gray-400 rounded border border-gray-600 text-sm italic">
-                    Calculated at checkout by Stripe
-                  </div>
+                  <input
+                    type="number"
+                    value={taxAmount || ""}
+                    onChange={(e) => setTaxAmount(parseFloat(e.target.value) || 0)}
+                    className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+                    step="0.01"
+                    min="0"
+                    placeholder="0 = calculated at checkout"
+                  />
                 </div>
                 <div>
                   <label className="block text-gray-300 text-sm mb-1">Discount</label>
@@ -544,70 +855,119 @@ export default function AdminLayawayQuotesPage() {
           </div>
         )}
 
-        {/* Quotes Table */}
-        <div className="bg-gray-800 rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-700">
-                <th className="text-left p-4 text-gray-300 font-semibold">Quote #</th>
-                <th className="text-left p-4 text-gray-300 font-semibold">Customer</th>
-                <th className="text-left p-4 text-gray-300 font-semibold">Total</th>
-                <th className="text-left p-4 text-gray-300 font-semibold">Status</th>
-                <th className="text-left p-4 text-gray-300 font-semibold">Valid Until</th>
-                <th className="text-left p-4 text-gray-300 font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-gray-400">Loading...</td>
-                </tr>
-              ) : quotes.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-gray-400">No quotes found</td>
-                </tr>
-              ) : (
-                quotes.map((quote) => (
-                  <tr key={quote.id} className="border-t border-gray-700 hover:bg-gray-750">
-                    <td className="p-4 text-white font-mono text-sm">{quote.quote_number}</td>
-                    <td className="p-4">
-                      <div className="text-white">{quote.customer_name}</div>
-                      <div className="text-gray-400 text-sm">{quote.customer_email}</div>
-                    </td>
-                    <td className="p-4 text-white font-semibold">{formatCurrency(quote.total_amount)}</td>
-                    <td className="p-4">{getStatusBadge(quote.status)}</td>
-                    <td className="p-4 text-gray-300">{formatDate(quote.valid_until)}</td>
-                    <td className="p-4">
-                      <div className="flex gap-2">
+        {/* Collapsible Folders by Status */}
+        {loading ? (
+          <div className="text-center py-12 text-gray-400">Loading quotes...</div>
+        ) : (
+          <div className="space-y-4">
+            {STATUS_FOLDERS.map((folder) => {
+              const folderQuotes = getQuotesForFolder(folder.key);
+              const isExpanded = expandedFolders.has(folder.key);
+              
+              return (
+                <div key={folder.key} className={`rounded-lg border ${folder.bgColor} overflow-hidden`}>
+                  {/* Folder Header */}
+                  <div
+                    onClick={() => toggleFolder(folder.key)}
+                    className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{folder.icon}</span>
+                      <span className={`text-lg font-semibold ${folder.color}`}>{folder.label}</span>
+                      <span className="px-2 py-0.5 bg-black/30 rounded text-sm text-gray-300">
+                        {folderQuotes.length}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {folderQuotes.length > 0 && (
                         <button
-                          onClick={() => copyQuoteUrl(quote.id)}
-                          className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded"
-                          title="Copy quote URL"
+                          onClick={(e) => { e.stopPropagation(); handleExportTaxReport(folder.key); }}
+                          className="px-2 py-1 bg-green-700/50 hover:bg-green-700 text-white text-xs rounded transition-colors"
                         >
-                          Copy URL
+                          📥 Export
                         </button>
-                        <button
-                          onClick={() => setSelectedQuote(quote)}
-                          className="px-2 py-1 bg-gray-600 hover:bg-gray-500 text-white text-xs rounded"
-                        >
-                          View
-                        </button>
-                        {quote.status === "pending" && (
-                          <button
-                            onClick={() => handleCancelQuote(quote.id)}
-                            className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
-                          >
-                            Cancel
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                      )}
+                      <span className={`text-xl text-gray-400 transform transition-transform ${isExpanded ? "rotate-180" : ""}`}>
+                        ▼
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Folder Content */}
+                  {isExpanded && (
+                    <div className="border-t border-gray-700">
+                      {folderQuotes.length === 0 ? (
+                        <div className="p-6 text-center text-gray-500">
+                          No {folder.label.toLowerCase()} found
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-gray-700">
+                          {folderQuotes.map((quote) => (
+                            <div key={quote.id} className="p-4 hover:bg-white/5 transition-colors">
+                              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                                {/* Quote Info */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-3 mb-1">
+                                    <span className="text-white font-mono text-sm">{quote.quote_number}</span>
+                                    <span className="text-gray-500 text-sm">•</span>
+                                    <span className="text-gray-400 text-sm">{formatDate(quote.created_at)}</span>
+                                  </div>
+                                  <div className="text-white font-medium">{quote.customer_name}</div>
+                                  <div className="text-gray-400 text-sm truncate">{quote.customer_email}</div>
+                                </div>
+                                
+                                {/* Pricing */}
+                                <div className="text-right lg:w-48">
+                                  <div className="text-green-400 font-bold text-lg">{formatCurrency(quote.total_amount)}</div>
+                                  {quote.tax_amount > 0 && (
+                                    <div className="text-gray-400 text-xs">Tax: {formatCurrency(quote.tax_amount)}</div>
+                                  )}
+                                  <div className="text-gray-500 text-xs">Valid until: {formatDate(quote.valid_until)}</div>
+                                </div>
+                                
+                                {/* Actions */}
+                                <div className="flex flex-wrap gap-2 lg:w-auto">
+                                  <button
+                                    onClick={() => handlePrintReceipt(quote)}
+                                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded transition-colors"
+                                    title="Print Receipt"
+                                  >
+                                    🖨️ Print
+                                  </button>
+                                  <button
+                                    onClick={() => copyQuoteUrl(quote.id)}
+                                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                                    title="Copy quote URL"
+                                  >
+                                    🔗 Copy URL
+                                  </button>
+                                  <button
+                                    onClick={() => setSelectedQuote(quote)}
+                                    className="px-3 py-1.5 bg-gray-600 hover:bg-gray-500 text-white text-xs rounded transition-colors"
+                                  >
+                                    👁️ View
+                                  </button>
+                                  {quote.status === "pending" && (
+                                    <button
+                                      onClick={() => handleCancelQuote(quote.id)}
+                                      className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition-colors"
+                                    >
+                                      Cancel
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Quote Detail Modal */}
         {selectedQuote && (
@@ -662,9 +1022,9 @@ export default function AdminLayawayQuotesPage() {
                       <span>Shipping</span>
                       <span>{formatCurrency(selectedQuote.shipping_cost)}</span>
                     </div>
-                    <div className="flex justify-between text-gray-500 text-sm italic">
+                    <div className="flex justify-between text-gray-400">
                       <span>Tax</span>
-                      <span>At checkout</span>
+                      <span>{selectedQuote.tax_amount > 0 ? formatCurrency(selectedQuote.tax_amount) : <span className="text-gray-500 text-sm italic">At checkout</span>}</span>
                     </div>
                     {selectedQuote.discount_amount > 0 && (
                       <div className="flex justify-between text-green-400">
@@ -673,7 +1033,7 @@ export default function AdminLayawayQuotesPage() {
                       </div>
                     )}
                     <div className="flex justify-between text-white font-bold mt-2 pt-2 border-t border-gray-700">
-                      <span>Total</span>
+                      <span>Total{selectedQuote.tax_amount <= 0 && " (before tax)"}</span>
                       <span>{formatCurrency(selectedQuote.total_amount)}</span>
                     </div>
                   </div>
@@ -706,6 +1066,12 @@ export default function AdminLayawayQuotesPage() {
                 )}
 
                 <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => handlePrintReceipt(selectedQuote)}
+                    className="flex-1 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors"
+                  >
+                    🖨️ Print Receipt
+                  </button>
                   <button
                     onClick={() => copyQuoteUrl(selectedQuote.id)}
                     className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"

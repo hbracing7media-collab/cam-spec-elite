@@ -54,6 +54,10 @@ export default function ProfilePage() {
   const [msg, setMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Admin state
+  const [isAdmin, setIsAdmin] = useState(false);
+  const ADMIN_EMAILS = ["philliphudson24@gmail.com"];
+
   // Notification preferences state
   const [notifyThreadReply, setNotifyThreadReply] = useState(true);
   const [notifyPostReply, setNotifyPostReply] = useState(true);
@@ -123,6 +127,10 @@ export default function ProfilePage() {
         setUser(data.user);
         setForumHandle(data.user.forum_handle || "");
         setAvatarUrl(data.user.forum_avatar_url || "");
+        // Check if user is admin
+        if (data.user.email && ADMIN_EMAILS.includes(data.user.email)) {
+          setIsAdmin(true);
+        }
         setChecking(false);
 
         // Load short blocks and cam builds
@@ -769,6 +777,119 @@ export default function ProfilePage() {
           >
             My Garage
           </h1>
+
+          {/* Admin Panel - Only visible to admins */}
+          {isAdmin && (
+            <div
+              style={{
+                marginBottom: 24,
+                padding: 16,
+                borderRadius: 12,
+                background: "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(236,72,153,0.15))",
+                border: "1px solid rgba(139,92,246,0.4)",
+              }}
+            >
+              <h3
+                style={{
+                  margin: "0 0 12px 0",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "#a78bfa",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <span style={{ fontSize: 16 }}>⚙️</span> Admin Panel
+              </h3>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 8,
+                }}
+              >
+                <Link
+                  href="/admin/layaway-quotes"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "10px 12px",
+                    borderRadius: 8,
+                    background: "rgba(59,130,246,0.2)",
+                    border: "1px solid rgba(59,130,246,0.4)",
+                    color: "#93c5fd",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <span>💳</span> Layaway Quotes
+                </Link>
+                <Link
+                  href="/admin-cam-review"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "10px 12px",
+                    borderRadius: 8,
+                    background: "rgba(34,197,94,0.2)",
+                    border: "1px solid rgba(34,197,94,0.4)",
+                    color: "#86efac",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <span>🎯</span> Cam Approval
+                </Link>
+                <Link
+                  href="/admin-cylinder-head-review"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "10px 12px",
+                    borderRadius: 8,
+                    background: "rgba(249,115,22,0.2)",
+                    border: "1px solid rgba(249,115,22,0.4)",
+                    color: "#fdba74",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <span>🔧</span> Head Approval
+                </Link>
+                <Link
+                  href="/admin/dyno-review"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "10px 12px",
+                    borderRadius: 8,
+                    background: "rgba(236,72,153,0.2)",
+                    border: "1px solid rgba(236,72,153,0.4)",
+                    color: "#f9a8d4",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <span>📊</span> Dyno Approval
+                </Link>
+              </div>
+            </div>
+          )}
 
         {/* Avatar Display Section */}
         <div

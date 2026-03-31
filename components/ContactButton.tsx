@@ -47,25 +47,25 @@ export default function ContactButton() {
 
   return (
     <>
-      {/* Floating Contact Button */}
+      {/* Floating Contact Button - positioned below AI chatbot on the right */}
       <button
         onClick={() => setIsOpen(true)}
         style={{
           position: "fixed",
           bottom: 24,
-          left: 24,
+          right: 20,
           zIndex: 9998,
           background: "linear-gradient(135deg, #ff3bd4, #8b5cf6)",
           border: "none",
           borderRadius: 50,
-          padding: "14px 24px",
+          padding: "12px 18px",
           color: "#fff",
-          fontSize: 14,
+          fontSize: 13,
           fontWeight: 600,
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
-          gap: 8,
+          gap: 6,
           boxShadow: "0 0 20px rgba(255, 59, 212, 0.5)",
           transition: "transform 0.2s ease, box-shadow 0.2s ease",
         }}
@@ -79,8 +79,8 @@ export default function ContactButton() {
         }}
       >
         <svg
-          width="18"
-          height="18"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -91,7 +91,7 @@ export default function ContactButton() {
           <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
           <polyline points="22,6 12,13 2,6" />
         </svg>
-        Contact Us
+        Contact
       </button>
 
       {/* Modal Overlay */}

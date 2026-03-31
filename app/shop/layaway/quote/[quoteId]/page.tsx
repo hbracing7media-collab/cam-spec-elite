@@ -349,12 +349,12 @@ export default function QuoteViewPage() {
                 <span>Shipping</span>
                 <span>{formatCurrency(quote.shipping_cost)}</span>
               </div>
-              <div className="flex justify-between py-2 text-gray-500 text-sm italic">
+              <div className="flex justify-between py-2 text-gray-400">
                 <span>Sales Tax</span>
-                <span>Calculated at checkout</span>
+                <span>{quote.tax_amount > 0 ? formatCurrency(quote.tax_amount) : <span className="text-gray-500 text-sm italic">At checkout</span>}</span>
               </div>
               <div className="flex justify-between py-3 text-xl font-bold text-white border-t border-gray-600 mt-2">
-                <span>Total (before tax)</span>
+                <span>Total{quote.tax_amount <= 0 && " (before tax)"}</span>
                 <span>{formatCurrency(quote.total_amount)}</span>
               </div>
             </div>
@@ -364,12 +364,12 @@ export default function QuoteViewPage() {
         {/* Payment Plan Details */}
         <div className="bg-blue-900/30 border border-blue-800 rounded-lg p-6 mt-6">
           <h3 className="text-lg font-semibold text-blue-300 mb-4">Layaway Payment Plan</h3>
-          <p className="text-gray-400 text-sm mb-4">Sales tax will be added to your down payment at checkout.</p>
+          {quote.tax_amount <= 0 && <p className="text-gray-400 text-sm mb-4">Sales tax will be added to your down payment at checkout.</p>}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-gray-800 p-4 rounded">
               <div className="text-gray-400 text-sm">Down Payment ({quote.suggested_down_payment_percent}%)</div>
               <div className="text-xl font-bold text-white">{formatCurrency(quote.suggested_down_payment_amount)}</div>
-              <div className="text-gray-500 text-xs mt-1">+ tax at checkout</div>
+              {quote.tax_amount <= 0 && <div className="text-gray-500 text-xs mt-1">+ tax at checkout</div>}
             </div>
             <div className="bg-gray-800 p-4 rounded">
               <div className="text-gray-400 text-sm">Number of Payments</div>
@@ -382,7 +382,7 @@ export default function QuoteViewPage() {
               <div className="text-gray-500 text-xs mt-1">Per installment</div>
             </div>
             <div className="bg-gray-800 p-4 rounded">
-              <div className="text-gray-400 text-sm">Total (before tax)</div>
+              <div className="text-gray-400 text-sm">Total{quote.tax_amount <= 0 && " (before tax)"}</div>
               <div className="text-xl font-bold text-green-400">{formatCurrency(quote.total_amount)}</div>
               <div className="text-gray-500 text-xs mt-1">All payments combined</div>
             </div>
@@ -419,7 +419,7 @@ export default function QuoteViewPage() {
 
         {/* Terms */}
         <div className="mt-8 text-center text-gray-500 text-sm">
-          <p>All sales final, applicable sales tax added at checkout.</p>
+          <p>All sales final{quote.tax_amount <= 0 && ", applicable sales tax added at checkout"}.</p>
           <p className="mt-2">Quotation prepared by: Phillip Hudson</p>
         </div>
 
