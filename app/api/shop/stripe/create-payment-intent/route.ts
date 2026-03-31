@@ -16,6 +16,13 @@ interface CreatePaymentIntentRequest {
   customer_name: string;
   description?: string;
   save_card?: boolean;  // For future auto-payments
+  // Shipping address for tax calculation
+  shipping?: {
+    address: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
 }
 
 // ============================================
@@ -79,21 +86,101 @@ export async function POST(req: NextRequest) {
     });
     
     if (existingCustomers.data.length > 0) {
-      customerId = existingCustomers.data[0].id;
+      // Update existing customer with address if provided
+      if (body.shipping) {
+        const customer = await stripe.customers.update(existingCustomers.data[0].id, {
+          name: body.customer_name,
+          address: {
+            line1: body.shipping.address,
+            city: body.shipping.city,
+            state: body.shipping.state,
+            postal_code: body.shipping.zip,
+            country: "US",
+          },
+          shipping: {
+            name: body.customer_name,
+            address: {
+              line1: body.shipping.address,
+              city: body.shipping.city,
+              state: body.shipping.state,
+              postal_code: body.shipping.zip,
+              country: "US",
+            },
+          },
+        });
+        customerId = customer.id;
+      } else {
+        customerId = existingCustomers.data[0].id;
+      }
     } else {
-      const customer = await stripe.customers.create({
+      const customerData: any = {
         email: body.customer_email,
         name: body.customer_name,
         metadata: {
           layaway_plan_id: body.plan_id,
         },
-      });
+      };
+      
+      if (body.shipping) {
+        customerData.address = {
+          line1: body.shipping.address,
+          city: body.shipping.city,
+          state: body.shipping.state,
+          postal_code: body.shipping.zip,
+          country: "US",
+        };
+        customerData.shipping = {
+          name: body.customer_name,
+          address: {
+            line1: body.shipping.address,
+            city: body.shipping.city,
+            state: body.shipping.state,
+            postal_code: body.shipping.zip,
+            country: "US",
+          },
+        };
+      }
+      
+      const customer = await stripe.customers.create(customerData);
       customerId = customer.id;
     }
     
+    // Calculate tax using Stripe Tax if shipping address provided
+    let taxAmountCents = 0;
+    let taxCalculationId: string | undefined;
+    const paymentAmountCents = toStripeCents(body.amount);
+    
+    if (body.shipping) {
+      try {
+        const taxCalculation = await stripe.tax.calculations.create({
+          currency: "usd",
+          customer: customerId,
+          line_items: [
+            {
+              amount: paymentAmountCents,
+              reference: "layaway_payment",
+              tax_code: "txcd_20030000", // General - Services
+            },
+          ],
+          shipping_cost: {
+            amount: 0,
+          },
+        });
+        
+        taxAmountCents = taxCalculation.tax_amount_exclusive;
+        taxCalculationId = taxCalculation.id;
+        console.log(`Stripe Tax calculated: $${(taxAmountCents / 100).toFixed(2)} for ${body.shipping.state}`);
+      } catch (taxError) {
+        console.error("Stripe Tax calculation error:", taxError);
+        // If Stripe Tax fails, proceed without tax
+      }
+    }
+    
+    const totalAmountCents = paymentAmountCents + taxAmountCents;
+    
     // Create Payment Intent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: toStripeCents(body.amount),
+      amount: totalAmountCents,
       currency: "usd",
       customer: customerId,
       description: body.description || `Layaway Payment - ${plan.plan_number}`,
@@ -102,6 +189,8 @@ export async function POST(req: NextRequest) {
         layaway_payment_id: body.payment_id,
         plan_number: plan.plan_number,
         payment_number: payment.payment_number.toString(),
+        tax_amount_cents: taxAmountCents.toString(),
+        tax_calculation_id: taxCalculationId || "",
       },
       // Enable saving payment method for future use
       setup_future_usage: body.save_card ? "off_session" : undefined,
@@ -115,6 +204,8 @@ export async function POST(req: NextRequest) {
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
       customerId,
+      taxAmount: taxAmountCents / 100,
+      totalAmount: totalAmountCents / 100,
     });
     
   } catch (err) {

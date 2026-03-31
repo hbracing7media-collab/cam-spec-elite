@@ -58,11 +58,14 @@ export default function AdminCylinderHeadReview() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ submission_id: submissionId }),
       });
-      if (!res.ok) throw new Error("Approval failed");
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.message || "Approval failed");
+      }
       setMsg("✅ Approved");
       await loadSubmissions();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "Error");
+      setMsg("❌ " + (err instanceof Error ? err.message : "Error"));
     }
   }
 
@@ -73,11 +76,14 @@ export default function AdminCylinderHeadReview() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ submission_id: submissionId }),
       });
-      if (!res.ok) throw new Error("Rejection failed");
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.message || "Rejection failed");
+      }
       setMsg("✅ Rejected");
       await loadSubmissions();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "Error");
+      setMsg("❌ " + (err instanceof Error ? err.message : "Error"));
     }
   }
 
