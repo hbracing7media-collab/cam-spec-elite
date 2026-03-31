@@ -59,6 +59,34 @@ interface LayawayPayment {
   payment_method: string | null;
 }
 
+interface LayawayQuote {
+  id: string;
+  quote_number: string;
+  customer_name: string;
+  customer_email: string;
+  items: Array<{
+    name: string;
+    price: number;
+    quantity: number;
+    description?: string;
+  }>;
+  subtotal: number;
+  tax_amount: number;
+  shipping_cost: number;
+  total_amount: number;
+  discount_amount: number;
+  discount_description: string | null;
+  suggested_down_payment_percent: number;
+  suggested_down_payment_amount: number;
+  suggested_payment_frequency: string;
+  suggested_num_payments: number;
+  suggested_payment_amount: number;
+  valid_until: string;
+  status: string;
+  customer_notes: string | null;
+  created_at: string;
+}
+
 interface ProfileLayawayConsoleProps {
   userEmail: string;
   userId?: string;
@@ -135,6 +163,7 @@ function getStatusLabel(status: string) {
 // ============================================
 export default function ProfileLayawayConsole({ userEmail, userId }: ProfileLayawayConsoleProps) {
   const [plans, setPlans] = useState<LayawayPlan[]>([]);
+  const [quotes, setQuotes] = useState<LayawayQuote[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
@@ -146,10 +175,34 @@ export default function ProfileLayawayConsole({ userEmail, userId }: ProfileLaya
     payment: LayawayPayment | null;
   }>({ isOpen: false, plan: null, payment: null });
   
-  // Load user's layaway plans
+  // Load user's layaway plans and quotes
   useEffect(() => {
     loadPlans();
+    loadQuotes();
   }, [userEmail, userId]);
+  
+  const loadQuotes = async () => {
+    try {
+      let url = "/api/shop/layaway/quotes?";
+      if (userId) {
+        url += `user_id=${encodeURIComponent(userId)}`;
+      } else if (userEmail) {
+        url += `email=${encodeURIComponent(userEmail)}`;
+      } else {
+        return;
+      }
+      
+      const res = await fetch(url);
+      const data = await res.json();
+      
+      if (data.ok && data.quotes) {
+        // Only show pending quotes
+        setQuotes(data.quotes.filter((q: LayawayQuote) => q.status === "pending"));
+      }
+    } catch (err) {
+      console.error("Failed to load quotes:", err);
+    }
+  };
   
   const loadPlans = async () => {
     setLoading(true);
@@ -321,7 +374,7 @@ export default function ProfileLayawayConsole({ userEmail, userId }: ProfileLaya
     );
   }
   
-  if (plans.length === 0) {
+  if (plans.length === 0 && quotes.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: 40, color: "#94a3b8" }}>
         <div style={{ fontSize: 36, marginBottom: 12 }}>📦</div>
@@ -360,6 +413,169 @@ export default function ProfileLayawayConsole({ userEmail, userId }: ProfileLaya
     <div>
       {error && (
         <div style={{ color: "#f87171", marginBottom: 16, fontSize: 13 }}>{error}</div>
+      )}
+      
+      {/* Pending Quotes Section */}
+      {quotes.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <h3 style={{ 
+            color: "#fbbf24", 
+            fontSize: 14, 
+            marginBottom: 12, 
+            textTransform: "uppercase",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}>
+            📋 Pending Quotes ({quotes.length})
+          </h3>
+          
+          {quotes.map((quote) => {
+            const validUntil = new Date(quote.valid_until);
+            const daysLeft = Math.ceil((validUntil.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+            const isExpiring = daysLeft <= 3;
+            
+            return (
+              <div 
+                key={quote.id} 
+                style={{
+                  ...styles.card,
+                  border: "1px solid rgba(251, 191, 36, 0.4)",
+                  background: "rgba(251, 191, 36, 0.05)",
+                }}
+              >
+                <div style={styles.planHeader}>
+                  <div>
+                    <div style={{ ...styles.planNumber, color: "#fbbf24" }}>{quote.quote_number}</div>
+                    <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                      {formatDate(quote.created_at)}
+                    </div>
+                  </div>
+                  <div style={{
+                    display: "inline-block",
+                    padding: "4px 10px",
+                    borderRadius: 16,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    background: isExpiring ? "rgba(248, 113, 113, 0.2)" : "rgba(251, 191, 36, 0.2)",
+                    color: isExpiring ? "#f87171" : "#fbbf24",
+                  }}>
+                    {isExpiring ? `⏰ ${daysLeft} days left` : "Pending Review"}
+                  </div>
+                </div>
+                
+                {quote.customer_notes && (
+                  <div style={{
+                    background: "rgba(251, 191, 36, 0.1)",
+                    borderLeft: "3px solid #fbbf24",
+                    padding: "10px 12px",
+                    marginBottom: 16,
+                    borderRadius: "0 6px 6px 0",
+                    fontSize: 13,
+                    color: "#e2e8f0",
+                  }}>
+                    <div style={{ fontSize: 10, color: "#fbbf24", marginBottom: 4, textTransform: "uppercase" }}>
+                      Note from HB Racing
+                    </div>
+                    {quote.customer_notes}
+                  </div>
+                )}
+                
+                {/* Items */}
+                <div style={{ marginBottom: 16 }}>
+                  {quote.items.slice(0, 3).map((item, idx) => (
+                    <div key={idx} style={{ 
+                      display: "flex", 
+                      justifyContent: "space-between",
+                      padding: "6px 0",
+                      borderBottom: idx < Math.min(quote.items.length - 1, 2) ? "1px solid rgba(100,100,120,0.2)" : "none",
+                      fontSize: 13,
+                    }}>
+                      <span style={{ color: "#e2e8f0" }}>
+                        {item.name} {item.quantity > 1 && `×${item.quantity}`}
+                      </span>
+                      <span style={{ color: "#0ff" }}>${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                  ))}
+                  {quote.items.length > 3 && (
+                    <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 4 }}>
+                      +{quote.items.length - 3} more items
+                    </div>
+                  )}
+                </div>
+                
+                {/* Price Summary */}
+                <div style={styles.statsRow}>
+                  <div style={styles.statBox}>
+                    <div style={styles.statValue}>${quote.total_amount.toFixed(2)}</div>
+                    <div style={styles.statLabel}>Total</div>
+                  </div>
+                  <div style={styles.statBox}>
+                    <div style={{ ...styles.statValue, color: "#fbbf24" }}>${quote.suggested_down_payment_amount.toFixed(2)}</div>
+                    <div style={styles.statLabel}>Down Payment</div>
+                  </div>
+                  <div style={styles.statBox}>
+                    <div style={styles.statValue}>{quote.suggested_num_payments}×${quote.suggested_payment_amount.toFixed(2)}</div>
+                    <div style={styles.statLabel}>{formatFrequency(quote.suggested_payment_frequency)}</div>
+                  </div>
+                </div>
+                
+                {quote.discount_amount > 0 && (
+                  <div style={{ 
+                    color: "#22c55e", 
+                    fontSize: 12, 
+                    marginBottom: 12,
+                    background: "rgba(34, 197, 94, 0.1)",
+                    padding: "6px 10px",
+                    borderRadius: 6,
+                  }}>
+                    💰 Discount: -${quote.discount_amount.toFixed(2)}
+                    {quote.discount_description && ` (${quote.discount_description})`}
+                  </div>
+                )}
+                
+                {/* Action Buttons */}
+                <div style={{ display: "flex", gap: 10 }}>
+                  <Link
+                    href={`/shop/layaway/quote/${quote.id}`}
+                    style={{
+                      ...styles.button,
+                      ...styles.primaryButton,
+                      flex: 1,
+                      textAlign: "center",
+                      textDecoration: "none",
+                      padding: "12px 16px",
+                    }}
+                  >
+                    ✅ View & Accept Quote
+                  </Link>
+                </div>
+                
+                <div style={{ 
+                  marginTop: 10, 
+                  fontSize: 11, 
+                  color: isExpiring ? "#f87171" : "#64748b",
+                  textAlign: "center",
+                }}>
+                  Valid until {formatDate(quote.valid_until)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      
+      {/* Existing Plans Section */}
+      {sortedPlans.length > 0 && quotes.length > 0 && (
+        <h3 style={{ 
+          color: "#0ff", 
+          fontSize: 14, 
+          marginBottom: 12, 
+          textTransform: "uppercase",
+        }}>
+          Active Plans ({sortedPlans.length})
+        </h3>
       )}
       
       {sortedPlans.map((plan) => {

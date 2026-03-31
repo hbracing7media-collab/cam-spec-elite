@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { stripe } from "@/lib/stripe";
 import { cookies } from "next/headers";
+import { notifyCustomerLayawayQuote } from "@/lib/email";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -229,14 +230,45 @@ export async function POST(req: NextRequest) {
 
     if (error) throw error;
 
-    // TODO: Send email notification to customer about the quote
-    console.log(`Quote ${quoteNumber} created for ${body.customer.email}`);
+    // Send email notification to customer about the quote
+    const quoteUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://cam-spec-elite.vercel.app"}/shop/layaway/quote/${quote.id}`;
+    
+    try {
+      await notifyCustomerLayawayQuote({
+        quoteNumber: quoteNumber,
+        customerName: body.customer.name,
+        customerEmail: body.customer.email,
+        items: body.items.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          description: item.description,
+        })),
+        subtotal,
+        discountAmount,
+        discountDescription: body.discount?.description,
+        shippingCost,
+        totalAmount,
+        downPaymentAmount,
+        downPaymentPercent,
+        paymentAmount,
+        numPayments,
+        paymentFrequency,
+        validUntil: validUntil.toISOString().split("T")[0],
+        quoteUrl,
+        customerNotes: body.customer_notes,
+      });
+      console.log(`Quote ${quoteNumber} email sent to ${body.customer.email}`);
+    } catch (emailErr) {
+      console.error("Failed to send quote email:", emailErr);
+      // Don't fail the request if email fails
+    }
 
     return NextResponse.json({
       ok: true,
       message: "Quote created successfully",
       quote,
-      quote_url: `${process.env.NEXT_PUBLIC_BASE_URL || ""}/shop/layaway/quote/${quote.id}`,
+      quote_url: quoteUrl,
     });
   } catch (err) {
     console.error("Admin quote POST error:", err);

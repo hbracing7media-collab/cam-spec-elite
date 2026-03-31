@@ -883,6 +883,170 @@ export async function notifyConsultingBooking(data: ConsultingBookingData): Prom
   });
 }
 
+// ============================================
+// Layaway Quote Notification (to Customer)
+// ============================================
+
+interface LayawayQuoteNotificationData {
+  quoteNumber: string;
+  customerName: string;
+  customerEmail: string;
+  items: Array<{ name: string; quantity: number; price: number; description?: string }>;
+  subtotal: number;
+  discountAmount: number;
+  discountDescription?: string;
+  shippingCost: number;
+  totalAmount: number;
+  downPaymentAmount: number;
+  downPaymentPercent: number;
+  paymentAmount: number;
+  numPayments: number;
+  paymentFrequency: string;
+  validUntil: string;
+  quoteUrl: string;
+  customerNotes?: string;
+}
+
+export async function notifyCustomerLayawayQuote(data: LayawayQuoteNotificationData): Promise<boolean> {
+  const itemsHtml = data.items
+    .map(item => `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #333;">
+          <div style="font-weight: 600; color: #e2e8f0;">${item.name}</div>
+          ${item.description ? `<div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">${item.description}</div>` : ''}
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #333; text-align: center;">${item.quantity}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #333; text-align: right;">$${item.price.toFixed(2)}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #333; text-align: right;">$${(item.price * item.quantity).toFixed(2)}</td>
+      </tr>
+    `)
+    .join("");
+
+  const frequencyLabel = data.paymentFrequency === 'weekly' ? 'Weekly' : 
+                         data.paymentFrequency === 'biweekly' ? 'Bi-weekly' : 'Monthly';
+
+  const validDate = new Date(data.validUntil).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a2e; color: #e2e8f0; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #00f5ff, #ff3bd4); padding: 25px; border-radius: 8px 8px 0 0; text-align: center;">
+        <h1 style="margin: 0; color: #0a0a1e; font-size: 26px;">📋 Your Layaway Quote is Ready!</h1>
+        <p style="margin: 8px 0 0 0; color: #0a0a1e; font-size: 14px;">From HB Racing</p>
+      </div>
+      
+      <div style="padding: 25px; background: #0a0a1e; border: 1px solid #333; border-radius: 0 0 8px 8px;">
+        <p style="color: #e2e8f0; font-size: 16px; margin-bottom: 20px;">
+          Hey ${data.customerName.split(' ')[0]}! 👋
+        </p>
+        
+        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 25px;">
+          We've put together a custom layaway quote for you. Review the details below and click the button to accept and start your plan!
+        </p>
+        
+        <div style="background: rgba(0, 245, 255, 0.1); border: 1px solid #0ff; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
+          <div style="font-size: 12px; color: #0ff; margin-bottom: 4px;">QUOTE #${data.quoteNumber}</div>
+          <div style="font-size: 11px; color: #f87171;">⏰ Valid until ${validDate}</div>
+        </div>
+        
+        ${data.customerNotes ? `
+          <div style="background: rgba(251, 191, 36, 0.1); border-left: 3px solid #fbbf24; padding: 12px 15px; margin-bottom: 25px; border-radius: 0 8px 8px 0;">
+            <div style="font-size: 11px; color: #fbbf24; margin-bottom: 4px; text-transform: uppercase;">Note from HB Racing</div>
+            <p style="margin: 0; color: #e2e8f0; font-size: 14px;">${data.customerNotes}</p>
+          </div>
+        ` : ''}
+
+        <div style="margin-bottom: 25px;">
+          <h3 style="color: #0ff; font-size: 14px; margin-bottom: 12px; text-transform: uppercase;">Items</h3>
+          <table style="width: 100%; border-collapse: collapse; color: #e2e8f0;">
+            <thead>
+              <tr style="background: #1e1e3f;">
+                <th style="padding: 10px; text-align: left; font-size: 11px; text-transform: uppercase; color: #94a3b8;">Item</th>
+                <th style="padding: 10px; text-align: center; font-size: 11px; text-transform: uppercase; color: #94a3b8;">Qty</th>
+                <th style="padding: 10px; text-align: right; font-size: 11px; text-transform: uppercase; color: #94a3b8;">Price</th>
+                <th style="padding: 10px; text-align: right; font-size: 11px; text-transform: uppercase; color: #94a3b8;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+        </div>
+        
+        <div style="background: #1e1e3f; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #94a3b8;">Subtotal:</span>
+            <span>$${data.subtotal.toFixed(2)}</span>
+          </div>
+          ${data.discountAmount > 0 ? `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #22c55e;">
+              <span>Discount${data.discountDescription ? ` (${data.discountDescription})` : ''}:</span>
+              <span>-$${data.discountAmount.toFixed(2)}</span>
+            </div>
+          ` : ''}
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #94a3b8;">Shipping:</span>
+            <span>$${data.shippingCost.toFixed(2)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #94a3b8;">Tax:</span>
+            <span style="font-size: 12px; color: #64748b;">Calculated at checkout</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 20px; font-weight: bold; color: #0ff; border-top: 1px solid #444; padding-top: 12px; margin-top: 12px;">
+            <span>TOTAL:</span>
+            <span>$${data.totalAmount.toFixed(2)}*</span>
+          </div>
+          <div style="font-size: 11px; color: #64748b; margin-top: 6px; text-align: right;">*Plus applicable tax</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 59, 212, 0.1)); border: 1px solid rgba(0, 245, 255, 0.3); border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+          <h3 style="color: #0ff; font-size: 14px; margin: 0 0 15px 0; text-transform: uppercase;">💳 Payment Plan</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+              <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">Down Payment (${data.downPaymentPercent}%)</div>
+              <div style="font-size: 22px; font-weight: bold; color: #fbbf24;">$${data.downPaymentAmount.toFixed(2)}</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">${frequencyLabel} Payments</div>
+              <div style="font-size: 22px; font-weight: bold; color: #e2e8f0;">${data.numPayments} × $${data.paymentAmount.toFixed(2)}</div>
+            </div>
+          </div>
+        </div>
+
+        <a href="${data.quoteUrl}" style="display: block; text-align: center; background: linear-gradient(90deg, #00f5ff, #0aa); color: #0a0a1e; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: bold; margin-bottom: 20px;">
+          ✅ View & Accept Quote
+        </a>
+        
+        <p style="text-align: center; font-size: 12px; color: #64748b;">
+          Or copy this link: ${data.quoteUrl}
+        </p>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333;">
+          <p style="font-size: 13px; color: #94a3b8; margin: 0;">
+            Questions? Reply to this email or contact us at <a href="mailto:hbracing77@yahoo.com" style="color: #0ff;">hbracing77@yahoo.com</a>
+          </p>
+        </div>
+      </div>
+      
+      <div style="text-align: center; padding: 20px; color: #64748b; font-size: 12px;">
+        <p style="margin: 0;">HB Racing - Performance Parts & Consultation</p>
+        <p style="margin: 4px 0 0 0;">📧 hbracing77@yahoo.com</p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: data.customerEmail,
+    subject: `📋 Your Layaway Quote from HB Racing - $${data.totalAmount.toFixed(2)}`,
+    html,
+    replyTo: COMPANY_EMAIL,
+  });
+}
+
 export async function sendConsultingReceipt(data: ConsultingBookingData): Promise<boolean> {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a2e; color: #e2e8f0; padding: 20px;">
