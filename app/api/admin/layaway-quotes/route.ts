@@ -233,8 +233,9 @@ export async function POST(req: NextRequest) {
     // Send email notification to customer about the quote
     const quoteUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://cam-spec-elite.vercel.app"}/shop/layaway/quote/${quote.id}`;
     
+    let emailSent = false;
     try {
-      await notifyCustomerLayawayQuote({
+      emailSent = await notifyCustomerLayawayQuote({
         quoteNumber: quoteNumber,
         customerName: body.customer.name,
         customerEmail: body.customer.email,
@@ -258,16 +259,18 @@ export async function POST(req: NextRequest) {
         quoteUrl,
         customerNotes: body.customer_notes,
       });
-      console.log(`Quote ${quoteNumber} email sent to ${body.customer.email}`);
+      console.log(`Quote ${quoteNumber} email ${emailSent ? 'sent' : 'FAILED'} to ${body.customer.email}`);
     } catch (emailErr) {
       console.error("Failed to send quote email:", emailErr);
-      // Don't fail the request if email fails
     }
 
     return NextResponse.json({
       ok: true,
-      message: "Quote created successfully",
+      message: emailSent 
+        ? "Quote created and email sent!" 
+        : "Quote created (email not sent - check RESEND_API_KEY)",
       quote,
+      email_sent: emailSent,
       quote_url: quoteUrl,
     });
   } catch (err) {
