@@ -5,11 +5,6 @@ import Link from "next/link";
 import Script from "next/script";
 import { useTranslations } from "next-intl";
 import { calculateSalesTax, getAllStates } from "@/lib/salesTax";
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-
-// Initialize Stripe
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 interface CartItem {
   id: string;
@@ -61,15 +56,13 @@ const inputStyle: React.CSSProperties = {
   outline: "none",
 };
 
-// Payment Form Component - Uses embedded CardElement with app-calculated tax
+// Payment Form Component - Redirects to Stripe Checkout for automatic tax
 function PaymentForm({ 
-  onSuccess,
   onError,
   customerInfo,
   cartItems,
   subtotal,
   shipping,
-  tax,
 }: { 
   onSuccess: () => void;
   onError: (error: string) => void;
@@ -77,163 +70,74 @@ function PaymentForm({
   cartItems: CartItem[];
   subtotal: number;
   shipping: number;
-  tax: number;
 }) {
-  const stripe = useStripe();
-  const elements = useElements();
   const [processing, setProcessing] = useState(false);
 
-  const total = subtotal + shipping + tax;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!stripe || !elements) return;
-
+  const handleCheckout = async () => {
     setProcessing(true);
 
     try {
-      // Create payment intent with total (already includes tax calculated by app)
-      const response = await fetch("/api/shop/checkout/create-intent", {
+      // Build items array for Stripe Checkout
+      const items = cartItems.map(item => ({
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      }));
+
+      // Create Stripe Checkout Session with automatic tax
+      const response = await fetch("/api/shop/stripe/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: Math.round(total * 100), // Convert to cents - this is final total with tax
-          customerEmail: customerInfo.email,
-          customerName: customerInfo.name,
-          // Don't send shipping address - we already calculated tax in the app
+          items,
+          shipping_cost: shipping,
+          customer_email: customerInfo.email,
+          customer_name: customerInfo.name,
+          success_url: `${window.location.origin}/shop/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${window.location.origin}/shop/checkout`,
           metadata: {
-            items: JSON.stringify(cartItems.map(i => ({ name: i.name, qty: i.quantity }))),
-            subtotal: subtotal.toFixed(2),
-            shipping: shipping.toFixed(2),
-            tax: tax.toFixed(2),
+            order_type: "shop_purchase",
+            customer_phone: customerInfo.phone,
             shipping_address: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state} ${customerInfo.zip}`,
-            tax_state: customerInfo.state,
+            shipping_notes: customerInfo.notes,
           },
         }),
       });
 
       const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
+
+      if (!data.ok || !data.url) {
+        throw new Error(data.message || "Failed to create checkout session");
       }
 
-      // Confirm payment
-      const cardElement = elements.getElement(CardElement);
-      if (!cardElement) throw new Error("Card element not found");
-
-      const { error, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
-        payment_method: {
-          card: cardElement,
-          billing_details: {
-            name: customerInfo.name,
-            email: customerInfo.email,
-            phone: customerInfo.phone,
-            address: {
-              line1: customerInfo.address,
-              city: customerInfo.city,
-              state: customerInfo.state,
-              postal_code: customerInfo.zip,
-              country: "US",
-            },
-          },
-        },
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      if (paymentIntent?.status === "succeeded") {
-        // Send order notification email
-        try {
-          await fetch("/api/shop/checkout/notify-stripe-order", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              paymentIntentId: paymentIntent.id,
-              customerName: customerInfo.name,
-              customerEmail: customerInfo.email,
-              customerPhone: customerInfo.phone,
-              items: cartItems.map(item => ({
-                name: item.name,
-                quantity: item.quantity,
-                price: item.price,
-                size: item.size,
-              })),
-              subtotal,
-              shipping,
-              tax,
-              taxRate: tax > 0 ? (tax / (subtotal + shipping)) * 100 : 0,
-              total,
-              shippingAddress: {
-                address: customerInfo.address,
-                city: customerInfo.city,
-                state: customerInfo.state,
-                zip: customerInfo.zip,
-              },
-            }),
-          });
-        } catch (emailErr) {
-          console.error("Failed to send order notification:", emailErr);
-        }
-        onSuccess();
-      }
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
     } catch (err) {
-      onError(err instanceof Error ? err.message : "Payment failed");
-    } finally {
+      onError(err instanceof Error ? err.message : "Failed to start checkout");
       setProcessing(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div>
       <div style={{ 
-        padding: 16, 
+        padding: 20, 
         background: "rgba(30, 30, 50, 0.5)", 
         borderRadius: 8,
-        marginBottom: 16
-      }}>
-        <CardElement
-          options={{
-            style: {
-              base: {
-                fontSize: "16px",
-                color: "#e2e8f0",
-                "::placeholder": { color: "#64748b" },
-              },
-              invalid: { color: "#ef4444" },
-            },
-          }}
-        />
-      </div>
-      <div style={{ 
-        background: "rgba(0, 255, 255, 0.1)", 
-        borderRadius: 8, 
-        padding: 12, 
         marginBottom: 16,
-        fontSize: 14
+        textAlign: "center"
       }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-          <span>Subtotal:</span>
-          <span>${subtotal.toFixed(2)}</span>
+        <div style={{ fontSize: 14, opacity: 0.8, marginBottom: 8 }}>
+          You&apos;ll be redirected to Stripe&apos;s secure checkout
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-          <span>Shipping:</span>
-          <span>${shipping.toFixed(2)}</span>
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-          <span>Tax ({customerInfo.state || "N/A"}):</span>
-          <span>${tax.toFixed(2)}</span>
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, borderTop: "1px solid rgba(255,255,255,0.2)", paddingTop: 8, marginTop: 8 }}>
-          <span>Total:</span>
-          <span style={{ color: "#0ff" }}>${total.toFixed(2)}</span>
+        <div style={{ fontSize: 13, opacity: 0.6 }}>
+          Tax will be calculated automatically based on your shipping address
         </div>
       </div>
       <button
-        type="submit"
-        disabled={!stripe || processing}
+        type="button"
+        onClick={handleCheckout}
+        disabled={processing}
         style={{
           width: "100%",
           padding: "14px 24px",
@@ -246,9 +150,9 @@ function PaymentForm({
           cursor: processing ? "not-allowed" : "pointer",
         }}
       >
-        {processing ? "Processing..." : `Pay $${total.toFixed(2)}`}
+        {processing ? "Redirecting to Stripe..." : `Checkout $${(subtotal + shipping).toFixed(2)} + tax`}
       </button>
-    </form>
+    </div>
   );
 }
 
@@ -990,17 +894,14 @@ export default function CheckoutPage() {
                 </div>
                 
                 {paymentMethod === "card" ? (
-                  <Elements stripe={stripePromise}>
-                    <PaymentForm
-                      onSuccess={handlePaymentSuccess}
-                      onError={handlePaymentError}
-                      customerInfo={checkoutForm}
-                      cartItems={cart}
-                      subtotal={cartTotal}
-                      shipping={SHIPPING_COST}
-                      tax={taxAmount}
-                    />
-                  </Elements>
+                  <PaymentForm
+                    onSuccess={handlePaymentSuccess}
+                    onError={handlePaymentError}
+                    customerInfo={checkoutForm}
+                    cartItems={cart}
+                    subtotal={cartTotal}
+                    shipping={SHIPPING_COST}
+                  />
                 ) : paymentMethod === "paypal" ? (
                   <div>
                     {isPaypalConfigured ? (
@@ -1038,17 +939,14 @@ export default function CheckoutPage() {
                     )}
                   </div>
                 ) : (
-                  <Elements stripe={stripePromise}>
-                    <PaymentForm
-                      onSuccess={handlePaymentSuccess}
-                      onError={handlePaymentError}
-                      customerInfo={checkoutForm}
-                      cartItems={cart}
-                      subtotal={cartTotal}
-                      shipping={SHIPPING_COST}
-                      tax={taxAmount}
-                    />
-                  </Elements>
+                  <PaymentForm
+                    onSuccess={handlePaymentSuccess}
+                    onError={handlePaymentError}
+                    customerInfo={checkoutForm}
+                    cartItems={cart}
+                    subtotal={cartTotal}
+                    shipping={SHIPPING_COST}
+                  />
                 )}
               </>
             )}
