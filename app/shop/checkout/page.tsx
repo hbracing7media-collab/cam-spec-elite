@@ -5,11 +5,6 @@ import Link from "next/link";
 import Script from "next/script";
 import { useTranslations } from "next-intl";
 import { calculateSalesTax, getAllStates } from "@/lib/salesTax";
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-
-// Initialize Stripe
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 interface CartItem {
   id: string;
@@ -61,9 +56,8 @@ const inputStyle: React.CSSProperties = {
   outline: "none",
 };
 
-// Payment Form Component
+// Payment Form Component - Redirects to Stripe Checkout for automatic tax calculation
 function PaymentForm({ 
-  onSuccess, 
   onError,
   customerInfo,
   cartItems,
@@ -77,155 +71,75 @@ function PaymentForm({
   subtotal: number;
   shipping: number;
 }) {
-  const stripe = useStripe();
-  const elements = useElements();
   const [processing, setProcessing] = useState(false);
-  const [calculatedTax, setCalculatedTax] = useState<number | null>(null);
-  const [finalTotal, setFinalTotal] = useState<number | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!stripe || !elements) return;
-
+  const handleCheckout = async () => {
     setProcessing(true);
 
     try {
-      // Create payment intent - send subtotal + shipping, Stripe will add tax
-      const amountBeforeTax = Math.round((subtotal + shipping) * 100); // Convert to cents
-      
-      const response = await fetch("/api/shop/checkout/create-intent", {
+      // Build items array for Stripe Checkout - API expects price in dollars
+      const items = cartItems.map(item => ({
+        name: item.name,
+        price: item.price, // Price in dollars
+        quantity: item.quantity,
+      }));
+
+      // Shipping is handled separately via shipping_cost
+
+      // Create Stripe Checkout Session with automatic tax
+      const response = await fetch("/api/shop/stripe/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: amountBeforeTax,
-          customerEmail: customerInfo.email,
-          customerName: customerInfo.name,
-          shippingAddress: {
-            line1: customerInfo.address,
-            city: customerInfo.city,
-            state: customerInfo.state,
-            postal_code: customerInfo.zip,
-            country: "US",
-          },
+          items,
+          shipping_cost: shipping,
+          customer_email: customerInfo.email,
+          customer_name: customerInfo.name,
+          success_url: `${window.location.origin}/shop/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${window.location.origin}/shop/checkout`,
           metadata: {
-            items: JSON.stringify(cartItems.map(i => ({ name: i.name, qty: i.quantity }))),
-            shipping_address: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state} ${customerInfo.zip}`,
+            order_type: "shop_purchase",
+            customer_phone: customerInfo.phone,
+            shipping_notes: customerInfo.notes,
+            items_summary: JSON.stringify(cartItems.map(i => ({ name: i.name, qty: i.quantity }))),
           },
         }),
       });
 
-      const { clientSecret, error: intentError, totalAmount, taxAmount } = await response.json();
-      
-      if (intentError) {
-        throw new Error(intentError);
+      const data = await response.json();
+
+      if (!data.ok || !data.url) {
+        throw new Error(data.message || "Failed to create checkout session");
       }
 
-      // Store the Stripe-calculated values
-      if (taxAmount !== undefined) {
-        setCalculatedTax(taxAmount);
-      }
-      if (totalAmount !== undefined) {
-        setFinalTotal(totalAmount);
-      }
-
-      // Confirm payment
-      const cardElement = elements.getElement(CardElement);
-      if (!cardElement) throw new Error("Card element not found");
-
-      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: cardElement,
-          billing_details: {
-            name: customerInfo.name,
-            email: customerInfo.email,
-            phone: customerInfo.phone,
-            address: {
-              line1: customerInfo.address,
-              city: customerInfo.city,
-              state: customerInfo.state,
-              postal_code: customerInfo.zip,
-              country: "US",
-            },
-          },
-        },
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      if (paymentIntent?.status === "succeeded") {
-        // Get final amounts from payment intent
-        const paidTotal = paymentIntent.amount / 100;
-        const paidTax = taxAmount || 0;
-        
-        // Send order notification email and save to database
-        try {
-          await fetch("/api/shop/checkout/notify-stripe-order", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              paymentIntentId: paymentIntent.id,
-              customerName: customerInfo.name,
-              customerEmail: customerInfo.email,
-              customerPhone: customerInfo.phone,
-              items: cartItems.map(item => ({
-                name: item.name,
-                quantity: item.quantity,
-                price: item.price,
-                size: item.size,
-              })),
-              subtotal,
-              shipping,
-              tax: paidTax,
-              taxRate: paidTax > 0 ? (paidTax / (subtotal + shipping)) * 100 : 0,
-              total: paidTotal,
-              shippingAddress: {
-                address: customerInfo.address,
-                city: customerInfo.city,
-                state: customerInfo.state,
-                zip: customerInfo.zip,
-              },
-              taxCalculatedByStripe: true,
-            }),
-          });
-        } catch (emailErr) {
-          console.error("Failed to send order notification:", emailErr);
-          // Don't fail the order if email fails
-        }
-        onSuccess();
-      }
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
     } catch (err) {
-      onError(err instanceof Error ? err.message : "Payment failed");
-    } finally {
+      onError(err instanceof Error ? err.message : "Failed to start checkout");
       setProcessing(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div>
       <div style={{ 
-        padding: 16, 
+        padding: 20, 
         background: "rgba(30, 30, 50, 0.5)", 
         borderRadius: 8,
-        marginBottom: 16
+        marginBottom: 16,
+        textAlign: "center"
       }}>
-        <CardElement
-          options={{
-            style: {
-              base: {
-                fontSize: "16px",
-                color: "#e2e8f0",
-                "::placeholder": { color: "#64748b" },
-              },
-              invalid: { color: "#ef4444" },
-            },
-          }}
-        />
+        <div style={{ fontSize: 14, opacity: 0.8, marginBottom: 8 }}>
+          You&apos;ll be redirected to Stripe&apos;s secure checkout
+        </div>
+        <div style={{ fontSize: 13, opacity: 0.6 }}>
+          Tax will be calculated based on your shipping address
+        </div>
       </div>
       <button
-        type="submit"
-        disabled={!stripe || processing}
+        type="button"
+        onClick={handleCheckout}
+        disabled={processing}
         style={{
           width: "100%",
           padding: "14px 24px",
@@ -238,9 +152,9 @@ function PaymentForm({
           cursor: processing ? "not-allowed" : "pointer",
         }}
       >
-        {processing ? "Processing..." : `Pay $${(subtotal + shipping).toFixed(2)} + tax`}
+        {processing ? "Redirecting to Stripe..." : `Checkout - $${(subtotal + shipping).toFixed(2)} + tax`}
       </button>
-    </form>
+    </div>
   );
 }
 
@@ -982,16 +896,14 @@ export default function CheckoutPage() {
                 </div>
                 
                 {paymentMethod === "card" ? (
-                  <Elements stripe={stripePromise}>
-                    <PaymentForm
-                      onSuccess={handlePaymentSuccess}
-                      onError={handlePaymentError}
-                      customerInfo={checkoutForm}
-                      cartItems={cart}
-                      subtotal={cartTotal}
-                      shipping={SHIPPING_COST}
-                    />
-                  </Elements>
+                  <PaymentForm
+                    onSuccess={handlePaymentSuccess}
+                    onError={handlePaymentError}
+                    customerInfo={checkoutForm}
+                    cartItems={cart}
+                    subtotal={cartTotal}
+                    shipping={SHIPPING_COST}
+                  />
                 ) : paymentMethod === "paypal" ? (
                   <div>
                     {isPaypalConfigured ? (
@@ -1029,16 +941,14 @@ export default function CheckoutPage() {
                     )}
                   </div>
                 ) : (
-                  <Elements stripe={stripePromise}>
-                    <PaymentForm
-                      onSuccess={handlePaymentSuccess}
-                      onError={handlePaymentError}
-                      customerInfo={checkoutForm}
-                      cartItems={cart}
-                      subtotal={cartTotal}
-                      shipping={SHIPPING_COST}
-                    />
-                  </Elements>
+                  <PaymentForm
+                    onSuccess={handlePaymentSuccess}
+                    onError={handlePaymentError}
+                    customerInfo={checkoutForm}
+                    cartItems={cart}
+                    subtotal={cartTotal}
+                    shipping={SHIPPING_COST}
+                  />
                 )}
               </>
             )}

@@ -1,18 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { loadStripe } from "@stripe/stripe-js";
-import {
-  Elements,
-  PaymentElement,
-  useStripe,
-  useElements,
-} from "@stripe/react-stripe-js";
-
-// Load Stripe outside of component to avoid recreating on every render
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-);
+import { useState } from "react";
 
 // ============================================
 // TYPES
@@ -105,151 +93,10 @@ const styles = {
     padding: 40,
     color: "#94a3b8",
   } as React.CSSProperties,
-  
-  checkbox: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 20,
-    color: "#94a3b8",
-    fontSize: 14,
-  } as React.CSSProperties,
 };
 
 // ============================================
-// CHECKOUT FORM (Inside Elements Provider)
-// ============================================
-function CheckoutForm({
-  planId,
-  paymentId,
-  amount,
-  onSuccess,
-  onCancel,
-}: {
-  planId: string;
-  paymentId: string;
-  amount: number;
-  onSuccess: (result: PaymentResult) => void;
-  onCancel: () => void;
-}) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState("");
-  const [saveCard, setSaveCard] = useState(true);
-  
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!stripe || !elements) {
-      return;
-    }
-    
-    setProcessing(true);
-    setError("");
-    
-    try {
-      // Confirm the payment
-      const { error: submitError, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/shop/layaway?success=true`,
-        },
-        redirect: "if_required",
-      });
-      
-      if (submitError) {
-        setError(submitError.message || "Payment failed");
-        setProcessing(false);
-        return;
-      }
-      
-      if (paymentIntent && paymentIntent.status === "succeeded") {
-        // Confirm with our backend
-        const confirmRes = await fetch("/api/shop/stripe/confirm-payment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            payment_intent_id: paymentIntent.id,
-            plan_id: planId,
-            payment_id: paymentId,
-          }),
-        });
-        
-        const confirmData = await confirmRes.json();
-        
-        if (confirmData.ok) {
-          onSuccess({
-            paymentIntentId: paymentIntent.id,
-            planId,
-            paymentId,
-            amount,
-            status: "succeeded",
-          });
-        } else {
-          // Payment succeeded but backend update failed - still show success
-          // Admin can reconcile later
-          onSuccess({
-            paymentIntentId: paymentIntent.id,
-            planId,
-            paymentId,
-            amount,
-            status: "succeeded",
-          });
-        }
-      }
-    } catch (err) {
-      console.error("Payment error:", err);
-      setError("An unexpected error occurred. Please try again.");
-    } finally {
-      setProcessing(false);
-    }
-  };
-  
-  return (
-    <form onSubmit={handleSubmit}>
-      <div style={styles.paymentElement}>
-        <PaymentElement />
-      </div>
-      
-      <label style={styles.checkbox}>
-        <input
-          type="checkbox"
-          checked={saveCard}
-          onChange={(e) => setSaveCard(e.target.checked)}
-          style={{ width: 18, height: 18 }}
-        />
-        Save card for future payments
-      </label>
-      
-      {error && <div style={styles.error}>{error}</div>}
-      
-      <button
-        type="submit"
-        disabled={!stripe || processing}
-        style={{
-          ...styles.button,
-          ...styles.primaryButton,
-          opacity: processing ? 0.6 : 1,
-        }}
-      >
-        {processing ? "Processing..." : `Pay $${amount.toFixed(2)}`}
-      </button>
-      
-      <button
-        type="button"
-        onClick={onCancel}
-        disabled={processing}
-        style={{ ...styles.button, ...styles.secondaryButton }}
-      >
-        Cancel
-      </button>
-    </form>
-  );
-}
-
-// ============================================
-// MAIN COMPONENT
+// MAIN COMPONENT - Redirects to Stripe Checkout
 // ============================================
 export default function StripePaymentForm({
   planId,
@@ -261,84 +108,45 @@ export default function StripePaymentForm({
   onSuccess,
   onCancel,
 }: StripePaymentFormProps) {
-  const [clientSecret, setClientSecret] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   
-  useEffect(() => {
-    createPaymentIntent();
-  }, []);
-  
-  const createPaymentIntent = async () => {
+  const handleCheckout = async () => {
+    setLoading(true);
+    setError("");
+    
     try {
-      const res = await fetch("/api/shop/stripe/create-payment-intent", {
+      const res = await fetch("/api/shop/stripe/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          plan_id: planId,
-          payment_id: paymentId,
+          layaway: {
+            plan_id: planId,
+            payment_id: paymentId,
+            description: description || "Layaway Payment",
+          },
           amount,
           customer_email: customerEmail,
           customer_name: customerName,
-          description,
-          save_card: true,
+          success_url: `${window.location.origin}/shop/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: window.location.href,
         }),
       });
       
       const data = await res.json();
       
-      if (data.ok && data.clientSecret) {
-        setClientSecret(data.clientSecret);
+      if (data.ok && data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
       } else {
-        setError(data.message || "Failed to initialize payment");
+        setError(data.message || "Failed to start checkout");
+        setLoading(false);
       }
     } catch (err) {
-      console.error("Failed to create payment intent:", err);
-      setError("Unable to initialize payment. Please try again.");
-    } finally {
+      console.error("Checkout error:", err);
+      setError("Unable to start checkout. Please try again.");
       setLoading(false);
     }
-  };
-  
-  if (loading) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.loading}>
-          <div style={{ fontSize: 24, marginBottom: 10 }}>💳</div>
-          Preparing secure checkout...
-        </div>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.error}>{error}</div>
-        <button
-          onClick={onCancel}
-          style={{ ...styles.button, ...styles.secondaryButton }}
-        >
-          Go Back
-        </button>
-      </div>
-    );
-  }
-  
-  if (!clientSecret) {
-    return null;
-  }
-  
-  const appearance = {
-    theme: "night" as const,
-    variables: {
-      colorPrimary: "#00f5ff",
-      colorBackground: "#1a1a2e",
-      colorText: "#e2e8f0",
-      colorDanger: "#f87171",
-      fontFamily: "system-ui, sans-serif",
-      borderRadius: "8px",
-    },
   };
   
   return (
@@ -346,24 +154,34 @@ export default function StripePaymentForm({
       <h2 style={styles.header}>💳 Secure Payment</h2>
       <div style={styles.amount}>${amount.toFixed(2)}</div>
       
-      <Elements
-        stripe={stripePromise}
-        options={{
-          clientSecret,
-          appearance,
+      <p style={{ color: "#94a3b8", marginBottom: 20, fontSize: 14, textAlign: "center" }}>
+        You'll be redirected to Stripe's secure checkout page where sales tax will be calculated based on your shipping address.
+      </p>
+      
+      {error && <div style={styles.error}>{error}</div>}
+      
+      <button
+        onClick={handleCheckout}
+        disabled={loading}
+        style={{
+          ...styles.button,
+          ...styles.primaryButton,
+          opacity: loading ? 0.6 : 1,
         }}
       >
-        <CheckoutForm
-          planId={planId}
-          paymentId={paymentId}
-          amount={amount}
-          onSuccess={onSuccess}
-          onCancel={onCancel}
-        />
-      </Elements>
+        {loading ? "Redirecting to Stripe..." : "Proceed to Checkout"}
+      </button>
+      
+      <button
+        onClick={onCancel}
+        disabled={loading}
+        style={{ ...styles.button, ...styles.secondaryButton }}
+      >
+        Cancel
+      </button>
       
       <div style={{ marginTop: 20, textAlign: "center", color: "#64748b", fontSize: 12 }}>
-        🔒 Payments secured by Stripe
+        🔒 Payments secured by Stripe • Tax calculated automatically
       </div>
     </div>
   );

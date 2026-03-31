@@ -128,21 +128,68 @@ async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
 }
 
 /**
- * Handle completed checkout session (for down payments via Checkout)
+ * Handle completed checkout session (for down payments via Checkout and regular shop orders)
  */
 async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   console.log(`Checkout completed: ${session.id}`);
 
-  const { layaway_plan_id, layaway_payment_id } = session.metadata || {};
+  const { layaway_plan_id, layaway_payment_id, order_type } = session.metadata || {};
+  const supabase = getSupabase();
 
-  if (!layaway_plan_id) {
-    console.log("Not a layaway checkout, skipping");
-    return;
+  // Handle regular shop orders
+  if (order_type === "shop_purchase" || !layaway_plan_id) {
+    console.log("Processing regular shop order");
+    
+    try {
+      // Get shipping address from collected details (available when shipping_address_collection is enabled)
+      const shippingAddr = (session as any).shipping_details?.address || 
+                          (session as any).customer_details?.address;
+      
+      // Send order notification to admin
+      const notifyResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/shop/checkout/notify-stripe-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          paymentIntentId: session.payment_intent as string,
+          checkoutSessionId: session.id,
+          customerName: session.customer_details?.name || "Unknown",
+          customerEmail: session.customer_email || session.customer_details?.email || "Unknown",
+          customerPhone: session.customer_details?.phone || session.metadata?.customer_phone || "",
+          subtotal: (session.amount_subtotal || 0) / 100,
+          shipping: 0, // Shipping is in line items
+          tax: (session.total_details?.amount_tax || 0) / 100,
+          taxRate: 0, // Calculated dynamically by Stripe
+          total: (session.amount_total || 0) / 100,
+          shippingAddress: shippingAddr ? {
+            address: shippingAddr.line1,
+            city: shippingAddr.city,
+            state: shippingAddr.state,
+            zip: shippingAddr.postal_code,
+          } : null,
+          taxCalculatedByStripe: true,
+          stripeCheckoutSession: true,
+        }),
+      });
+      
+      if (!notifyResponse.ok) {
+        console.error("Failed to send order notification:", await notifyResponse.text());
+      } else {
+        console.log("Order notification sent successfully");
+      }
+    } catch (err) {
+      console.error("Error sending order notification:", err);
+      // Don't throw - order was successful, just notification failed
+    }
+    
+    // If not a layaway order, we're done
+    if (!layaway_plan_id) {
+      return;
+    }
   }
 
   // If there's a payment ID, mark it paid
   if (layaway_payment_id) {
-    const { error } = await getSupabase()
+    const { error } = await supabase
       .from("layaway_payments")
       .update({
         status: "paid",
@@ -156,6 +203,52 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     if (error) {
       console.error("Failed to update layaway payment from checkout:", error);
       throw error;
+    }
+    
+    // Check if this was the down payment (payment_number = 0) and if so, activate the plan
+    const { data: payment } = await supabase
+      .from("layaway_payments")
+      .select("payment_number, amount")
+      .eq("id", layaway_payment_id)
+      .single();
+    
+    if (payment?.payment_number === 0) {
+      // This was the down payment - update plan status to active
+      const { error: planError } = await supabase
+        .from("layaway_plans")
+        .update({
+          status: "active",
+          amount_paid: payment.amount,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", layaway_plan_id);
+      
+      if (planError) {
+        console.error("Failed to activate layaway plan:", planError);
+      } else {
+        console.log(`Layaway plan ${layaway_plan_id} activated after down payment`);
+        
+        // Calculate next payment due date
+        const { data: plan } = await supabase
+          .from("layaway_plans")
+          .select("payment_frequency")
+          .eq("id", layaway_plan_id)
+          .single();
+        
+        if (plan) {
+          const nextDue = new Date();
+          switch (plan.payment_frequency) {
+            case "weekly": nextDue.setDate(nextDue.getDate() + 7); break;
+            case "biweekly": nextDue.setDate(nextDue.getDate() + 14); break;
+            case "monthly": nextDue.setMonth(nextDue.getMonth() + 1); break;
+          }
+          
+          await supabase
+            .from("layaway_plans")
+            .update({ next_payment_due: nextDue.toISOString().split("T")[0] })
+            .eq("id", layaway_plan_id);
+        }
+      }
     }
   }
 
