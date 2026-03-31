@@ -73,16 +73,21 @@ CREATE TABLE IF NOT EXISTS public.layaway_quotes (
 -- ============================================
 -- INDEXES
 -- ============================================
-CREATE INDEX idx_layaway_quotes_user ON public.layaway_quotes(user_id);
-CREATE INDEX idx_layaway_quotes_email ON public.layaway_quotes(customer_email);
-CREATE INDEX idx_layaway_quotes_status ON public.layaway_quotes(status);
-CREATE INDEX idx_layaway_quotes_valid_until ON public.layaway_quotes(valid_until);
-CREATE INDEX idx_layaway_quotes_quote_number ON public.layaway_quotes(quote_number);
+CREATE INDEX IF NOT EXISTS idx_layaway_quotes_user ON public.layaway_quotes(user_id);
+CREATE INDEX IF NOT EXISTS idx_layaway_quotes_email ON public.layaway_quotes(customer_email);
+CREATE INDEX IF NOT EXISTS idx_layaway_quotes_status ON public.layaway_quotes(status);
+CREATE INDEX IF NOT EXISTS idx_layaway_quotes_valid_until ON public.layaway_quotes(valid_until);
+CREATE INDEX IF NOT EXISTS idx_layaway_quotes_quote_number ON public.layaway_quotes(quote_number);
 
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
 ALTER TABLE public.layaway_quotes ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users view own quotes" ON public.layaway_quotes;
+DROP POLICY IF EXISTS "Service role full access to quotes" ON public.layaway_quotes;
+DROP POLICY IF EXISTS "Users can respond to quotes" ON public.layaway_quotes;
 
 -- Users can view quotes sent to them
 CREATE POLICY "Users view own quotes" ON public.layaway_quotes
@@ -132,6 +137,8 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_update_layaway_quotes_timestamp ON public.layaway_quotes;
 
 CREATE TRIGGER trigger_update_layaway_quotes_timestamp
   BEFORE UPDATE ON public.layaway_quotes

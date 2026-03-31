@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,6 +16,8 @@ export async function GET(req: NextRequest) {
     const email = searchParams.get("email");
     const userId = searchParams.get("user_id");
 
+    console.log("Fetching quotes for:", { email, userId });
+
     if (!email && !userId) {
       return NextResponse.json(
         { ok: false, message: "Email or user_id is required" },
@@ -24,38 +25,62 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Build query to find quotes for this user
-    let query = supabase
-      .from("layaway_quotes")
-      .select("*")
-      .order("created_at", { ascending: false });
+    let userEmail = email?.toLowerCase();
 
-    if (userId) {
-      // Find by user_id or email
-      const { data: userProfile } = await supabase
-        .from("user_profiles")
-        .select("email")
-        .eq("user_id", userId)
-        .single();
-
-      if (userProfile?.email) {
-        query = query.or(`user_id.eq.${userId},customer_email.ilike.${userProfile.email}`);
-      } else {
-        query = query.eq("user_id", userId);
+    // If we have userId but no email, get email from auth.users via admin API
+    if (userId && !email) {
+      const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+      if (authUser?.user?.email) {
+        userEmail = authUser.user.email.toLowerCase();
       }
-    } else if (email) {
-      query = query.ilike("customer_email", email);
     }
 
-    const { data: quotes, error } = await query;
+    console.log("Looking for quotes with email:", userEmail, "or userId:", userId);
 
-    if (error) throw error;
+    // Query quotes - use separate queries and combine results to avoid syntax issues
+    let allQuotes: any[] = [];
+
+    // Query by user_id if available
+    if (userId) {
+      const { data: userIdQuotes } = await supabase
+        .from("layaway_quotes")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+      
+      if (userIdQuotes) {
+        allQuotes.push(...userIdQuotes);
+      }
+    }
+
+    // Query by email if available
+    if (userEmail) {
+      const { data: emailQuotes } = await supabase
+        .from("layaway_quotes")
+        .select("*")
+        .ilike("customer_email", userEmail)
+        .order("created_at", { ascending: false });
+      
+      if (emailQuotes) {
+        // Add quotes not already in the list (avoid duplicates)
+        for (const quote of emailQuotes) {
+          if (!allQuotes.find(q => q.id === quote.id)) {
+            allQuotes.push(quote);
+          }
+        }
+      }
+    }
+
+    // Sort by created_at descending
+    allQuotes.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    console.log("Found quotes:", allQuotes.length);
 
     // Auto-expire any pending quotes that are past their valid_until date
     const now = new Date();
-    const expiredQuotes = quotes?.filter(
+    const expiredQuotes = allQuotes.filter(
       (q: any) => q.status === "pending" && new Date(q.valid_until) < now
-    ) || [];
+    );
 
     if (expiredQuotes.length > 0) {
       for (const quote of expiredQuotes) {
@@ -67,7 +92,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ ok: true, quotes: quotes || [] });
+    return NextResponse.json({ ok: true, quotes: allQuotes });
   } catch (err) {
     console.error("User quotes GET error:", err);
     return NextResponse.json(
