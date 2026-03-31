@@ -12,10 +12,10 @@ const supabase = createClient(
 // ============================================
 export async function GET(
   req: NextRequest,
-  { params }: { params: { quoteId: string } }
+  { params }: { params: Promise<{ quoteId: string }> }
 ) {
   try {
-    const quoteId = params.quoteId;
+    const { quoteId } = await params;
 
     const { data: quote, error } = await supabase
       .from("layaway_quotes")
@@ -57,10 +57,10 @@ export async function GET(
 // ============================================
 export async function POST(
   req: NextRequest,
-  { params }: { params: { quoteId: string } }
+  { params }: { params: Promise<{ quoteId: string }> }
 ) {
   try {
-    const quoteId = params.quoteId;
+    const { quoteId } = await params;
     const body = await req.json();
     const { action, decline_reason, shipping } = body;
 
