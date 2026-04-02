@@ -65,128 +65,128 @@ const inputStyle: React.CSSProperties = {
 // Image paths for Texas Speed products - mapped to match website order (download order)
 const IMAGE_PATHS: Record<string, string> = {
   // Products 1-13: Precision Turbo (positions match)
-  'pt-74-85': '/shop/power%20adders/turbos+/25780.webp',           // pos 1
-  'pt-56-62': '/shop/power%20adders/turbos+/25681.webp',           // pos 2
-  'pt-scp-66-70': '/shop/power%20adders/turbos+/25698_1.webp',     // pos 3
-  'pt-74-80-sportsman': '/shop/power%20adders/turbos+/25783_1.webp', // pos 4
-  'pt-nextr-62-80': '/shop/power%20adders/turbos+/25791.webp',     // pos 5
-  'pt-68-80-sportsman': '/shop/power%20adders/turbos+/25758_1.webp', // pos 6
-  'pt-ss-vband-rr-68-70': '/shop/power%20adders/turbos+/25745_1.webp', // pos 7
-  'pt-t3-rr-62-66': '/shop/power%20adders/turbos+/25690.webp',     // pos 8
-  'pt-scp-68-70': '/shop/power%20adders/turbos+/25727_1.webp',     // pos 9
-  'pt-71-80-sportsman': '/shop/power%20adders/turbos+/25778_1.webp', // pos 10
-  'pt-t3-rr-56-58': '/shop/power%20adders/turbos+/25680_1.webp',   // pos 11
-  'pt-80-80-sportsman': '/shop/power%20adders/turbos+/25786_2.webp', // pos 12
-  'pt-68-75-sportsman': '/shop/power%20adders/turbos+/25755.webp', // pos 13
+  'pt-74-85': '/shop/power%20adders/turbos/25780.webp',           // pos 1
+  'pt-56-62': '/shop/power%20adders/turbos/25681.webp',           // pos 2
+  'pt-scp-66-70': '/shop/power%20adders/turbos/25698_1.webp',     // pos 3
+  'pt-74-80-sportsman': '/shop/power%20adders/turbos/25783_1.webp', // pos 4
+  'pt-nextr-62-80': '/shop/power%20adders/turbos/25791.webp',     // pos 5
+  'pt-68-80-sportsman': '/shop/power%20adders/turbos/25758_1.webp', // pos 6
+  'pt-ss-vband-rr-68-70': '/shop/power%20adders/turbos/25745_1.webp', // pos 7
+  'pt-t3-rr-62-66': '/shop/power%20adders/turbos/25690.webp',     // pos 8
+  'pt-scp-68-70': '/shop/power%20adders/turbos/25727_1.webp',     // pos 9
+  'pt-71-80-sportsman': '/shop/power%20adders/turbos/25778_1.webp', // pos 10
+  'pt-t3-rr-56-58': '/shop/power%20adders/turbos/25680_1.webp',   // pos 11
+  'pt-80-80-sportsman': '/shop/power%20adders/turbos/25786_2.webp', // pos 12
+  'pt-68-75-sportsman': '/shop/power%20adders/turbos/25755.webp', // pos 13
   // Position 14: S&B Green screen (was incorrectly assigned to pt-scp-64-66)
-  'sb-turbo-screen-green': '/shop/power%20adders/turbos+/19709_2.webp', // pos 14
-  'pt-scp-64-66': '/shop/power%20adders/turbos+/25692_2.webp',     // pos 15
-  'pt-71-75-sportsman': '/shop/power%20adders/turbos+/25759.webp', // pos 16
-  'pt-74-80-sportsman-1375': '/shop/power%20adders/turbos+/25781.webp', // pos 17
-  'pt-83-85-sportsman': '/shop/power%20adders/turbos+/25787.webp', // pos 18
-  'pt-75-75': '/shop/power%20adders/turbos+/25754_1.webp',         // pos 19
-  'pt-80-85-sportsman': '/shop/power%20adders/turbos+/25784.webp', // pos 20
+  'sb-turbo-screen-green': '/shop/power%20adders/turbos/19709_2.webp', // pos 14
+  'pt-scp-64-66': '/shop/power%20adders/turbos/25692_2.webp',     // pos 15
+  'pt-71-75-sportsman': '/shop/power%20adders/turbos/25759.webp', // pos 16
+  'pt-74-80-sportsman-1375': '/shop/power%20adders/turbos/25781.webp', // pos 17
+  'pt-83-85-sportsman': '/shop/power%20adders/turbos/25787.webp', // pos 18
+  'pt-75-75': '/shop/power%20adders/turbos/25754_1.webp',         // pos 19
+  'pt-80-85-sportsman': '/shop/power%20adders/turbos/25784.webp', // pos 20
   // Position 21: S&B Red screen
-  'sb-turbo-screen-red': '/shop/power%20adders/turbos+/19707_1.webp', // pos 21
-  'pt-86-85-sportsman': '/shop/power%20adders/turbos+/25790.webp', // pos 22
-  'pt-68-85-sportsman': '/shop/power%20adders/turbos+/25757.webp', // pos 23
-  'pt-56-58': '/shop/power%20adders/turbos+/25678_1.webp',         // pos 24
-  'pt-scp-68-75': '/shop/power%20adders/turbos+/25746.webp',       // pos 25
-  'pt-74-75-sportsman': '/shop/power%20adders/turbos+/25779.webp', // pos 26
-  'pt-t3-rr-h-64-66': '/shop/power%20adders/turbos+/25695.webp',   // pos 27
-  'pt-60-62': '/shop/power%20adders/turbos+/25689_1.webp',         // pos 28
-  'pt-62-66': '/shop/power%20adders/turbos+/25691_1.webp',         // pos 29
-  'pt-h-68-75': '/shop/power%20adders/turbos+/25750.webp',         // pos 30
-  'pt-t3-rr-scp-64-66': '/shop/power%20adders/turbos+/25693.webp', // pos 31
-  'pt-h-66-70': '/shop/power%20adders/turbos+/25718_1.webp',       // pos 32
-  'pt-76-85-sportsman': '/shop/power%20adders/turbos+/25782_1.webp', // pos 33
-  'pt-h-68-70': '/shop/power%20adders/turbos+/25738.webp',         // pos 34
-  'pt-ss-rr-scp-68-70': '/shop/power%20adders/turbos+/25742_1.webp', // pos 35
-  'pt-hp-64-66': '/shop/power%20adders/turbos+/25694_1.webp',      // pos 36
+  'sb-turbo-screen-red': '/shop/power%20adders/turbos/19707_1.webp', // pos 21
+  'pt-86-85-sportsman': '/shop/power%20adders/turbos/25790.webp', // pos 22
+  'pt-68-85-sportsman': '/shop/power%20adders/turbos/25757.webp', // pos 23
+  'pt-56-58': '/shop/power%20adders/turbos/25678_1.webp',         // pos 24
+  'pt-scp-68-75': '/shop/power%20adders/turbos/25746.webp',       // pos 25
+  'pt-74-75-sportsman': '/shop/power%20adders/turbos/25779.webp', // pos 26
+  'pt-t3-rr-h-64-66': '/shop/power%20adders/turbos/25695.webp',   // pos 27
+  'pt-60-62': '/shop/power%20adders/turbos/25689_1.webp',         // pos 28
+  'pt-62-66': '/shop/power%20adders/turbos/25691_1.webp',         // pos 29
+  'pt-h-68-75': '/shop/power%20adders/turbos/25750.webp',         // pos 30
+  'pt-t3-rr-scp-64-66': '/shop/power%20adders/turbos/25693.webp', // pos 31
+  'pt-h-66-70': '/shop/power%20adders/turbos/25718_1.webp',       // pos 32
+  'pt-76-85-sportsman': '/shop/power%20adders/turbos/25782_1.webp', // pos 33
+  'pt-h-68-70': '/shop/power%20adders/turbos/25738.webp',         // pos 34
+  'pt-ss-rr-scp-68-70': '/shop/power%20adders/turbos/25742_1.webp', // pos 35
+  'pt-hp-64-66': '/shop/power%20adders/turbos/25694_1.webp',      // pos 36
   // Positions 37-38: S&B Black and Blue screens
-  'sb-turbo-screen-black': '/shop/power%20adders/turbos+/19706.webp', // pos 37
-  'sb-turbo-screen-blue': '/shop/power%20adders/turbos+/19708_1.webp', // pos 38
+  'sb-turbo-screen-black': '/shop/power%20adders/turbos/19706.webp', // pos 37
+  'sb-turbo-screen-blue': '/shop/power%20adders/turbos/19708_1.webp', // pos 38
   // Positions 39-60: Turbosmart and VS Racing products
-  'ts-iwg75-gt2860rs': '/shop/power%20adders/turbos+/25761.webp',  // pos 39
-  'ts-bov-controller-kit': '/shop/power%20adders/turbos+/25723.webp', // pos 40
-  'vs-4-113mm-t6': '/shop/power%20adders/turbos+/26487.webp',      // pos 41
-  'ts-wg40-compgate-blue': '/shop/power%20adders/turbos+/9196.webp', // pos 42
-  'ts-wg60cg-black': '/shop/power%20adders/turbos+/9205.webp',     // pos 43
-  'ts-bov-raceport-red': '/shop/power%20adders/turbos+/9185.webp', // pos 44
-  'ts-ts2-7170-wc': '/shop/power%20adders/turbos+/25724.webp',     // pos 45
-  'ts-raceport-plumback-sc': '/shop/power%20adders/turbos+/25772.webp', // pos 46
-  'ts-ts2-6466-wc': '/shop/power%20adders/turbos+/25743.webp',     // pos 47
-  'ts-proport-sleeper': '/shop/power%20adders/turbos+/25767.webp', // pos 48
-  'ts-wg60cg-blue': '/shop/power%20adders/turbos+/9204.webp',      // pos 49
-  'ts-big-bubba-sleeper': '/shop/power%20adders/turbos+/25748.webp', // pos 50
-  'ts-bov-raceport-female-purple': '/shop/power%20adders/turbos+/9188.webp', // pos 51
-  'ts-iwg75-twin-14psi': '/shop/power%20adders/turbos+/25739.webp', // pos 52
-  'ts-raceport-sc-black': '/shop/power%20adders/turbos+/25737.webp', // pos 53
-  'ts-ts1-7880-vband': '/shop/power%20adders/turbos+/25732.webp',  // pos 54
-  'ts-ts1-6870-kompact': '/shop/power%20adders/turbos+/25717.webp', // pos 55
-  'ts-ts1-6262-rr': '/shop/power%20adders/turbos+/25740.webp',     // pos 56
-  'ts-opr-fitting-kit': '/shop/power%20adders/turbos+/9208.webp',  // pos 57
-  'ts-wg40-compgate-black': '/shop/power%20adders/turbos+/9197.webp', // pos 58
-  'ts-ts1-7880-t4': '/shop/power%20adders/turbos+/25735.webp',     // pos 59
-  'ts-wg50-progate-black': '/shop/power%20adders/turbos+/9201.webp', // pos 60
+  'ts-iwg75-gt2860rs': '/shop/power%20adders/turbos/25761.webp',  // pos 39
+  'ts-bov-controller-kit': '/shop/power%20adders/turbos/25723.webp', // pos 40
+  'vs-4-113mm-t6': '/shop/power%20adders/turbos/26487.webp',      // pos 41
+  'ts-wg40-compgate-blue': '/shop/power%20adders/turbos/9196.webp', // pos 42
+  'ts-wg60cg-black': '/shop/power%20adders/turbos/9205.webp',     // pos 43
+  'ts-bov-raceport-red': '/shop/power%20adders/turbos/9185.webp', // pos 44
+  'ts-ts2-7170-wc': '/shop/power%20adders/turbos/25724.webp',     // pos 45
+  'ts-raceport-plumback-sc': '/shop/power%20adders/turbos/25772.webp', // pos 46
+  'ts-ts2-6466-wc': '/shop/power%20adders/turbos/25743.webp',     // pos 47
+  'ts-proport-sleeper': '/shop/power%20adders/turbos/25767.webp', // pos 48
+  'ts-wg60cg-blue': '/shop/power%20adders/turbos/9204.webp',      // pos 49
+  'ts-big-bubba-sleeper': '/shop/power%20adders/turbos/25748.webp', // pos 50
+  'ts-bov-raceport-female-purple': '/shop/power%20adders/turbos/9188.webp', // pos 51
+  'ts-iwg75-twin-14psi': '/shop/power%20adders/turbos/25739.webp', // pos 52
+  'ts-raceport-sc-black': '/shop/power%20adders/turbos/25737.webp', // pos 53
+  'ts-ts1-7880-vband': '/shop/power%20adders/turbos/25732.webp',  // pos 54
+  'ts-ts1-6870-kompact': '/shop/power%20adders/turbos/25717.webp', // pos 55
+  'ts-ts1-6262-rr': '/shop/power%20adders/turbos/25740.webp',     // pos 56
+  'ts-opr-fitting-kit': '/shop/power%20adders/turbos/9208.webp',  // pos 57
+  'ts-wg40-compgate-black': '/shop/power%20adders/turbos/9197.webp', // pos 58
+  'ts-ts1-7880-t4': '/shop/power%20adders/turbos/25735.webp',     // pos 59
+  'ts-wg50-progate-black': '/shop/power%20adders/turbos/9201.webp', // pos 60
   // Positions 61-117 - Corrected based on website order
-  'ts-ebg50': '/shop/power%20adders/turbos+/25683.webp',           // pos 61 - eBG50 Electronic BoostGate
-  'ts-fpr-800': '/shop/power%20adders/turbos+/9193.webp',          // pos 62 - FPR 800
-  'ts-raceport-plumback-sleeper': '/shop/power%20adders/turbos+/25711.webp', // pos 63 - RacePort Plumback Sleeper
-  'ts-ts1-6262-vband': '/shop/power%20adders/turbos+/25722.webp',  // pos 64 - TS-1 6262 V-Band
-  'ts-bov-raceport-female-sleeper': '/shop/power%20adders/turbos+/25760.webp', // pos 65 - BOV RacePort Female Sleeper
-  'ts-proport-black': '/shop/power%20adders/turbos+/25764.webp',   // pos 66 - ProPort BOV Black
-  'ts-raceport-em-sleeper': '/shop/power%20adders/turbos+/25775.webp', // pos 67 - RacePort EM Sleeper
-  'ts-ts1-6466-vband': '/shop/power%20adders/turbos+/25673.webp',  // pos 68 - TS-1 6466 V-Band
-  'ts-ts1-5862-vband': '/shop/power%20adders/turbos+/25730.webp',  // pos 69 - TS-1 5862 V-Band
-  'ts-ts2-6262-int': '/shop/power%20adders/turbos+/25734.webp',    // pos 70 - TS-2 6262 Internal WG
-  'ts-ts1-6870-t4': '/shop/power%20adders/turbos+/25726.webp',     // pos 71 - TS-1 6870 T4
-  'ts-ts1-5862-t3': '/shop/power%20adders/turbos+/25744.webp',     // pos 72 - TS-1 5862 T3
-  'ts-opr-t40-black': '/shop/power%20adders/turbos+/9207.webp',    // pos 73 - OPR T40 Black
-  'ts-ts1-7675-t4': '/shop/power%20adders/turbos+/25721.webp',     // pos 74 - TS-1 7675 T4
-  'ts-oil-filter': '/shop/power%20adders/turbos+/25776.webp',      // pos 75 - Oil Feed Filter
-  'ts-bov-raceport-female-red': '/shop/power%20adders/turbos+/9189.webp', // pos 76 - BOV RacePort Female Red
-  'ts-bov-raceport-purple': '/shop/power%20adders/turbos+/9184.webp', // pos 77 - BOV RacePort Purple
-  'ts-wg60-powergate-blue': '/shop/power%20adders/turbos+/9202.webp', // pos 78 - WG60 Power-Gate Blue
-  'ts-ts2-6262-ext': '/shop/power%20adders/turbos+/25747.webp',    // pos 79 - TS-2 6262 External WG
-  'dd-ls-oil-feed': '/shop/power%20adders/turbos+/4027.webp',      // pos 80 - Dirty Dingo LS Oil Feed
-  'ts-opr-t40-blue': '/shop/power%20adders/turbos+/9206.webp',     // pos 81 - OPR T40 Blue
-  'ts-ts1-7675-vband': '/shop/power%20adders/turbos+/25707.webp',  // pos 82 - TS-1 7675 V-Band
-  'ts-powerport-black': '/shop/power%20adders/turbos+/25765.webp', // pos 83 - PowerPort BOV Black
-  'vs-80mm-t6': '/shop/power%20adders/turbos+/16146.webp',         // pos 84 - VS Racing 80mm T6
-  'vs-ng-7875': '/shop/power%20adders/turbos+/16143.webp',         // pos 85 - VS Racing NG 7875
-  'ts-fpr-2000': '/shop/power%20adders/turbos+/9195.webp',         // pos 86 - FPR 2000
-  'vs-85mm-slip': '/shop/power%20adders/turbos+/16156.webp',       // pos 87 - VS Racing 85mm Slip
-  'vs-50mm-bov': '/shop/power%20adders/turbos+/17994.webp',        // pos 88 - VS Racing 50mm BOV
-  'vs-88-103mm': '/shop/power%20adders/turbos+/16144.webp',        // pos 89 - VS Racing 88/103mm
-  'vs-gen3-7875': '/shop/power%20adders/turbos+/16171.webp',       // pos 90 - VS Racing Gen3 7875
-  'vs-70-70-t4': '/shop/power%20adders/turbos+/16170.webp',        // pos 91 - VS Racing 70/70 T4
-  'vs-67-66-t4': '/shop/power%20adders/turbos+/16216_1.webp',      // pos 92 - VS Racing 67/66 T4
-  'ts-eboost-street': '/shop/power%20adders/turbos+/9192.webp',    // pos 93 - E-Boost Street
-  'ts-ts1-6466-rev': '/shop/power%20adders/turbos+/25715.webp',    // pos 94 - TS-1 6466 Reversed
-  'ts-wg45-hypergate-black': '/shop/power%20adders/turbos+/9199.webp', // pos 95 - WG45 Hyper-Gate Black
-  'vs-7875-t51r': '/shop/power%20adders/turbos+/16148.webp',       // pos 96 - VS Racing 7875 T51R
-  'ts-ts2-6466-ext': '/shop/power%20adders/turbos+/25699.webp',    // pos 97 - TS-2 6466 External WG
-  'ts-eb2-solenoid': '/shop/power%20adders/turbos+/9191.webp',     // pos 98 - EB2 Solenoid
-  'ts-fpr-1200': '/shop/power%20adders/turbos+/9194.webp',         // pos 99 - FPR 1200
-  'ts-wg45-hypergate-blue': '/shop/power%20adders/turbos+/9198.webp', // pos 100 - WG45 Hyper-Gate Blue
-  'ts-eboost2-60mm-black': '/shop/power%20adders/turbos+/9190.webp', // pos 101 - EBoost2 60mm Black
-  'ts-opr-v2': '/shop/power%20adders/turbos+/18459.webp',          // pos 102 - OPR V2
-  'ts-bov-raceport-female-black': '/shop/power%20adders/turbos+/9187.webp', // pos 103 - BOV RacePort Female Black
-  'ts-bov-raceport-blue': '/shop/power%20adders/turbos+/9182.webp', // pos 104 - BOV RacePort Blue
-  'ts-raceport-sleeper': '/shop/power%20adders/turbos+/25682.webp', // pos 105 - RacePort BOV Sleeper
-  'ts-bov-raceport-female-blue': '/shop/power%20adders/turbos+/9186.webp', // pos 106 - BOV RacePort Female Blue
-  'ts-wg50-progate-blue': '/shop/power%20adders/turbos+/9200.webp', // pos 107 - WG50 Pro-Gate Blue
-  'ts-wg60-powergate-black': '/shop/power%20adders/turbos+/9203.webp', // pos 108 - WG60 Power-Gate Black
-  'ts-bov-raceport-black': '/shop/power%20adders/turbos+/9183.webp', // pos 109 - BOV RacePort Black
-  'pc-race-valve-steel': '/shop/power%20adders/turbos+/20566.webp', // pos 110 - Procharger Race Valve Steel
-  'pte-discharge-flange': '/shop/power%20adders/turbos+/7331.webp', // pos 111 - PTE Discharge Flange
-  'pte-50mm-bov': '/shop/power%20adders/turbos+/9495.webp',        // pos 112 - PTE 50mm BOV
-  'pc-race-valve-alum': '/shop/power%20adders/turbos+/20565.webp', // pos 113 - Procharger Race Valve Aluminum
-  'pte-vband-flange': '/shop/power%20adders/turbos+/7330.webp',    // pos 114 - PTE V-Band Flange
-  'ict-ls-oil-adapter': '/shop/power%20adders/turbos+/11863.webp', // pos 115 - ICT LS Oil Adapter
-  'ict-oil-line-48': '/shop/power%20adders/turbos+/11832.webp',    // pos 116 - ICT Oil Line 48"
-  'ict-oil-line-60': '/shop/power%20adders/turbos+/11827.webp',    // pos 117 - ICT Oil Line 60"
+  'ts-ebg50': '/shop/power%20adders/turbos/25683.webp',           // pos 61 - eBG50 Electronic BoostGate
+  'ts-fpr-800': '/shop/power%20adders/turbos/9193.webp',          // pos 62 - FPR 800
+  'ts-raceport-plumback-sleeper': '/shop/power%20adders/turbos/25711.webp', // pos 63 - RacePort Plumback Sleeper
+  'ts-ts1-6262-vband': '/shop/power%20adders/turbos/25722.webp',  // pos 64 - TS-1 6262 V-Band
+  'ts-bov-raceport-female-sleeper': '/shop/power%20adders/turbos/25760.webp', // pos 65 - BOV RacePort Female Sleeper
+  'ts-proport-black': '/shop/power%20adders/turbos/25764.webp',   // pos 66 - ProPort BOV Black
+  'ts-raceport-em-sleeper': '/shop/power%20adders/turbos/25775.webp', // pos 67 - RacePort EM Sleeper
+  'ts-ts1-6466-vband': '/shop/power%20adders/turbos/25673.webp',  // pos 68 - TS-1 6466 V-Band
+  'ts-ts1-5862-vband': '/shop/power%20adders/turbos/25730.webp',  // pos 69 - TS-1 5862 V-Band
+  'ts-ts2-6262-int': '/shop/power%20adders/turbos/25734.webp',    // pos 70 - TS-2 6262 Internal WG
+  'ts-ts1-6870-t4': '/shop/power%20adders/turbos/25726.webp',     // pos 71 - TS-1 6870 T4
+  'ts-ts1-5862-t3': '/shop/power%20adders/turbos/25744.webp',     // pos 72 - TS-1 5862 T3
+  'ts-opr-t40-black': '/shop/power%20adders/turbos/9207.webp',    // pos 73 - OPR T40 Black
+  'ts-ts1-7675-t4': '/shop/power%20adders/turbos/25721.webp',     // pos 74 - TS-1 7675 T4
+  'ts-oil-filter': '/shop/power%20adders/turbos/25776.webp',      // pos 75 - Oil Feed Filter
+  'ts-bov-raceport-female-red': '/shop/power%20adders/turbos/9189.webp', // pos 76 - BOV RacePort Female Red
+  'ts-bov-raceport-purple': '/shop/power%20adders/turbos/9184.webp', // pos 77 - BOV RacePort Purple
+  'ts-wg60-powergate-blue': '/shop/power%20adders/turbos/9202.webp', // pos 78 - WG60 Power-Gate Blue
+  'ts-ts2-6262-ext': '/shop/power%20adders/turbos/25747.webp',    // pos 79 - TS-2 6262 External WG
+  'dd-ls-oil-feed': '/shop/power%20adders/turbos/4027.webp',      // pos 80 - Dirty Dingo LS Oil Feed
+  'ts-opr-t40-blue': '/shop/power%20adders/turbos/9206.webp',     // pos 81 - OPR T40 Blue
+  'ts-ts1-7675-vband': '/shop/power%20adders/turbos/25707.webp',  // pos 82 - TS-1 7675 V-Band
+  'ts-powerport-black': '/shop/power%20adders/turbos/25765.webp', // pos 83 - PowerPort BOV Black
+  'vs-80mm-t6': '/shop/power%20adders/turbos/16146.webp',         // pos 84 - VS Racing 80mm T6
+  'vs-ng-7875': '/shop/power%20adders/turbos/16143.webp',         // pos 85 - VS Racing NG 7875
+  'ts-fpr-2000': '/shop/power%20adders/turbos/9195.webp',         // pos 86 - FPR 2000
+  'vs-85mm-slip': '/shop/power%20adders/turbos/16156.webp',       // pos 87 - VS Racing 85mm Slip
+  'vs-50mm-bov': '/shop/power%20adders/turbos/17994.webp',        // pos 88 - VS Racing 50mm BOV
+  'vs-88-103mm': '/shop/power%20adders/turbos/16144.webp',        // pos 89 - VS Racing 88/103mm
+  'vs-gen3-7875': '/shop/power%20adders/turbos/16171.webp',       // pos 90 - VS Racing Gen3 7875
+  'vs-70-70-t4': '/shop/power%20adders/turbos/16170.webp',        // pos 91 - VS Racing 70/70 T4
+  'vs-67-66-t4': '/shop/power%20adders/turbos/16216_1.webp',      // pos 92 - VS Racing 67/66 T4
+  'ts-eboost-street': '/shop/power%20adders/turbos/9192.webp',    // pos 93 - E-Boost Street
+  'ts-ts1-6466-rev': '/shop/power%20adders/turbos/25715.webp',    // pos 94 - TS-1 6466 Reversed
+  'ts-wg45-hypergate-black': '/shop/power%20adders/turbos/9199.webp', // pos 95 - WG45 Hyper-Gate Black
+  'vs-7875-t51r': '/shop/power%20adders/turbos/16148.webp',       // pos 96 - VS Racing 7875 T51R
+  'ts-ts2-6466-ext': '/shop/power%20adders/turbos/25699.webp',    // pos 97 - TS-2 6466 External WG
+  'ts-eb2-solenoid': '/shop/power%20adders/turbos/9191.webp',     // pos 98 - EB2 Solenoid
+  'ts-fpr-1200': '/shop/power%20adders/turbos/9194.webp',         // pos 99 - FPR 1200
+  'ts-wg45-hypergate-blue': '/shop/power%20adders/turbos/9198.webp', // pos 100 - WG45 Hyper-Gate Blue
+  'ts-eboost2-60mm-black': '/shop/power%20adders/turbos/9190.webp', // pos 101 - EBoost2 60mm Black
+  'ts-opr-v2': '/shop/power%20adders/turbos/18459.webp',          // pos 102 - OPR V2
+  'ts-bov-raceport-female-black': '/shop/power%20adders/turbos/9187.webp', // pos 103 - BOV RacePort Female Black
+  'ts-bov-raceport-blue': '/shop/power%20adders/turbos/9182.webp', // pos 104 - BOV RacePort Blue
+  'ts-raceport-sleeper': '/shop/power%20adders/turbos/25682.webp', // pos 105 - RacePort BOV Sleeper
+  'ts-bov-raceport-female-blue': '/shop/power%20adders/turbos/9186.webp', // pos 106 - BOV RacePort Female Blue
+  'ts-wg50-progate-blue': '/shop/power%20adders/turbos/9200.webp', // pos 107 - WG50 Pro-Gate Blue
+  'ts-wg60-powergate-black': '/shop/power%20adders/turbos/9203.webp', // pos 108 - WG60 Power-Gate Black
+  'ts-bov-raceport-black': '/shop/power%20adders/turbos/9183.webp', // pos 109 - BOV RacePort Black
+  'pc-race-valve-steel': '/shop/power%20adders/turbos/20566.webp', // pos 110 - Procharger Race Valve Steel
+  'pte-discharge-flange': '/shop/power%20adders/turbos/7331.webp', // pos 111 - PTE Discharge Flange
+  'pte-50mm-bov': '/shop/power%20adders/turbos/9495.webp',        // pos 112 - PTE 50mm BOV
+  'pc-race-valve-alum': '/shop/power%20adders/turbos/20565.webp', // pos 113 - Procharger Race Valve Aluminum
+  'pte-vband-flange': '/shop/power%20adders/turbos/7330.webp',    // pos 114 - PTE V-Band Flange
+  'ict-ls-oil-adapter': '/shop/power%20adders/turbos/11863.webp', // pos 115 - ICT LS Oil Adapter
+  'ict-oil-line-48': '/shop/power%20adders/turbos/11832.webp',    // pos 116 - ICT Oil Line 48"
+  'ict-oil-line-60': '/shop/power%20adders/turbos/11827.webp',    // pos 117 - ICT Oil Line 60"
   
   // ===== NITROUS PRODUCTS =====
   'no-xseries-efi-single': '/shop/power%20adders/Nitrous/16353_48.webp',       // 1 - Nitrous Outlet X-Series
@@ -613,7 +613,7 @@ function getProductImage(productId: string): string {
   if (productId.startsWith('no-') || productId.startsWith('nx-') || productId.startsWith('nos-') || productId.startsWith('tz-')) {
     return '';
   }
-  return '/shop/power%20adders/turbos+/7330.webp';
+  return '/shop/power%20adders/turbos/7330.webp';
 }
 
 // Power adder products - Real products
@@ -6222,7 +6222,7 @@ const categoryIcons: Record<string, string | React.ReactNode> = {
   accessories: "🛠️",
 };
 
-const TURBO_ICON_PATH = "/shop/power adders/turbos+/25780.webp";
+const TURBO_ICON_PATH = "/shop/power adders/turbos/25780.webp";
 
 export default function PowerAddersPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
