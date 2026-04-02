@@ -6214,7 +6214,7 @@ const categoryLabels: Record<string, string> = {
 const categoryIcons: Record<string, string | React.ReactNode> = {
   turbo: null, // Uses image instead
   supercharger: "🌪️",
-  nitrous: "❄️",
+  nitrous: null, // Uses image instead
   intercooler: "🧱",
   wastegate: "⚙️",
   "blow-off-valve": "💥",
@@ -6222,7 +6222,8 @@ const categoryIcons: Record<string, string | React.ReactNode> = {
   accessories: "🛠️",
 };
 
-const TURBO_ICON_PATH = "/shop/power adders/turbos/25780.webp";
+const TURBO_ICON_PATH = "/shop/power%20adders/turbos/25780.webp";
+const NITROUS_ICON_PATH = "/shop/power%20adders/Nitrous/16353_48.webp";
 
 export default function PowerAddersPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -6489,6 +6490,8 @@ export default function PowerAddersPage() {
                   <div style={{ fontSize: 28, marginBottom: 6, display: "flex", justifyContent: "center", alignItems: "center" }}>
                     {key === "turbo" ? (
                       <img src={TURBO_ICON_PATH} alt="Turbo" style={{ width: 32, height: 32, objectFit: "contain", borderRadius: 4 }} />
+                    ) : key === "nitrous" ? (
+                      <img src={NITROUS_ICON_PATH} alt="Nitrous" style={{ width: 32, height: 32, objectFit: "contain", borderRadius: 4 }} />
                     ) : (
                       categoryIcons[key]
                     )}
