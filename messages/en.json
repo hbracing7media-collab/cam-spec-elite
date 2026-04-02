@@ -540,7 +540,10 @@
       "shopBottomEnd": "Shop Bottom End →",
       "wheelsTires": "Wheels & Tires",
       "wheelsTiresDesc": "Drag radials, slicks, skinnies & racing wheels",
-      "shopWheels": "Shop Wheels →"
+      "shopWheels": "Shop Wheels →",
+      "powerAdders": "Power Adders",
+      "powerAddersDesc": "Turbos, superchargers, nitrous & boost control",
+      "shopPowerAdders": "Shop Power Adders →"
     },
     "merch": {
       "title": "Merch",

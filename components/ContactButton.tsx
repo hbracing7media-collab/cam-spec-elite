@@ -47,14 +47,14 @@ export default function ContactButton() {
 
   return (
     <>
-      {/* Floating Contact Button - positioned below AI chatbot on the right */}
+      {/* Floating Contact Button - positioned above AI chatbot on the right */}
       <button
         onClick={() => setIsOpen(true)}
         style={{
           position: "fixed",
-          bottom: 24,
+          bottom: 170,
           right: 20,
-          zIndex: 9998,
+          zIndex: 10001,
           background: "linear-gradient(135deg, #ff3bd4, #8b5cf6)",
           border: "none",
           borderRadius: 50,

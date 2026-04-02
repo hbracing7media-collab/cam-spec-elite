@@ -881,6 +881,42 @@ export default function ShopPage() {
             </span>
           </Link>
 
+          {/* Power Adders */}
+          <Link
+            href="/shop/power-adders"
+            style={{
+              display: "block",
+              padding: "24px",
+              background: "linear-gradient(135deg, rgba(60, 10, 10, 0.9), rgba(50, 5, 5, 0.95))",
+              borderRadius: 12,
+              border: "1px solid rgba(255, 50, 50, 0.6)",
+              textDecoration: "none",
+              textAlign: "center",
+              transition: "transform 0.2s, box-shadow 0.2s",
+            }}
+          >
+            <div style={{ width: 64, height: 64, margin: "0 auto 8px", borderRadius: 8, overflow: "hidden" }}>
+              <img src="/shop/ChatGPT Image Mar 31, 2026, 07_24_35 PM.png" alt="Power Adders" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ff3232", margin: "0 0 8px 0" }}>
+              {t('shop.parts.powerAdders')}
+            </h2>
+            <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 12px 0" }}>
+              {t('shop.parts.powerAddersDesc')}
+            </p>
+            <span style={{
+              display: "inline-block",
+              padding: "8px 16px",
+              background: "rgba(255, 50, 50, 0.2)",
+              borderRadius: 6,
+              color: "#ff3232",
+              fontWeight: 600,
+              fontSize: 13,
+            }}>
+              {t('shop.parts.shopPowerAdders')}
+            </span>
+          </Link>
+
           {/* Machine Shop Services */}
           <Link
             href="/shop/services"
