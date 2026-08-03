@@ -793,7 +793,7 @@ export default function CamSpecEliteCalculator() {
               { key: 'intDur', label: 'Int Dur @ .050 (°)', type: 'number', min: 180, max: 290, step: 1 },
               { key: 'exhDur', label: 'Exh Dur @ .050 (°)', type: 'number', min: 180, max: 300, step: 1 },
               { key: 'lsa', label: 'LSA (°)', type: 'number', min: 104, max: 118, step: 1 },
-              { key: 'ivc', label: 'IVC @ .050 (ABDC °)', type: 'number', min: 40, max: 90, step: 1 },
+              { key: 'ivc', label: 'Intake Valve Closing Event @ .050 (ABDC °)', type: 'number', min: 40, max: 90, step: 1 },
               { key: 'intLift', label: 'Int Lift (in)', type: 'number', min: 0.35, max: 0.9, step: 0.001 },
               { key: 'exhLift', label: 'Exh Lift (in)', type: 'number', min: 0.35, max: 0.9, step: 0.001 },
               { key: 'rpmStart', label: 'Cam RPM Start', type: 'number', min: 1000, max: 8000, step: 100 },
